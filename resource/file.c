@@ -2,6 +2,8 @@
 #define RESOURCE_C
 #include "../unilayer.h"
 
+#ifdef RESOURCE_FILE
+
 static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    FILE* res_file = NULL;
    uint8_t* buffer = NULL;
@@ -70,4 +72,6 @@ MEMORY_PTR resource_unlock_handle( MEMORY_HANDLE handle ) {
 void resource_free_handle( MEMORY_HANDLE handle ) {
    memory_free( handle );
 }
+
+#endif /* RESOURCE_FILE */
 

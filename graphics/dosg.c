@@ -406,3 +406,7 @@ int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    return 0;
 }
 
+#ifndef USE_SOFTWARE_TEXT
+#error "platform dos does not support hardware text"
+#endif /* !USE_SOFTWARE_TEXT */
+

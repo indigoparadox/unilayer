@@ -10,6 +10,11 @@
 #define PACKED
 #endif /* __GNUC__ */
 
+#if defined( __GNUC__ ) && !defined( _POSIX_C_SOURCE )
+/* For strnlen(). */
+#define _POSIX_C_SOURCE 200809L
+#endif /* __GNUC__ */
+
 #include <stddef.h>
 
 #if !defined( offsetof )

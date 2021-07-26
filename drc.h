@@ -4,22 +4,11 @@
 #ifndef DRC_H
 #define DRC_H
 
-#ifndef DRC_COPY_BLOCK_SZ
-#define DRC_COPY_BLOCK_SZ 1024
-#endif /* !DRC_COPY_BLOCK_SZ */
-
-#ifdef USE_DOS
-#define DRC_DEFAULT_TEMP "c:\\temp"
-#define DRC_PATH_SEP '\\'
-#else
-#define DRC_DEFAULT_TEMP "/tmp"
-#define DRC_PATH_SEP '/'
-#endif /* USE_DOS */
-
-#define DRC_FILENAME_SZ 64
-
 /* This is kind of arbitrary. Test if increasing. */
 #define DRC_MAX_ENTRIES 1024
+
+/* Not configurable; integral to header size. */
+#define DRC_FILENAME_SZ 64
 
 #define DRC_ERROR_PATH_TOO_LONG           -1
 #define DRC_ERROR_COULD_NOT_CREATE        -2

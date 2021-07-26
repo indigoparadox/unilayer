@@ -250,3 +250,7 @@ int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    return 1;
 }
 
+#ifndef USE_SOFTWARE_TEXT
+#error "platform xlib does not support hardware text"
+#endif /* !USE_SOFTWARE_TEXT */
+

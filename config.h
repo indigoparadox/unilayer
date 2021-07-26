@@ -14,57 +14,15 @@
 
 #include "../gen/dos/resext.h"
 
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "c:\\temp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '\\'
-#endif /* !DIO_PATH_SEP */
-
-#ifndef LOG_FILE_NAME
-#define LOG_FILE_NAME "logdos.txt"
-#endif /* !LOG_FILE_NAME */
-
-#ifndef DRC_ARCHIVE
-#define DRC_ARCHIVE "doscga.drc"
-#endif /* !DRC_ARCHIVE */
-
-#define LOG_TO_FILE
-#define USE_SOFTWARE_TEXT
-#define RESOURCE_HEADER
-
 /* ------ */
 #elif defined( PLATFORM_SDL )
 /* ------ */
-
-#ifdef __GNUC__
-/* For strnlen(). */
-#define _POSIX_C_SOURCE 200809L
-#endif /* __GNUC__ */
 
 #ifdef RESOURCE_FILE
 #include "../gen/sdl-file/resext.h"
 #else
 #include "../gen/sdl/resext.h"
 #endif /* RESOURCE_FILE */
-
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "/tmp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '/'
-#endif /* !DIO_PATH_SEP */
-
-#ifndef DRC_ARCHIVE
-#define DRC_ARCHIVE "sdl16.drc"
-#endif /* !DRC_ARCHIVE */
-
-#define USE_SOFTWARE_TEXT
-#ifndef RESOURCE_FILE
-#define RESOURCE_HEADER
-#endif /* !RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_XLIB )
@@ -75,20 +33,7 @@
 #define _POSIX_C_SOURCE 200809L
 #endif /* __GNUC__ */
 
-#include <X11/Xlib.h>
-
 #include "../gen/xlib/resext.h"
-
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "/tmp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '/'
-#endif /* !DIO_PATH_SEP */
-
-#define USE_SOFTWARE_TEXT
-#define RESOURCE_HEADER
 
 /* ------ */
 #elif defined( PLATFORM_PALM )
@@ -108,12 +53,6 @@
 
 #define stringify_line( line ) #line
 
-#define platform_file HostFILE*
-#define platform_fprintf HostFPrintF
-#define platform_fopen HostFOpen
-#define platform_fflush HostFFlush
-#define platform_fclose HostFClose
-
 /* #define assert( test ) ErrFatalDisplayIf( !(test), __FILE__ ": " stringify_line( __LINE__ ) ": assert failure" ) */
 
 /* ------ */
@@ -122,23 +61,7 @@
 
 #include "../gen/win16/resext.h"
 
-#ifndef LOG_FILE_NAME
-#define LOG_FILE_NAME "logwin16.txt"
-#endif /* !LOG_FILE_NAME */
-
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "c:\\temp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '\\'
-#endif /* !DIO_PATH_SEP */
-
-#define LOG_TO_FILE
-#define USE_SOFTWARE_TEXT
 #define PLATFORM_WIN
-
-#define PLATFORM_API PASCAL
 
 #define SCREEN_BPP 4
 
@@ -148,21 +71,7 @@
 
 #include "../gen/win16/resext.h"
 
-#ifndef LOG_FILE_NAME
-#define LOG_FILE_NAME "logwince.txt"
-#endif /* !LOG_FILE_NAME */
-
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "c:\\temp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '\\'
-#endif /* !DIO_PATH_SEP */
-
 #define PLATFORM_WIN
-
-#define PLATFORM_API WINAPI
 
 #define SCREEN_BPP 4
 
@@ -172,21 +81,7 @@
 
 #include "../gen/win32/resext.h"
 
-#ifndef LOG_FILE_NAME
-#define LOG_FILE_NAME "logwince.txt"
-#endif /* !LOG_FILE_NAME */
-
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "c:\\temp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '\\'
-#endif /* !DIO_PATH_SEP */
-
 #define PLATFORM_WIN
-
-#define PLATFORM_API WINAPI
 
 #define SCREEN_BPP 4
 
@@ -196,38 +91,8 @@
 
 #include "../gen/mac7/resext.h"
 
-/* Doesn't exist on this platform. */
-#define far
-
-#ifndef DIO_PATH_TEMP
-/* TODO */
-#define DIO_PATH_TEMP ""
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP ':'
-#endif /* !DIO_PATH_SEP */
-
-#ifndef DRC_ARCHIVE
-#define DRC_ARCHIVE "mac7.drc"
-#endif /* !DRC_ARCHIVE */
-
-#ifndef LOG_FILE_NAME
-#define LOG_FILE_NAME "logmac.txt"
-#endif /* !LOG_FILE_NAME */
-
-#define platform_file FILE*
-#define platform_fprintf fprintf
-#define platform_fopen fopen
-#define platform_fflush fflush
-#define platform_fclose fclose
-
-#define USE_SOFTWARE_TEXT
 #define DRC_TOC_INITIAL_ALLOC 50 /* Fake it until we have realloc. */
-#define RESOURCE_HEADER
-#define DISABLE_MAIN_PARMS
 #define LOG_TO_FILE
-#define PLATFORM_NEWLINE "\r"
 
 /* ------ */
 #elif defined( PLATFORM_NDS )
@@ -235,33 +100,9 @@
 
 #include "../gen/nds/resext.h"
 
-#ifndef DIO_PATH_TEMP
-/* TODO */
-#define DIO_PATH_TEMP ""
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP ':'
-#endif /* !DIO_PATH_SEP */
-
-#define platform_file FILE*
-#define platform_fprintf fprintf
-#define platform_fopen fopen
-#define platform_fflush fflush
-#define platform_fclose fclose
-
-#define USE_SOFTWARE_TEXT
-#define DRC_TOC_INITIAL_ALLOC 50 /* Fake it until we have realloc. */
-#define RESOURCE_HEADER
-
 /* ------ */
 #elif defined( PLATFORM_GL )
 /* ------ */
-
-#ifdef __GNUC__
-/* For strnlen(). */
-#define _POSIX_C_SOURCE 200809L
-#endif /* __GNUC__ */
 
 #ifdef PLATFORM_WEB
 #include "../gen/web/resext.h"
@@ -269,68 +110,9 @@
 #include "../gen/gl/resext.h"
 #endif /* PLATFORM_WEB */
 
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "/tmp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '/'
-#endif /* !DIO_PATH_SEP */
-
-#ifndef DRC_ARCHIVE
-#define DRC_ARCHIVE "gl.drc"
-#endif /* !DRC_ARCHIVE */
-
-#define USE_SOFTWARE_TEXT
-#ifndef RESOURCE_FILE
-#define RESOURCE_HEADER
-#endif /* !RESOURCE_FILE */
-
-/* ------ */
-#else /* !PLATFORM_DOS, !PLATFORM_SDL, !PLATFORM_PALM, !PLATFORM_WIN16 */
-/* ------ */
-
-#ifndef DIO_PATH_TEMP
-#define DIO_PATH_TEMP "/tmp"
-#endif /* !DIO_PATH_TEMP */
-
-#ifndef DIO_PATH_SEP
-#define DIO_PATH_SEP '/'
-#endif /* !DIO_PATH_SEP */
-
-#ifndef DRC_ARCHIVE
-#define DRC_ARCHIVE "null.drc"
-#endif /* !DRC_ARCHIVE */
-
-#ifndef NO_RESEXT
-#include "../gen/check_null/resext.h"
-#endif /* NO_RESEXT */
-
-#define USE_SOFTWARE_TEXT
-
 /* ------ */
 #endif /* PLATFORM_DOS, PLATFORM_SDL, PLATFORM_PALM, PLATFORM_WIN16 */
 /* ------ */
-
-#ifndef platform_file
-#define platform_file FILE*
-#endif /* !platform_file */
-
-#ifndef platform_fprintf
-#define platform_fprintf fprintf
-#endif /* !platform_fprintf */
-
-#ifndef platform_fopen
-#define platform_fopen fopen
-#endif /* !platform_fopen */
-
-#ifndef platform_fflush
-#define platform_fflush fflush
-#endif /* !platform_fflush */
-
-#ifndef platform_fclose
-#define platform_fclose fclose
-#endif /* !platform_fclose */
 
 #ifndef JSON_BUFFER_SZ
 #define JSON_BUFFER_SZ 8192

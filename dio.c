@@ -310,7 +310,8 @@ int16_t dio_mktemp_path( char* buf, uint16_t buf_sz, const char* tmpfilename ) {
 
    temp_dir = getenv( "TEMP" );
    if( NULL == temp_dir ) {
-      temp_dir = DIO_PATH_TEMP;
+      error_printf( "no temporary directory defined by environment" );
+      return -1;
    }
 
    if(
@@ -324,7 +325,7 @@ int16_t dio_mktemp_path( char* buf, uint16_t buf_sz, const char* tmpfilename ) {
    memory_zero_ptr( buf, buf_sz );
    memory_strncpy_ptr( buf, temp_dir, buf_sz );
 
-   buf[memory_strnlen_ptr( temp_dir, 0 )] = DIO_PATH_SEP;
+   buf[memory_strnlen_ptr( temp_dir, 0 )] = '/';
    memory_strncpy_ptr( &(buf[memory_strnlen_ptr( temp_dir, 0 ) + 1]),
       tmpfilename, buf_sz - memory_strnlen_ptr( temp_dir + 1, 0 ) );
 

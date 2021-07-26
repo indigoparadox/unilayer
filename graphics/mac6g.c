@@ -255,17 +255,6 @@ int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
 }
 
 #ifndef USE_SOFTWARE_TEXT
-
-void graphics_string_sz(
-   const char* str, uint16_t str_sz, uint8_t scale, struct GRAPHICS_RECT* sz_out
-) {
-}
-
-void graphics_string_at(
-   const char* str, uint16_t str_sz, uint16_t x_orig, uint16_t y_orig,
-   GRAPHICS_COLOR color, uint8_t scale
-) {
-}
-
+#error "platform mac6 does not support hardware text"
 #endif /* !USE_SOFTWARE_TEXT */
 

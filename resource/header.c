@@ -2,6 +2,8 @@
 #define RESOURCE_C
 #include "../unilayer.h"
 
+#ifdef RESOURCE_HEADER
+
 #include <resext.h>
 
 RESOURCE_BITMAP_HANDLE resource_get_bitmap_handle( RESOURCE_ID id ) {
@@ -22,4 +24,6 @@ MEMORY_PTR resource_unlock_handle( MEMORY_HANDLE handle ) {
 
 void resource_free_handle( MEMORY_HANDLE handle ) {
 }
+
+#endif /* RESOURCE_HEADER */
 

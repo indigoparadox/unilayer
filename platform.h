@@ -2,6 +2,10 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#if defined( PLATFORM_WIN16 ) || defined( PLATFORM_WIN32 ) || defined( PLATFORM_WINCE )
+#define PLATFORM_WIN
+#endif
+
 #ifdef PLATFORM_DOS
 
 #  define NEWLINE_STR "\n"
@@ -59,7 +63,18 @@
 
 #elif defined( PLATFORM_PALM )
 
+#  ifdef RESOURCE_FILE
+#     undef RESOURCE_FILE
+#  endif
+#  ifdef RESOURCE_HEADER
+#     undef RESOURCE_HEADER
+#  endif
+#  ifdef RESOURCE_DRC
+#     undef RESOURCE_DRC
+#  endif
 #  define NEWLINE_STR "\n"
+#  define USE_SOFT_ASSERT
+#  define DISABLE_FILESYSTEM
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logpalm.txt"
 #  include <PalmOS.h>
@@ -76,6 +91,15 @@
 
 #elif defined( PLATFORM_WIN )
 
+#  ifdef RESOURCE_FILE
+#     undef RESOURCE_FILE
+#  endif
+#  ifdef RESOURCE_HEADER
+#     undef RESOURCE_HEADER
+#  endif
+#  ifdef RESOURCE_DRC
+#     undef RESOURCE_DRC
+#  endif
 #  define NEWLINE_STR "\n"
 #  define LOG_TO_FILE
 #  ifdef PLATFORM_WIN16

@@ -28,11 +28,6 @@
 #elif defined( PLATFORM_XLIB )
 /* ------ */
 
-#ifdef __GNUC__
-/* For strnlen(). */
-#define _POSIX_C_SOURCE 200809L
-#endif /* __GNUC__ */
-
 #include "../gen/xlib/resext.h"
 
 /* ------ */
@@ -43,17 +38,9 @@
 
 #include "../gen/palm/resext.h"
 
-#ifndef LOG_FILE_NAME
-#define LOG_FILE_NAME "logpalm.txt"
-#endif /* !LOG_FILE_NAME */
+/* #define stringify_line( line ) #line
 
-#define USE_SOFT_ASSERT
-#define DISABLE_FILESYSTEM
-#define LOG_TO_FILE
-
-#define stringify_line( line ) #line
-
-/* #define assert( test ) ErrFatalDisplayIf( !(test), __FILE__ ": " stringify_line( __LINE__ ) ": assert failure" ) */
+#define assert( test ) ErrFatalDisplayIf( !(test), __FILE__ ": " stringify_line( __LINE__ ) ": assert failure" ) */
 
 /* ------ */
 #elif defined( PLATFORM_WIN16 )
@@ -197,8 +184,6 @@
 #define FONT_SPACE 0
 #define SPRITE_H 16
 #define SPRITE_W 16
-#define TILE_W 16
-#define TILE_H 16
 #define PATTERN_W 16
 #define PATTERN_H 16
 

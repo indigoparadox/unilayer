@@ -1,6 +1,6 @@
 
-#ifndef DSTYPES_H
-#define DSTYPES_H
+#ifndef UNILAYER_H
+#define UNILAYER_H
 
 #ifdef __GNUC__
 #define WARN_UNUSED __attribute__( (warn_unused_result) )
@@ -30,11 +30,11 @@
 #  define NO_CGA_FUNCTIONS
 #endif /* ANCIENT_C */
 
+#include "platform.h"
+
 #include "config.h"
 #include "uassert.h"
 #include "uprintf.h"
-
-#include "platform.h"
 
 struct PACKED TILEMAP_COORDS {
    int32_t x;
@@ -48,5 +48,5 @@ struct PACKED TILEMAP_COORDS {
 #include "dio.h"
 #include "drc.h"
 
-#endif /* DSTYPES_H */
+#endif /* UNILAYER_H */
 

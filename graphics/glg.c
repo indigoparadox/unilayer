@@ -1,6 +1,6 @@
 
 #define GRAPHICS_C
-#include "../dstypes.h"
+#include "../unilayer.h"
 
 /*
  * @return 1 if init was successful and 0 otherwise.

@@ -1,7 +1,5 @@
 
-#include "../input.h"
-
-#include <Multiverse.h>
+#include "../unilayer.h"
 
 int input_init() {
    FlushEvents( everyEvent, 0 );

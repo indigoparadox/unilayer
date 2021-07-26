@@ -2,41 +2,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
-#ifdef PLATFORM_DOS
-#include "graphics/dosg.h"
-#elif defined( PLATFORM_SDL )
-#include "graphics/sdlg.h"
-#elif defined( PLATFORM_XLIB )
-#include "graphics/xg.h"
-#elif defined( PLATFORM_PALM )
-#include "graphics/palmg.h"
-#elif defined( PLATFORM_WIN )
-#include "graphics/wing.h"
-#elif defined( PLATFORM_MAC7 )
-#include "graphics/mac7g.h"
-#elif defined( PLATFORM_NDS )
-#include "graphics/ndsg.h"
-#elif defined( PLATFORM_GL )
-#include "graphics/glg.h"
-#else
-#include "graphics/nullg.h"
-#endif /* PLATFORM_DOS, PLATFORM_SDL, PLATFORM_PALM, PLATFORM_WIN16 */
-
 #define GRAPHICS_MAX_PATH 32
-
-/*
-typedef struct GRAPHICS_MASK {uint8_t bits[16]; } GRAPHICS_MASK;
-typedef struct GRAPHICS_PATTERN {
-   PATTERN_TYPE bits[PATTERN_H]; } GRAPHICS_PATTERN;
-
-#define graphics_pattern_masked_at( spr, mask, mo_x, mo_y, x, y ) \
-   graphics_blit_masked_at( \
-      (const GRAPHICS_PATTERN*)spr, mask, mo_x, mo_y, \
-      x, y, PATTERN_W, PATTERN_H )
-
-#define graphics_pattern_at( spr, x, y ) \
-   graphics_blit_at( spr, x, y, PATTERN_W, PATTERN_H )
-*/
 
 struct GRAPHICS_RECT {
    int16_t x;

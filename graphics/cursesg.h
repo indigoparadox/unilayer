@@ -1,8 +1,6 @@
 #ifndef CURSESG_H
 #define CURSESG_H
 
-#include "../dstypes.h"
-
 typedef uint8_t GRAPHICS_COLOR;
 
 struct GRAPHICS_BITMAP {

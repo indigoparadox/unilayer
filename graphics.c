@@ -6,7 +6,7 @@
 #include "data/font8x8.h"
 #endif /* USE_SOFTWARE_TEXT */
 
-static MEMORY_HANDLE gs_graphics_cache_handle = NULL;
+static MEMORY_HANDLE gs_graphics_cache_handle = (MEMORY_HANDLE)NULL;
 static int16_t gs_graphics_cache_sz = 0;
 
 int16_t graphics_init( struct GRAPHICS_ARGS* args ) {
@@ -104,11 +104,11 @@ void graphics_string_sz(
  */
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
-   RESOURCE_BITMAP_HANDLE bitmap_handle = NULL;
+   RESOURCE_BITMAP_HANDLE bitmap_handle = (RESOURCE_BITMAP_HANDLE)NULL;
    
    /* Load resource into buffer. */
    bitmap_handle = resource_get_bitmap_handle( id );
-   if( NULL == bitmap_handle ) {
+   if( (RESOURCE_BITMAP_HANDLE)NULL == bitmap_handle ) {
       retval = 0;
       error_printf( "unable to get resource handle" );
       goto cleanup;

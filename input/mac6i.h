@@ -1,6 +1,6 @@
 
-#ifndef MAC7I_H
-#define MAC7I_H
+#ifndef MAC6I_H
+#define MAC6I_H
 
 #define INPUT_KEY_LEFT 1
 #define INPUT_KEY_RIGHT 2
@@ -9,5 +9,5 @@
 #define INPUT_KEY_UP 5
 #define INPUT_KEY_OK 6
 
-#endif /* MAC7I_H */
+#endif /* MAC6I_H */
 

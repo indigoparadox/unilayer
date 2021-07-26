@@ -2,8 +2,6 @@
 #ifndef NULLG_H
 #define NULLG_H
 
-#include "../graphics.h"
-
 typedef int GRAPHICS_COLOR;
 struct GRAPHICS_BITMAP {
    RESOURCE_ID id;

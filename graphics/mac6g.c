@@ -1,10 +1,8 @@
 
 #define GRAPHICS_C
-#include "../dstypes.h"
+#include "../unilayer.h"
 
-#include "../../tools/data/bmp.h"
-
-#include <Multiverse.h>
+#include "../formats/bmp.h"
 
 #include <string.h>
 

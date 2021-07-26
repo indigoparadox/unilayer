@@ -2,10 +2,6 @@
 #ifndef NDSG_H
 #define NDSG_H
 
-#include "../dstypes.h"
-
-#include <nds.h>
-
 typedef uint16_t GRAPHICS_COLOR;
 struct GRAPHICS_BITMAP {
    RESOURCE_ID id;

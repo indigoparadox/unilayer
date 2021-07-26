@@ -2,18 +2,6 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "unilayer.h"
-
-#ifdef PLATFORM_PALM
-#include "memory/palmm.h"
-#elif defined( PLATFORM_WIN )
-#include "memory/winm.h"
-#elif defined( PLATFORM_MAC7 )
-#include "memory/mac7m.h"
-#else
-#include "memory/fakem.h"
-#endif /* PLATFORM_* */
-
 struct FAKE_MEMORY_HANDLE {
 #if 0
    uint32_t sz;

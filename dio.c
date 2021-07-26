@@ -381,7 +381,7 @@ uint32_t dio_read_file( const char* path, MEMORY_HANDLE* buffer_handle ) {
    file_in_sz = ftell( file_in );
    fseek( file_in, 0, SEEK_SET );
    *buffer_handle = memory_alloc( file_in_sz, 1 );
-   assert( NULL != *buffer_handle );
+   assert( (MEMORY_HANDLE)NULL != *buffer_handle );
    buffer_ptr = memory_lock( *buffer_handle );
 
    while(

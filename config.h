@@ -120,8 +120,6 @@
 #elif defined( PLATFORM_WIN16 )
 /* ------ */
 
-#include <windows.h>
-
 #include "../gen/win16/resext.h"
 
 #ifndef LOG_FILE_NAME
@@ -148,8 +146,6 @@
 #elif defined( PLATFORM_WINCE )
 /* ------ */
 
-#include <windows.h>
-
 #include "../gen/win16/resext.h"
 
 #ifndef LOG_FILE_NAME
@@ -174,8 +170,6 @@
 #elif defined( PLATFORM_WIN32 )
 /* ------ */
 
-#include <windows.h>
-
 #include "../gen/win32/resext.h"
 
 #ifndef LOG_FILE_NAME
@@ -197,7 +191,7 @@
 #define SCREEN_BPP 4
 
 /* ------ */
-#elif defined( PLATFORM_MAC7 )
+#elif defined( PLATFORM_MAC6 )
 /* ------ */
 
 #include "../gen/mac7/resext.h"
@@ -414,87 +408,6 @@
 #define JSON_PATH_SZ 255
 #endif /* !JSON_PATH_SZ */
 
-#ifndef PLATFORM_NEWLINE
-#define PLATFORM_NEWLINE "\n"
-#endif /* !PLATFORM_NEWLINE */
-
-#ifdef LOG_TO_FILE
-#ifndef DEBUG_LOG
-#define DEBUG_LOG
-#endif /* !DEBUG_LOG */
-#define LOG_ERR_TARGET g_log_file
-#define LOG_STD_TARGET g_log_file
-#else
-#define LOG_ERR_TARGET stderr
-#define LOG_STD_TARGET stdout
-#endif /* LOG_TO_FILE */
-
-#ifdef __GNUC__
-#define WARN_UNUSED __attribute__( (warn_unused_result) )
-#else
-#define WARN_UNUSED
-#endif /* __GNUC__ */
-
-/* ! */
-#ifdef ANCIENT_C
-/* ! */
-
-#  define debug_printf
-#  define error_printf
-
-/* ! */
-#elif defined( DEBUG_LOG )
-/* ! */
-
-#  include <stdio.h>
-
-#  define internal_debug_printf( lvl, ... ) if( NULL != LOG_ERR_TARGET && lvl >= DEBUG_THRESHOLD ) { platform_fprintf( LOG_STD_TARGET, "(%d) " __FILE__ ": %d: ", lvl, __LINE__ ); platform_fprintf( LOG_STD_TARGET, __VA_ARGS__ ); platform_fprintf( LOG_STD_TARGET, PLATFORM_NEWLINE ); platform_fflush( LOG_STD_TARGET ); }
-
-#  define internal_error_printf( ... ) if( NULL != LOG_ERR_TARGET ) { platform_fprintf( LOG_ERR_TARGET, "(E) " __FILE__ ": %d: ", __LINE__ ); platform_fprintf( LOG_ERR_TARGET, __VA_ARGS__ ); platform_fprintf( LOG_ERR_TARGET, PLATFORM_NEWLINE ); platform_fflush( LOG_ERR_TARGET ); }
-
-#  define debug_printf( lvl, ... ) internal_debug_printf( lvl, __VA_ARGS__ )
-
-#  define error_printf( ... ) internal_error_printf( __VA_ARGS__ )
-
-/* ! */
-#else /* !DEBUG_LOG, !ANCIENT_C */
-/* ! */
-
-#  define debug_printf( ... )
-#  define error_printf( ... )
-
-/* ! */
-#endif /* DEBUG_LOG, ANCIENT_C */
-/* ! */
-
-#ifdef ANCIENT_C
-#  include <stdio.h>
-#  define DIO_SILENT
-#  define NO_VARGS
-#  define NO_I86
-#  define NO_CGA_FUNCTIONS
-#endif /* ANCIENT_C */
-
-/* ! */
-#ifdef DISABLE_ASSERT
-/* ! */
-
-#define assert( comp )
-
-/* ! */
-#elif defined( USE_SOFT_ASSERT )
-/* ! */
-
-#  define assert( comp ) if( !(comp) ) { g_assert_failed_len = dio_snprintf( g_assert_failed, 255, __FILE__ ": %d: ASSERT FAILED", __LINE__ ); }
-
-#elif !defined( assert )
-
-#include <assert.h>
-
-/* ! */
-#endif /* USE_SOFT_ASSERT */
-/* ! */
-
 /* Graphics Parameters */
 
 #define FONT_W 8
@@ -516,19 +429,6 @@
 #if defined( SCREEN_H ) && defined( SCREEN_SCALE )
 #define SCREEN_REAL_H (SCREEN_H * SCREEN_SCALE)
 #endif /* SCREEN_H, SCREEN_SCALE */
-
-#ifdef LOG_TO_FILE
-#ifdef MAIN_C
-platform_file g_log_file = NULL;
-#else /* !MAIN_C */
-extern platform_file g_log_file;
-#endif /* MAIN_C */
-#endif /* LOG_TO_FILE */
-
-#ifndef MAIN_C
-extern char g_assert_failed[];
-extern int g_assert_failed_len;
-#endif /* !MAIN_C */
 
 #endif /* CONFIG_H */
 

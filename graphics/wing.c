@@ -225,12 +225,12 @@ int graphics_platform_blit_at(
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
-   HDC hdcBuffer = NULL;
-   HBITMAP oldHbmBuffer = NULL;
+   HDC hdcBuffer = (HDC)NULL;
+   HBITMAP oldHbmBuffer = (HBITMAP)NULL;
 
    /* Create HDC for the off-screen buffer to blit to. */
-   hdcBuffer = CreateCompatibleDC( NULL );
-   if( NULL == hdcBuffer ) {
+   hdcBuffer = CreateCompatibleDC( (HDC)NULL );
+   if( (HDC)NULL == hdcBuffer ) {
       error_printf( "screen buffer HDC is NULL" );
       return;
    }
@@ -249,10 +249,10 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    const GRAPHICS_COLOR color
 ) {
-   HDC hdcBuffer = NULL;
-   HBITMAP oldHbmBuffer = NULL;
+   HDC hdcBuffer = (HDC)NULL;
+   HBITMAP oldHbmBuffer = (HBITMAP)NULL;
    RECT rect;
-   HBRUSH brush = NULL;
+   HBRUSH brush = (HBRUSH)NULL;
 
    rect.left = x_orig;
    rect.top = y_orig;
@@ -260,8 +260,8 @@ void graphics_draw_block(
    rect.bottom = y_orig + h;
 
    /* Create HDC for the off-screen buffer to blit to. */
-   hdcBuffer = CreateCompatibleDC( NULL );
-   if( NULL == hdcBuffer ) {
+   hdcBuffer = CreateCompatibleDC( (HDC)NULL );
+   if( (HDC)NULL == hdcBuffer ) {
       error_printf( "screen buffer HDC is NULL" );
       return;
    }
@@ -286,23 +286,23 @@ void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    uint16_t thickness, const GRAPHICS_COLOR color
 ) {
-   HDC hdcBuffer = NULL;
-   HBITMAP oldHbmBuffer = NULL;
-   HPEN pen = NULL;
-   HPEN oldPen = NULL;
+   HDC hdcBuffer = (HDC)NULL;
+   HBITMAP oldHbmBuffer = (HBITMAP)NULL;
+   HPEN pen = (HPEN)NULL;
+   HPEN oldPen = (HPEN)NULL;
    POINT points[5];
 
 #ifndef PLATFORM_WINCE /* TODO */
    /* Create HDC for the off-screen buffer to blit to. */
-   hdcBuffer = CreateCompatibleDC( NULL );
-   if( NULL == hdcBuffer ) {
+   hdcBuffer = CreateCompatibleDC( (HDC)NULL );
+   if( (HDC)NULL == hdcBuffer ) {
       error_printf( "screen buffer HDC is NULL" );
       return;
    }
    oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
 
    pen = CreatePen( PS_SOLID, thickness * SCREEN_SCALE, color );
-   if( NULL == pen ) {
+   if( (HPEN)NULL == pen ) {
       error_printf( "pen is NULL" );
       return;
    }
@@ -337,19 +337,19 @@ void graphics_draw_line(
    uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
    uint16_t thickness, const GRAPHICS_COLOR color
 ) {
-   HDC hdcBuffer = NULL;
-   HBITMAP oldHbmBuffer = NULL;
-   HPEN pen = NULL;
-   HPEN oldPen = NULL;
+   HDC hdcBuffer = (HDC)NULL;
+   HBITMAP oldHbmBuffer = (HBITMAP)NULL;
+   HPEN pen = (HPEN)NULL;
+   HPEN oldPen = (HPEN)NULL;
    POINT points[2];
 
 #ifndef PLATFORM_WINCE /* TODO */
    /* Create HDC for the off-screen buffer to blit to. */
-   hdcBuffer = CreateCompatibleDC( NULL );
+   hdcBuffer = CreateCompatibleDC( (HDC)NULL );
    oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
 
    pen = CreatePen( PS_SOLID, thickness, color );
-   if( NULL == pen ) {
+   if( (HPEN)NULL == pen ) {
       error_printf( "pen is NULL" );
       return;
    }

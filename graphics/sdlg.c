@@ -28,7 +28,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 
    /*SDL_CreateWindowAndRenderer(
       SCREEN_REAL_W, SCREEN_REAL_H, 0, &g_window, &g_renderer );*/
-   g_window = SDL_CreateWindow( "dsekai",
+   g_window = SDL_CreateWindow( UNILAYER_WINDOW_TITLE,
       SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
       SCREEN_REAL_W, SCREEN_REAL_H, 0 );
    if( NULL ) {

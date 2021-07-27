@@ -33,7 +33,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    g_window = NewWindow(
       &g_window_record,
       &g_window_rect,
-      "\pdsekai",
+      "\p" UNILAYER_WINDOW_TITLE,
       false,
       noGrowDocProc,
       (WindowPtr)-1L,

@@ -124,7 +124,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    wc.hCursor       = LoadCursor( 0, IDC_ARROW );
    wc.hbrBackground = (HBRUSH)( COLOR_BTNFACE + 1 );
    /* wc.lpszMenuName  = MAKEINTRESOURCE( IDR_MAINMENU ); */
-   wc.lpszClassName = "DSekaiWindowClass";
+   wc.lpszClassName = UNILAYER_WINDOW_CLASS "WindowClass";
 
    if( !RegisterClass( &wc ) ) {
       error_printf( "unable to register main window class" );
@@ -132,7 +132,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    }
 
    g_window = CreateWindowEx(
-      0, "DSekaiWindowClass", "dsekai",
+      0, UNILAYER_WINDOW_CLASS "WindowClass", UNILAYER_WINDOW_TITLE,
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
       CW_USEDEFAULT, CW_USEDEFAULT,
       SCREEN_REAL_W, SCREEN_REAL_H, 0, 0, g_instance, 0

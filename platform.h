@@ -83,6 +83,7 @@
 #  define platform_fopen HostFOpen
 #  define platform_fflush HostFFlush
 #  define platform_fclose HostFClose
+#  define unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags )
 #  include "types/palmt.h"
 #  include "memory/palmm.h"
 #  include "resource/palmr.h"
@@ -112,6 +113,7 @@
 #     define LOG_FILE_NAME "logwin32.txt"
 #     define PLATFORM_API WINAPI
 #  endif /* PLATFORM_WIN16, PLATFORM_WIN32 */
+#  define unilayer_main() int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 #  include <windows.h>
 #  include "types/x86.h"
 #  include "memory/winm.h"
@@ -191,6 +193,12 @@
 #  include "graphics/nullg.h"
 
 #endif
+
+#if !defined( unilayer_main ) && defined( DISABLE_MAIN_PARMS )
+#  define unilayer_main() void main()
+#elif !defined( unilayer_main ) && !defined( DISABLE_MAIN_PARMS )
+#  define unilayer_main() int main( int argc, char* argv[] )
+#endif /* unilayer_main() */
 
 #endif /* !PLATFORM_H */
 

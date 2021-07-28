@@ -101,6 +101,8 @@ int graphics_platform_blit_at(
       y * SCREEN_SCALE,
       w * SCREEN_SCALE, 
       h * SCREEN_SCALE};
+   SDL_Rect src_rect = {
+      0, 0, w, h };
 
    if( NULL == bmp || NULL == bmp->texture ) {
       error_printf( "NULL bitmap passed" );
@@ -109,7 +111,7 @@ int graphics_platform_blit_at(
 
    debug_printf( 0, "blitting resource #%d to %d, %d x %d, %d...",
       bmp->id, x, y, w, h );
-   SDL_RenderCopy( g_renderer, bmp->texture, NULL, &dest_rect );
+   SDL_RenderCopy( g_renderer, bmp->texture, &src_rect, &dest_rect );
 
    return 1;
 }

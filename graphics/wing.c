@@ -207,12 +207,12 @@ int graphics_platform_blit_at(
    StretchBlt(
       hdcBuffer,
       x * SCREEN_SCALE, y * SCREEN_SCALE,
-      srcBitmap.bmWidth * SCREEN_SCALE,
-      srcBitmap.bmHeight * SCREEN_SCALE,
+      w * SCREEN_SCALE,
+      h * SCREEN_SCALE,
       hdcSrc,
       0, 0,
-      srcBitmap.bmWidth,
-      srcBitmap.bmHeight,
+      w,
+      h,
       SRCCOPY
    );
 

@@ -22,6 +22,7 @@
 #define GRAPHICS_ADDR     GRAPHICS_M_320_200_256_VGA_A
 #endif /* GRAPHICS_MODE */
 
+#include <stdlib.h>
 #include <string.h>
 #ifndef NO_I86
 #include <i86.h>
@@ -32,7 +33,7 @@
 #ifdef USE_LOOKUPS
 #include "../data/offsets.h"
 #endif /* USE_LOOKUPS */
-#include "../../tools/data/cga.h"
+#include "formats/cga.h"
 
 #ifdef USE_DOUBLEBUF
 static uint8_t huge g_buffer[76800]; /* Sized for 0x13. */
@@ -165,24 +166,24 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, GRAPHICS_COLOR color ) {
-	int byte_offset = 0,
+	int screen_byte_offset = 0,
       bit_offset = 0,
       bit_mask = 0;
    uint16_t scaled_x = x,
       scaled_y = y;
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
-      byte_offset = ((y * SCREEN_W) + x);
-      g_buffer[byte_offset] = color;
+      screen_byte_offset = ((y * SCREEN_W) + x);
+      g_buffer[screen_byte_offset] = color;
 #elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
 #ifdef USE_LOOKUPS
       /* Use pre-generated lookup tables for offsets to improve performance. */
-      byte_offset = gc_offsets_cga_bytes_p1[scaled_y][scaled_x];
+      screen_byte_offset = gc_offsets_cga_bytes_p1[scaled_y][scaled_x];
       bit_offset = gc_offsets_cga_bits_p1[scaled_y][scaled_x];
 #else
       /* Divide y by 2 since both planes are SCREEN_H / 2 high. */
       /* Divide result by 4 since it's 2 bits per pixel. */
-      byte_offset = (((scaled_y / 2) * SCREEN_W) + scaled_x) / 4;
+      screen_byte_offset = (((scaled_y / 2) * SCREEN_W) + scaled_x) / 4;
       /* Shift the bits over by the remainder. */
       bit_offset = 
          6 - (((((scaled_y / 2) * SCREEN_W) + scaled_x) % 4) * 2);
@@ -190,11 +191,11 @@ void graphics_draw_px( uint16_t x, uint16_t y, GRAPHICS_COLOR color ) {
 
       /* Clear the existing pixel. */
       if( 1 == scaled_y % 2 ) {
-         g_buffer[0x2000 + byte_offset] &= ~(0x03 << bit_offset);
-         g_buffer[0x2000 + byte_offset] |= (color << bit_offset);
+         g_buffer[0x2000 + screen_byte_offset] &= ~(0x03 << bit_offset);
+         g_buffer[0x2000 + screen_byte_offset] |= (color << bit_offset);
       } else {
-         g_buffer[byte_offset] &= ~(0x03 << bit_offset);
-         g_buffer[byte_offset] |= (color << bit_offset);
+         g_buffer[screen_byte_offset] &= ~(0x03 << bit_offset);
+         g_buffer[screen_byte_offset] |= (color << bit_offset);
       }
 #endif /* GRAPHICS_MODE */
 }
@@ -207,9 +208,10 @@ int graphics_platform_blit_at(
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
 	int y_offset = 0;
-   uint16_t byte_offset = 0;
-   const uint8_t* plane_1 = bmp->plane_1 - 2;
-   const uint8_t* plane_2 = bmp->plane_2 - 2;
+   uint16_t screen_byte_offset = 0;
+   /* Still not sure why copy seems to start w/2px in? */
+   const uint8_t* plane_1 = bmp->plane_1 - bmp->w / 8;
+   const uint8_t* plane_2 = bmp->plane_2 - bmp->w / 8;
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
 #error "not implemented"
@@ -221,19 +223,20 @@ int graphics_platform_blit_at(
 
 	for( y_offset = 0 ; h > y_offset ; y_offset++ ) {
 #ifdef USE_LOOKUPS
-      byte_offset = gc_offsets_cga_bytes_p1[y + y_offset][x];
+      screen_byte_offset = gc_offsets_cga_bytes_p1[y + y_offset][x];
 #else
       /* Divide y by 2 since both planes are SCREEN_H / 2 high. */
       /* Divide result by 4 since it's 2 bits per pixel. */
-      byte_offset = ((((y + y_offset) / 2) * SCREEN_W) + x) / 4;
+      screen_byte_offset = ((((y + y_offset) / 2) * SCREEN_W) + x) / 4;
 #endif /* USE_LOOKUPS */
 
-      _fmemcpy( &(g_buffer[byte_offset]), plane_1, 4 );
-      _fmemcpy( &(g_buffer[0x2000 + byte_offset]), plane_2, 4 );
+      /* 4px per byte * 4 bytes = 16 px. */
+      _fmemcpy( &(g_buffer[screen_byte_offset]), plane_1, 4 );
+      _fmemcpy( &(g_buffer[0x2000 + screen_byte_offset]), plane_2, 4 );
 
       /* Advance source address by bytes per copy. */
-      plane_1 += 2;
-      plane_2 += 2;
+      plane_1 += bmp->w / 8;
+      plane_2 += bmp->w / 8;
 	}
 #endif /* GRAPHICS_MODE */
 
@@ -246,19 +249,19 @@ void graphics_draw_block(
 ) {
 	int x = 0;
 	int y = 0;
-   uint16_t byte_offset = 0;
+   uint16_t screen_byte_offset = 0;
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
 #error "not implemented"
 #elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
    for( y = y_orig ; y < y + h ; y++ ) {
 #ifdef USE_LOOKUPS
-      byte_offset = gc_offsets_cga_bytes_p1[y][x_orig];
+      screen_byte_offset = gc_offsets_cga_bytes_p1[y][x_orig];
 #else
 /* #error "not implemented" */
 #endif /* USE_LOOKUPS */
-      _fmemset( (char far *)0xB8000000 + byte_offset, color, 2 );
-      _fmemset( (char far *)0xB8002000 + byte_offset, color, 2 );
+      _fmemset( (char far *)0xB8000000 + screen_byte_offset, color, 2 );
+      _fmemset( (char far *)0xB8002000 + screen_byte_offset, color, 2 );
    }
 #endif /* GRAPHICS_MODE */
 
@@ -340,30 +343,34 @@ int16_t graphics_platform_load_bitmap(
    uint16_t plane_sz = 0,
       plane_offset = 0;
    int32_t retval = 1;
+   struct CGA_HEADER* header = NULL;
 
    buffer_sz = memory_sz( res_handle );
    buffer = resource_lock_handle( res_handle );
+   header = (struct CGA_HEADER*)buffer;
+
+   debug_printf( 1, "found CGA header version %u", header->version );
 
    /* Parse the resource into a usable struct. */
-   b->w = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_WIDTH / 2];
-   assert( 16 == b->w );
-   b->h = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_HEIGHT / 2];
-   assert( 16 == b->h );
-   b->palette = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_PALETTE / 2];
+   b->w = header->width;
+   b->h = header->height;
+   b->palette = header->palette;
 
-   plane_sz = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_PLANE1_SZ / 2];
-   plane_offset = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_PLANE1_OFFSET / 2];
+   debug_printf( 1, "%u x %x px, %u colors", b->w, b->h, b->palette );
+
+   plane_sz = header->plane1_sz;
+   plane_offset = header->plane1_offset;
    /* TODO: Memory architecture? */
-   b->plane_1 = calloc( plane_sz, 1 );
+   b->plane_1 = (uint8_t*)calloc( plane_sz, 1 );
    if( NULL == b->plane_1 ) {
       retval = 0;
       goto cleanup;
    }
    memory_copy_ptr( b->plane_1, &(buffer[plane_offset]), plane_sz );
 
-   plane_sz = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_PLANE2_SZ / 2];
-   plane_offset = ((uint16_t*)buffer)[CGA_HEADER_OFFSET_PLANE2_OFFSET / 2];
-   b->plane_2 = calloc( plane_sz, 1 );
+   plane_sz = header->plane2_sz;
+   plane_offset = header->plane2_offset;
+   b->plane_2 = (uint8_t*)calloc( plane_sz, 1 );
    if( NULL == b->plane_2 ) {
       retval = 0;
       goto cleanup;

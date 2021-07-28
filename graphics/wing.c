@@ -264,7 +264,7 @@ int16_t graphics_platform_blit_partial_at(
       w * SCREEN_SCALE,
       h * SCREEN_SCALE,
       hdcSrc,
-      s_x, s_x,
+      s_x, s_y,
       w,
       h,
       SRCCOPY

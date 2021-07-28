@@ -121,6 +121,11 @@
 #  include "input/wini.h"
 #  include "graphics/wing.h"
 
+#ifdef MAIN_C
+HINSTANCE g_instance = (HINSTANCE)NULL;
+HWND g_window = (HWND)NULL;
+#endif /* MAIN_C */
+
 #elif defined( PLATFORM_MAC6 )
 
 #  define DISABLE_MAIN_PARMS
@@ -198,7 +203,7 @@
 #  define unilayer_main() void main()
 #elif !defined( unilayer_main ) && !defined( DISABLE_MAIN_PARMS )
 #  define unilayer_main() int main( int argc, char* argv[] )
-#endif /* unilayer_main() */
+#endif /* !unilayer_main() */
 
 #endif /* !PLATFORM_H */
 

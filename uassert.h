@@ -14,6 +14,14 @@
 
 #  define assert( comp ) if( !(comp) ) { g_assert_failed_len = dio_snprintf( g_assert_failed, 255, __FILE__ ": %d: ASSERT FAILED", __LINE__ ); }
 
+#ifdef MAIN_C
+char g_assert_failed[256];
+int g_assert_failed_len;
+#else
+extern char g_assert_failed[];
+extern int g_assert_failed_len;
+#endif /* MAIN_C */
+
 #elif !defined( assert )
 
 #include <assert.h>
@@ -21,11 +29,6 @@
 /* ! */
 #endif /* USE_SOFT_ASSERT */
 /* ! */
-
-#ifndef MAIN_C
-extern char g_assert_failed[];
-extern int g_assert_failed_len;
-#endif /* !MAIN_C */
 
 #endif /* UASSERT_H */
 

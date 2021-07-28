@@ -176,7 +176,7 @@ void graphics_loop_end() {
 /*
  * @return 1 if blit was successful and 0 otherwise.
  */
-int graphics_platform_blit_at(
+int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
@@ -211,6 +211,60 @@ int graphics_platform_blit_at(
       h * SCREEN_SCALE,
       hdcSrc,
       0, 0,
+      w,
+      h,
+      SRCCOPY
+   );
+
+   /* Reselect the initial objects into the provided DCs. */
+   SelectObject( hdcSrc, oldHbmSrc );
+   SelectObject( hdcBuffer, oldHbmBuffer );
+
+   DeleteDC( hdcSrc );
+   DeleteDC( hdcBuffer );
+
+   return 1;
+}
+
+/*
+ * @return 1 if blit was successful and 0 otherwise.
+ */
+int16_t graphics_platform_blit_partial_at(
+   const struct GRAPHICS_BITMAP* bmp,
+   uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
+   uint16_t w, uint16_t h
+) {
+   HDC hdcBuffer = (HDC)NULL;
+   HDC hdcSrc = (HDC)NULL;
+   BITMAP srcBitmap;
+   HBITMAP oldHbmSrc = (HBITMAP)NULL;
+   HBITMAP oldHbmBuffer = (HBITMAP)NULL;
+
+   if( (struct GRAPHICS_BITMAP*)NULL == bmp || (HBITMAP)NULL == bmp->bitmap ) {
+      error_printf( "blit bmp is NULL" );
+      return 0;
+   }
+
+   debug_printf( 0, "blitting resource #%d to %d, %d x %d, %d...",
+      bmp->id, d_x, d_y, w, h );
+
+   /* Create HDC for the off-screen buffer to blit to. */
+   hdcBuffer = CreateCompatibleDC( (HDC)NULL );
+   oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
+
+   /* Create HDC for source bitmap compatible with the buffer. */
+   hdcSrc = CreateCompatibleDC( (HDC)NULL );
+   oldHbmSrc = SelectObject( hdcSrc, bmp->bitmap );
+
+   GetObject( bmp->bitmap, sizeof( BITMAP ), &srcBitmap );
+
+   StretchBlt(
+      hdcBuffer,
+      d_x * SCREEN_SCALE, d_y * SCREEN_SCALE,
+      w * SCREEN_SCALE,
+      h * SCREEN_SCALE,
+      hdcSrc,
+      s_x, s_x,
       w,
       h,
       SRCCOPY

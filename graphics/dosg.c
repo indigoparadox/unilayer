@@ -203,7 +203,7 @@ void graphics_draw_px( uint16_t x, uint16_t y, GRAPHICS_COLOR color ) {
 /*
  * @return 1 if blit was successful and 0 otherwise.
  */
-int graphics_platform_blit_at(
+int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
@@ -228,6 +228,58 @@ int graphics_platform_blit_at(
       /* Divide y by 2 since both planes are SCREEN_H / 2 high. */
       /* Divide result by 4 since it's 2 bits per pixel. */
       screen_byte_offset = ((((y + y_offset) / 2) * SCREEN_W) + x) / 4;
+#endif /* USE_LOOKUPS */
+
+      /* 4px per byte * 4 bytes = 16 px. */
+      _fmemcpy( &(g_buffer[screen_byte_offset]), plane_1, 4 );
+      _fmemcpy( &(g_buffer[0x2000 + screen_byte_offset]), plane_2, 4 );
+
+      /* Advance source address by bytes per copy. */
+      plane_1 += bmp->w / 8;
+      plane_2 += bmp->w / 8;
+	}
+#endif /* GRAPHICS_MODE */
+
+   return 1;
+}
+
+/*
+ * @return 1 if blit was successful and 0 otherwise.
+ */
+int16_t graphics_platform_blit_partial_at(
+   const struct GRAPHICS_BITMAP* bmp,
+   uint16_t s_x, uint16_t s_y,
+   uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
+) {
+	int y_offset = 0;
+   uint16_t screen_byte_offset = 0;
+   /* Still not sure why copy seems to start w/2px in? */
+   const uint8_t* plane_1 = bmp->plane_1 - bmp->w / 8;
+   const uint8_t* plane_2 = bmp->plane_2 - bmp->w / 8;
+
+#if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
+#error "not implemented"
+#elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
+
+   if( NULL == plane_1 || NULL == plane_2 ) {
+      return 0;
+   }
+
+   if( 0 != s_x % 4 ) {
+      error_printf( "s_x must be divisible by 4" );
+      return 0;
+   }
+
+   plane_1 += s_x / 4;
+   plane_2 += s_x / 4;
+
+	for( y_offset = 0 ; h > y_offset ; y_offset++ ) {
+#ifdef USE_LOOKUPS
+      screen_byte_offset = gc_offsets_cga_bytes_p1[d_y + y_offset][d_x];
+#else
+      /* Divide y by 2 since both planes are SCREEN_H / 2 high. */
+      /* Divide result by 4 since it's 2 bits per pixel. */
+      screen_byte_offset = ((((d_y + y_offset) / 2) * SCREEN_W) + d_x) / 4;
 #endif /* USE_LOOKUPS */
 
       /* 4px per byte * 4 bytes = 16 px. */

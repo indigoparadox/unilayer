@@ -140,7 +140,9 @@ cleanup:
  * @return 1 if blit was successful and 0 otherwise.
  */
 int16_t graphics_blit_at(
-   RESOURCE_ID res_id, uint16_t x, uint16_t y, uint16_t w, uint16_t h
+   RESOURCE_ID res_id,
+   uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
+   uint16_t w, uint16_t h
 ) {
    int16_t retval = 0,
       i = 0;
@@ -175,7 +177,12 @@ int16_t graphics_blit_at(
       goto cleanup;
    }
 
-   retval = graphics_platform_blit_at( bitmap_blit, x, y, w, h );
+   if( 0 == s_x && 0 == s_y ) {
+      retval = graphics_platform_blit_at( bitmap_blit, d_x, d_y, w, h );
+   } else {
+      retval = graphics_platform_blit_partial_at(
+         bitmap_blit, s_x, s_y, d_x, d_y, w, h );
+   }
    if( !retval ) {
       /* error_printf( "failed to blit bitmap" ); */
       goto cleanup;

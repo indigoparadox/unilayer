@@ -112,7 +112,7 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
 /*
  * @return 1 if blit was successful and 0 otherwise.
  */
-int graphics_platform_blit_at(
+int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* b,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
@@ -120,7 +120,8 @@ int graphics_platform_blit_at(
       screen_bytes_per_pixel = 0,
       b_bytes_per_pixel = 0,
       screen_xy_byte = 0,
-      src_y = 0;
+      src_xy_byte = 0,
+      offset_y = 0;
 
    if( NULL == b->pixmap || NULL == b->pixmap->data ) {
       return 0;
@@ -130,18 +131,68 @@ int graphics_platform_blit_at(
    screen_bytes_per_pixel = g_buffer->bits_per_pixel / 8;
    b_bytes_per_pixel = b->pixmap->bits_per_pixel / 8;
    assert( screen_bytes_per_pixel == b_bytes_per_pixel );
-   for( src_y = 0 ; b->pixmap->height > src_y ; src_y++ ) {
+   for( offset_y = 0 ; h > offset_y ; offset_y++ ) {
       /* Multiply offsets by px byte size. */
       screen_xy_byte = 
-         ((y + src_y) * (SCREEN_W * screen_bytes_per_pixel)) +
+         ((y + offset_y) * (SCREEN_W * screen_bytes_per_pixel)) +
          (x * screen_bytes_per_pixel);
    
       assert( screen_xy_byte < g_buffer_bits_sz );
 
+      src_xy_byte = offset_y * (b->pixmap->width * b_bytes_per_pixel);
+
       /* Perform the blit. */
       memcpy(
          &(g_buffer_bits[screen_xy_byte]),
-         &(b->pixmap->data[(src_y * (b->pixmap->width * b_bytes_per_pixel))]),
+         &(b->pixmap->data[src_xy_byte]),
+         w * screen_bytes_per_pixel );
+   }
+
+   return retval;
+}
+
+/*
+ * @return 1 if blit was successful and 0 otherwise.
+ */
+int16_t graphics_platform_blit_partial_at(
+   const struct GRAPHICS_BITMAP* b,
+   uint16_t s_x, uint16_t s_y,
+   uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
+) {
+   int16_t retval = 1;
+   uint32_t
+      screen_bytes_per_pixel = 0,
+      b_bytes_per_pixel = 0,
+      screen_xy_byte = 0,
+      offset_y = 0,
+      src_xy_byte = 0;
+
+   if( NULL == b->pixmap || NULL == b->pixmap->data ) {
+      return 0;
+   }
+
+   /* Copy the image line by line into the buffer. */
+   screen_bytes_per_pixel = g_buffer->bits_per_pixel / 8;
+   b_bytes_per_pixel = b->pixmap->bits_per_pixel / 8;
+   assert( screen_bytes_per_pixel == b_bytes_per_pixel );
+   for( offset_y = 0 ; h > offset_y ; offset_y++ ) {
+      /* Multiply offsets by px byte size. */
+      screen_xy_byte = 
+         ((d_y + offset_y) * (SCREEN_W * screen_bytes_per_pixel)) +
+         (d_x * screen_bytes_per_pixel);
+   
+      assert( screen_xy_byte < g_buffer_bits_sz );
+
+      src_xy_byte = 
+         ((s_y + offset_y) * (b->pixmap->width * b_bytes_per_pixel)) +
+         (s_x * b_bytes_per_pixel);
+
+      assert( src_xy_byte < b->pixmap->width * b->pixmap->height );
+
+      /* Perform the blit. */
+      memcpy(
+         &(g_buffer_bits[screen_xy_byte]),
+         &(b->pixmap->data[src_xy_byte]),
          w * screen_bytes_per_pixel );
    }
 
@@ -174,7 +225,7 @@ int16_t graphics_platform_load_bitmap(
    uint8_t* bitmap_bits = NULL;
    uint8_t* buffer = NULL;
    uint32_t* palette = NULL;
-   uint32_t id = 0,
+   uint32_t
       retval = 1,
       buffer_sz = 0,
       px = 0;

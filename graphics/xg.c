@@ -78,7 +78,7 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
    XCloseDisplay( g_display );
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
+void graphics_flip() {
    /* Draw the buffer to the window. */
    XPutImage(
       g_display,

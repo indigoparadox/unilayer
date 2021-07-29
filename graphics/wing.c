@@ -2,8 +2,6 @@
 #define GRAPHICS_C
 #include "../unilayer.h"
 
-#define NULL ((void*)0)
-
 #include <string.h>
 
 extern uint8_t g_running;
@@ -100,8 +98,7 @@ static LRESULT CALLBACK WndProc(
          break;
 
       case WM_TIMER:
-         g_running = topdown_loop( g_state_handle );
-         graphics_flip( NULL );
+         g_running = g_loop_iter( g_loop_data );
          break;
 
       default:
@@ -160,8 +157,8 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
-   /*UpdateWindow( g_screen.window );*/
+void graphics_flip() {
+   /* The closest analog to the actual graphics_flip(): */
    if( (HWND)NULL != g_window ) {
       InvalidateRect( g_window, 0, TRUE );
    }

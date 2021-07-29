@@ -31,7 +31,7 @@ struct GRAPHICS_BITMAP_BASE {
 
 int16_t graphics_init();
 void graphics_shutdown();
-void graphics_flip( struct GRAPHICS_ARGS* );
+void graphics_flip();
 void graphics_loop_start();
 void graphics_loop_end();
 void graphics_draw_px( uint16_t, uint16_t, const GRAPHICS_COLOR );

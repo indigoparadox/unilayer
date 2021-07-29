@@ -6,12 +6,21 @@
 #define PLATFORM_WIN
 #endif
 
+typedef int (*loop_iter)( void* );
+
+#ifdef MAIN_C
+#define loop_globals() uint8_t g_running = 1; loop_iter g_loop_iter = NULL; void* g_loop_data = NULL;
+#else
+#define loop_globals() extern uint8_t g_running; extern loop_iter g_loop_iter; extern void* g_loop_data;
+#endif /* MAIN_C */
+
 #ifdef PLATFORM_DOS
 
 #  define NEWLINE_STR "\n"
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logdos.txt"
 #  include "types/x86.h"
+loop_globals();
 #  include "memory/fakem.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
@@ -30,6 +39,7 @@
 #    define NEWLINE_STR "\n"
 #  endif /* !NEWLINE_STR */
 #  include <stdint.h>
+loop_globals();
 #  include "memory/fakem.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
@@ -49,6 +59,7 @@
 #  endif /* !NEWLINE_STR */
 #  include <X11/Xlib.h>
 #  include <stdint.h>
+loop_globals();
 #  include "memory/fakem.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
@@ -114,8 +125,10 @@
 #     define PLATFORM_API WINAPI
 #  endif /* PLATFORM_WIN16, PLATFORM_WIN32 */
 #  define unilayer_main() int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+#  define unilayer_loop_iter() win_process_messages()
 #  include <windows.h>
 #  include "types/x86.h"
+loop_globals();
 #  include "memory/winm.h"
 #  include "resource/winr.h"
 #  include "input/wini.h"
@@ -135,6 +148,7 @@ HWND g_window = (HWND)NULL;
 #  include <Multiverse.h>
 #  include <Quickdraw.h>
 #  include <stdint.h>
+loop_globals();
 #  include "memory/mac7m.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
@@ -156,6 +170,7 @@ HWND g_window = (HWND)NULL;
 #  define LOG_FILE_NAME "lognds.txt"
 #  include <nds.h>
 #  include <stdint.h>
+loop_globals();
 #  include "memory/fakem.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
@@ -174,6 +189,7 @@ HWND g_window = (HWND)NULL;
 #    define NEWLINE_STR "\n"
 #  endif /* !NEWLINE_STR */
 #  include <stdint.h>
+loop_globals();
 #  include "memory/fakem.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
@@ -192,6 +208,7 @@ HWND g_window = (HWND)NULL;
 #    define NEWLINE_STR "\n"
 #  endif /* !NEWLINE_STR */
 #  include <stdint.h>
+loop_globals();
 #  include "memory/fakem.h"
 #  include "resource/nullr.h"
 #  include "input/nulli.h"
@@ -204,6 +221,10 @@ HWND g_window = (HWND)NULL;
 #elif !defined( unilayer_main ) && !defined( DISABLE_MAIN_PARMS )
 #  define unilayer_main() int main( int argc, char* argv[] )
 #endif /* !unilayer_main() */
+
+#ifndef unilayer_loop_iter
+#define unilayer_loop_iter() g_running = g_loop_iter( g_loop_data )
+#endif /* !unilayer_loop_iter() */
 
 #endif /* !PLATFORM_H */
 

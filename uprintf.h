@@ -66,11 +66,21 @@
 /* ! */
 
 #ifdef LOG_TO_FILE
+
+#define logging_init() g_log_file = platform_fopen( LOG_FILE_NAME, "w" );
+#define logging_shutdown() platform_fclose( g_log_file );
+
 #ifdef MAIN_C
 platform_file g_log_file = NULL;
 #else /* !MAIN_C */
 extern platform_file g_log_file;
 #endif /* MAIN_C */
+
+#else
+
+#define logging_init()
+#define logging_shutdown()
+
 #endif /* LOG_TO_FILE */
 
 #endif /* !UPRINTF_H */

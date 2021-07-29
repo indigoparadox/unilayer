@@ -32,6 +32,8 @@
 
 #include "platform.h"
 
+/* = Subsystems and Structures = */
+
 #include "config.h"
 #include "uassert.h"
 #include "uprintf.h"
@@ -41,12 +43,16 @@ struct PACKED TILEMAP_COORDS {
    int32_t y;
 };
 
+/* = Module Includes = */
+
 #include "memory.h"
 #include "resource.h"
 #include "graphics.h"
 #include "input.h"
 #include "dio.h"
 #include "drc.h"
+
+#define loop_set( iter, data ) g_loop_iter = (loop_iter)iter; g_loop_data = (void*)data;
 
 #endif /* UNILAYER_H */
 

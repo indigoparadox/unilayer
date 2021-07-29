@@ -30,5 +30,22 @@ struct GRAPHICS_ARGS {
 #define GRAPHICS_COLOR_MAGENTA      RGB(255, 0, 255)
 #define GRAPHICS_COLOR_WHITE        RGB(255, 255, 255)
 
+#ifdef MAIN_C
+static void win_process_messages() {
+   MSG msg;
+   int msg_retval = 0;
+
+   /* Process messages here, which triggers the message handler above. */
+   msg_retval = GetMessage( &msg, 0, 0, 0 );
+   if( 0 >= msg_retval ) {
+      g_running = 0;
+      return;
+   }
+
+   TranslateMessage( &msg );
+   DispatchMessage( &msg );
+}
+#endif /* MAIN_C */
+
 #endif /* WING_H */
 

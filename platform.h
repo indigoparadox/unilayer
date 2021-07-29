@@ -95,6 +95,8 @@ loop_globals();
 #  define platform_fflush HostFFlush
 #  define platform_fclose HostFClose
 #  define unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags )
+#  define platform_init() if( cmd == sysAppLaunchCmdNormalLaunch ) {
+#  define platform_shutdown() }
 #  include "types/palmt.h"
 #  include "memory/palmm.h"
 #  include "resource/palmr.h"
@@ -126,6 +128,7 @@ loop_globals();
 #  endif /* PLATFORM_WIN16, PLATFORM_WIN32 */
 #  define unilayer_main() int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 #  define unilayer_loop_iter() win_process_messages()
+#  define platform_init( graphics_args, icon ) g_instance = hInstance; graphics_args.cmd_show = nCmdShow; graphics_args.icon_res = icon; if( hPrevInstance ) { error_printf( "previous instance detected" ); return 1; }
 #  include <windows.h>
 #  include "types/x86.h"
 loop_globals();
@@ -225,6 +228,14 @@ loop_globals();
 #ifndef unilayer_loop_iter
 #define unilayer_loop_iter() g_running = g_loop_iter( g_loop_data )
 #endif /* !unilayer_loop_iter() */
+
+#ifndef platform_init
+#define platform_init( graphics_args, icon )
+#endif /* !platform_init() */
+
+#ifndef platform_shutdown
+#define platform_shutdown()
+#endif /* !platform_shutdown */
 
 #endif /* !PLATFORM_H */
 

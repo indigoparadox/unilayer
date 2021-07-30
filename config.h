@@ -137,18 +137,6 @@
 #define DRC_COPY_BLOCK_SZ 1024
 #endif /* !DRC_COPY_BLOCK_SZ */
 
-#ifndef MOBILES_MAX
-#define MOBILES_MAX 20
-#endif /* !MOBILES_MAX */
-
-#ifndef ITEMS_MAX
-#define ITEMS_MAX 200
-#endif /* !ITEMS_MAX */
-
-#ifndef ITEM_INVENTORY_MAX
-#define ITEM_INVENTORY_MAX 20
-#endif /* !ITEM_INVENTORY_MAX */
-
 #ifndef DEBUG_THRESHOLD
 #define DEBUG_THRESHOLD 2
 #endif /* !DEBUG_THRESHOLD */
@@ -190,10 +178,6 @@
 #define FONT_W 8
 #define FONT_H 8
 #define FONT_SPACE 0
-#define SPRITE_H 16
-#define SPRITE_W 16
-#define PATTERN_W 16
-#define PATTERN_H 16
 
 /* Derived Parameters */
 

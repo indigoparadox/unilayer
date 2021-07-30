@@ -95,9 +95,10 @@ loop_globals();
 #  define platform_fflush HostFFlush
 #  define platform_fclose HostFClose
 #  define unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags )
-#  define platform_init() if( cmd == sysAppLaunchCmdNormalLaunch ) {
+#  define platform_init( graphics_arg, icon ) if( cmd == sysAppLaunchCmdNormalLaunch ) {
 #  define platform_shutdown() }
 #  include "types/palmt.h"
+loop_globals();
 #  include "memory/palmm.h"
 #  include "resource/palmr.h"
 #  include "input/palmi.h"

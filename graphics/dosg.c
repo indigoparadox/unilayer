@@ -270,8 +270,10 @@ int16_t graphics_platform_blit_partial_at(
       return 0;
    }
 
-   plane_1 += s_x / 4;
-   plane_2 += s_x / 4;
+   /* Set starting X/Y from source planes. */
+   /* s_y / 2 because each plane is 1/2 height. */
+   plane_1 += (((s_y / 2) * bmp->w) / 4) + (s_x / 4);
+   plane_2 += (((s_y / 2) * bmp->w) / 4) + (s_x / 4);
 
 	for( y_offset = 0 ; h > y_offset ; y_offset++ ) {
 #ifdef USE_LOOKUPS

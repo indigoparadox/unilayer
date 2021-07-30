@@ -25,8 +25,19 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
 /**
  * \return New size of handle; either given size or old size if unsuccessful.
  */
-uint32_t memory_resize( MEMORY_HANDLE handle, uint32_t sz ) {
-   return realloc( handle, sz );
+uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
+   MEMORY_HANDLE new_handle = (MEMORY_HANDLE)NULL;
+
+   if( (MEMORY_PTR)NULL == handle || (MEMORY_HANDLE)NULL == *handle ) {
+      return 0;
+   }
+
+   new_handle = LocalReAlloc( *handle, sz, LMEM_MOVEABLE );
+   if( (MEMORY_HANDLE)NULL == new_handle ) {
+      error_printf( "unable to resize handle" );
+      return sz;
+   }
+   *handle = new_handle;
 }
 
 void memory_copy_ptr( MEMORY_PTR dest, CONST_MEMORY_PTR src, uint32_t sz ) {

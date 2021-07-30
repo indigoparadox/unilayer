@@ -41,8 +41,8 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
    return MemHandleSize( handle );
 }
 
-uint32_t memory_resize( MEMORY_HANDLE handle, uint32_t sz ) {
-   if( !MemHandleResize( handle, sz ) ) {
+uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
+   if( !MemHandleResize( *handle, sz ) ) {
       return sz;
    } else {
       return 0;

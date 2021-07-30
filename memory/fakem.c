@@ -120,29 +120,27 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
 /**
  * \return New size of handle; either given size or old size if unsuccessful.
  */
-uint32_t memory_resize( MEMORY_HANDLE handle, uint32_t sz ) {
+uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    MEMORY_PTR new_ptr = NULL;
 
-   if( NULL == handle ) {
+   if( NULL == handle || NULL == *handle ) {
       return 0;
    }
 
    debug_printf( 1, "reallocating %u-byte block to %u bytes",
-      handle->ptr_sz, sz );
+      (*handle)->ptr_sz, sz );
 
-   assert( NULL != handle->ptr );
-
-   new_ptr = realloc( handle->ptr, sz );
+   new_ptr = realloc( (*handle)->ptr, sz );
    if( NULL == new_ptr ) {
       error_printf( "unable to reallocate handle" );
       goto cleanup;
    }
 
-   handle->ptr = new_ptr;
-   handle->ptr_sz = sz;
+   (*handle)->ptr = new_ptr;
+   (*handle)->ptr_sz = sz;
 
 cleanup:
-   return handle->ptr_sz;
+   return (*handle)->ptr_sz;
 }
 
 void memory_copy_ptr( MEMORY_PTR dest, CONST_MEMORY_PTR src, uint32_t sz ) {

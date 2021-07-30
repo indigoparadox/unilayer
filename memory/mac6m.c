@@ -16,8 +16,8 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
    return GetHandleSize( handle );
 }
 
-uint32_t memory_resize( MEMORY_HANDLE handle, uint32_t sz ) {
-   SetHandleSize( handle, sz );
+uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
+   SetHandleSize( *handle, sz );
    return sz;
 }
 

@@ -85,7 +85,7 @@ int32_t drc_list_resources(
                DRC_TOC_INITIAL_ALLOC, sizeof( struct DRC_TOC_E ) );
          } else if( 0 == htoc_sz || i >= htoc_sz ) {
             new_toc_list_sz = sizeof( struct DRC_TOC_E ) * toc_count_out;
-            if( memory_resize( *htoc, new_toc_list_sz ) < new_toc_list_sz ) {
+            if( memory_resize( htoc, new_toc_list_sz ) < new_toc_list_sz ) {
                error_printf( "unable to allocate new TOC list" );
                toc_count_out--;
                goto cleanup;

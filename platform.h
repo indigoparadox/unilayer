@@ -88,6 +88,7 @@ loop_globals();
 #  define DISABLE_FILESYSTEM
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logpalm.txt"
+#  define CODE_SECTION( name ) __attribute__( (section( name )) )
 #  include <PalmOS.h>
 #  define platform_file HostFILE*
 #  define platform_fprintf HostFPrintF
@@ -237,6 +238,10 @@ loop_globals();
 #ifndef platform_shutdown
 #define platform_shutdown()
 #endif /* !platform_shutdown */
+
+#ifndef CODE_SECTION
+#define CODE_SECTION
+#endif
 
 #endif /* !PLATFORM_H */
 

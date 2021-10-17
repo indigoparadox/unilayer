@@ -6,11 +6,11 @@
  *  \brief Platform-overridden typedefs and macros for loading assets.
  */
 
-/*! String or numerical identifier specifying an asset on disk. */
+/*! \brief String or numerical identifier specifying an asset on disk. */
 typedef uint32_t RESOURCE_ID;
-/*! Resource handle for physical bitmap asset. */
+/*! \brief Resource handle for physical bitmap asset. */
 typedef MEMORY_HANDLE RESOURCE_BITMAP_HANDLE;
-/*! Resource handle for physical JSON asset. */
+/*! \brief Resource handle for physical JSON asset. */
 typedef MEMORY_HANDLE RESOURCE_JSON_HANDLE;
 
 /**

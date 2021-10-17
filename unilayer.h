@@ -23,6 +23,7 @@
 #endif /* !offsetof */
 
 #ifdef ANCIENT_C
+/* For Microsoft C 5 and company. */
 #  include <stdio.h>
 #  define DIO_SILENT
 #  define NO_VARGS
@@ -37,11 +38,6 @@
 #include "config.h"
 #include "uassert.h"
 #include "uprintf.h"
-
-struct PACKED TILEMAP_COORDS {
-   int32_t x;
-   int32_t y;
-};
 
 /* = Module Includes = */
 

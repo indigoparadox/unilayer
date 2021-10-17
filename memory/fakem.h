@@ -28,7 +28,8 @@ typedef const char* CONST_MEMORY_FAR_PTR;
 
 #else
 
-/*! \brief A C-style memory pointer that can be safely dereferenced.
+/**
+ * \brief A C-style memory pointer that can be safely dereferenced.
  *
  * Interchangeable with pointers to arbitrary types (e.g. char\*, int\*, etc).
  */

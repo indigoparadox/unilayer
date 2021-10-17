@@ -157,7 +157,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 }
 
-void graphics_flip() {
+void graphics_flip( struct GRAPHICS_ARGS* args ) {
    /* The closest analog to the actual graphics_flip(): */
    if( (HWND)NULL != g_window ) {
       InvalidateRect( g_window, 0, TRUE );

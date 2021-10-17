@@ -18,7 +18,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 }
 
-void graphics_flip() {
+void graphics_flip( struct GRAPHICS_ARGS* args ) {
 }
 
 void graphics_loop_start() {

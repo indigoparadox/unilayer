@@ -98,10 +98,6 @@ void graphics_string_sz(
 
 #endif /* USE_SOFTWARE_TEXT */
 
-/** 
- * \brief Load the graphics resource into a handle and pass that into the
- *        platform-specific loader.
- */
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
    RESOURCE_BITMAP_HANDLE bitmap_handle = (RESOURCE_BITMAP_HANDLE)NULL;

@@ -2,6 +2,11 @@
 #ifndef UNILAYER_H
 #define UNILAYER_H
 
+/*! \file unilayer.h
+ *  \brief Combines platform-specific functionality and loads enablers in
+ *         the correct order.
+ */
+
 #ifdef __GNUC__
 #define WARN_UNUSED __attribute__( (warn_unused_result) )
 #define PACKED __attribute__( (__packed__) )
@@ -48,7 +53,13 @@
 #include "dio.h"
 #include "drc.h"
 
-#define loop_set( iter, data ) g_loop_iter = (loop_iter)iter; g_loop_data = (void*)data;
+/**
+ * \brief Setup the main loop function and data arguments.
+ * \param iter Function pointer to the main loop iteration function.
+ * \param data MEMORY_HANDLE for implementation-specific data/state struct.
+ * \param gargs MEMORY_PTR for platform-specific graphics args struct.
+ */
+#define loop_set( iter, data, gargs ) g_loop_iter = (loop_iter)iter; g_loop_data = (void*)data; g_loop_gargs = gargs;
 
 #endif /* UNILAYER_H */
 

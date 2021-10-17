@@ -60,7 +60,7 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
    SDL_Quit();
 }
 
-void graphics_flip() {
+void graphics_flip( struct GRAPHICS_ARGS* args ) {
    SDL_UpdateWindowSurface( g_window );
 }
 

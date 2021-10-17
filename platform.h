@@ -2,16 +2,25 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+/*! \file platform.h
+ *  \brief Contains platform-specific overrides and implementations for engine
+ *         functionality.
+ */
+
 #if defined( PLATFORM_WIN16 ) || defined( PLATFORM_WIN32 ) || defined( PLATFORM_WINCE )
 #define PLATFORM_WIN
 #endif
 
-typedef int (*loop_iter)( void* );
+struct GRAPHICS_ARGS;
+
+/*! \brief Implementation-specific main loop iteration function. */
+typedef int (*loop_iter)( void*, struct GRAPHICS_ARGS* );
 
 #ifdef MAIN_C
-#define loop_globals() uint8_t g_running = 1; loop_iter g_loop_iter = NULL; void* g_loop_data = NULL;
+#define loop_globals() uint8_t g_running = 1; loop_iter g_loop_iter = NULL; void* g_loop_data = NULL; struct GRAPHICS_ARGS* g_loop_gargs = NULL;
 #else
-#define loop_globals() extern uint8_t g_running; extern loop_iter g_loop_iter; extern void* g_loop_data;
+/*! \brief Declare the globals that hold the main loop pointer and args. */
+#define loop_globals() extern uint8_t g_running; extern loop_iter g_loop_iter; extern void* g_loop_data; extern struct GRAPHICS_ARGS* g_loop_gargs;
 #endif /* MAIN_C */
 
 #ifdef PLATFORM_DOS
@@ -210,6 +219,7 @@ loop_globals();
 #else
 
 #  ifndef NEWLINE_STR
+/*! \brief Newline string on the current platform. */
 #    define NEWLINE_STR "\n"
 #  endif /* !NEWLINE_STR */
 #  include <stdint.h>
@@ -224,22 +234,28 @@ loop_globals();
 #if !defined( unilayer_main ) && defined( DISABLE_MAIN_PARMS )
 #  define unilayer_main() void main()
 #elif !defined( unilayer_main ) && !defined( DISABLE_MAIN_PARMS )
+/*! \brief Replaces main() and calls the appropriate platform-specific
+ *         entrypoint. */
 #  define unilayer_main() int main( int argc, char* argv[] )
 #endif /* !unilayer_main() */
 
 #ifndef unilayer_loop_iter
-#define unilayer_loop_iter() g_running = g_loop_iter( g_loop_data )
+/*! \brief Call the main loop for one iteration. */
+#define unilayer_loop_iter() g_running = g_loop_iter( g_loop_data, g_loop_gargs )
 #endif /* !unilayer_loop_iter() */
 
 #ifndef platform_init
+/*! \brief Platform-specific setup function (e.g. create window). */
 #define platform_init( graphics_args, icon )
 #endif /* !platform_init() */
 
 #ifndef platform_shutdown
+/*! \brief Platform-specific cleanup function. */
 #define platform_shutdown()
 #endif /* !platform_shutdown */
 
 #ifndef CODE_SECTION
+/*! \brief Define which code resource a function should be placed in. */
 #define CODE_SECTION
 #endif
 

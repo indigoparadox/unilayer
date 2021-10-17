@@ -6,6 +6,9 @@
  *  \brief Functions and prototypes for managing memory.
  */
 
+/*! \brief An emulated memory handle for modern systems. Overridden on most
+ *         platforms.
+ */
 struct FAKE_MEMORY_HANDLE {
 #if 0
    uint32_t sz;
@@ -22,8 +25,8 @@ struct FAKE_MEMORY_HANDLE {
  *        overflow conditions.
  * \param sz Size of blocks to request.
  * \param count Number of blocks to request.
- * \return A MEMORY_HANDLE to allocated memory. This handle MUST BE locked to
- *         receive a MEMORY_PTR that can be dereferenced safely.
+ * \return A MEMORY_HANDLE to allocated memory. This handle **MUST BE** locked
+ *         to receive a MEMORY_PTR that can be dereferenced safely.
  */
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count );
 

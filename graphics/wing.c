@@ -98,7 +98,7 @@ static LRESULT CALLBACK WndProc(
          break;
 
       case WM_TIMER:
-         g_running = g_loop_iter( g_loop_data );
+         g_running = g_loop_iter( g_loop_data, g_loop_gargs );
          break;
 
       default:

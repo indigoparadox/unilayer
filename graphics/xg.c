@@ -78,7 +78,7 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
    XCloseDisplay( g_display );
 }
 
-void graphics_flip() {
+void graphics_flip( struct GRAPHICS_ARGS* args ) {
    /* Draw the buffer to the window. */
    XPutImage(
       g_display,
@@ -187,7 +187,7 @@ int16_t graphics_platform_blit_partial_at(
          ((s_y + offset_y) * (b->pixmap->width * b_bytes_per_pixel)) +
          (s_x * b_bytes_per_pixel);
 
-      assert( src_xy_byte < b->pixmap->width * b->pixmap->height );
+      /* assert( src_xy_byte < b->pixmap->width * b->pixmap->height ); */
 
       /* Perform the blit. */
       memcpy(

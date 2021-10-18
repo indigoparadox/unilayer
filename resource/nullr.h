@@ -14,11 +14,11 @@ typedef MEMORY_HANDLE RESOURCE_BITMAP_HANDLE;
 typedef MEMORY_HANDLE RESOURCE_JSON_HANDLE;
 
 /**
- * \brief Compare two RESOURCE_ID instances for equivalency.
+ * \brief Compare two ::RESOURCE_ID instances for equivalency.
  */
 #define resource_compare_id( a, b ) (a == b)
 /**
- * \brief Set the content of RESOURCE_ID dest to the same as source.
+ * \brief Set the content of ::RESOURCE_ID dest to the same as source.
  */
 #define resource_assign_id( dest, source ) dest = source
 

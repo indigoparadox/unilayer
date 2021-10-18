@@ -58,6 +58,11 @@ void graphics_shutdown( struct GRAPHICS_ARGS* args );
 void graphics_flip( struct GRAPHICS_ARGS* args );
 
 /**
+ * \return A constantly increasing number of ticks since program start.
+ */
+uint32_t graphics_get_ms();
+
+/**
  * \brief Mark the beginning of rendering the current graphical frame.
  *
  * This should be called from the main loop, and is critical to maintaining

@@ -64,6 +64,10 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
    SDL_UpdateWindowSurface( g_window );
 }
 
+uint32_t graphics_get_ms() {
+   return SDL_GetTicks();
+}
+
 void graphics_loop_start() {
    g_ms_start = SDL_GetTicks();
 }

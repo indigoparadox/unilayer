@@ -99,6 +99,9 @@ static LRESULT CALLBACK WndProc(
 
       case WM_TIMER:
          g_running = g_loop_iter( g_loop_data, g_loop_gargs );
+
+         /* Kind of a hack so that we can have a cheap timer. */
+         g_ms += 1000;
          break;
 
       default:
@@ -162,6 +165,10 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
    if( (HWND)NULL != g_window ) {
       InvalidateRect( g_window, 0, TRUE );
    }
+}
+
+uint32_t graphics_get_ms() {
+   return g_ms;
 }
 
 void graphics_loop_start() {

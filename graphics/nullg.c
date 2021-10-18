@@ -13,6 +13,9 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 void graphics_flip( struct GRAPHICS_ARGS* args ) {
 }
 
+uint32_t graphics_get_ms() {
+}
+
 void graphics_loop_start() {
 }
 

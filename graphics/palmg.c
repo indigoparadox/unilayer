@@ -21,6 +21,14 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 void graphics_flip( struct GRAPHICS_ARGS* args ) {
 }
 
+uint32_t graphics_get_ms() {
+   uint32_t ticks_per_ms = 0;
+
+   ticks_per_ms = SysTicksPerSecond() * 1000;
+
+   return TimGetTicks() * ticks_per_ms;
+}
+
 void graphics_loop_start() {
    g_ticks_start = TimGetTicks();
 }

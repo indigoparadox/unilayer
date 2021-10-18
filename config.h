@@ -76,7 +76,7 @@
 #elif defined( PLATFORM_MAC6 )
 /* ------ */
 
-#include "../gen/mac7/resext.h"
+#include "../gen/mac6/resext.h"
 
 #define DRC_TOC_INITIAL_ALLOC 50 /* Fake it until we have realloc. */
 #define LOG_TO_FILE

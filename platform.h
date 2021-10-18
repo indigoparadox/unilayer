@@ -163,7 +163,7 @@ HWND g_window = (HWND)NULL;
 #  include <Quickdraw.h>
 #  include <stdint.h>
 loop_globals();
-#  include "memory/mac7m.h"
+#  include "memory/mac6m.h"
 #  if defined RESOURCE_DRC
 #     include "resource/drcr.h"
 #  elif defined RESOURCE_HEADER

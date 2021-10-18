@@ -19,8 +19,8 @@ int g_buffer_bits_sz = 0;
 
 uint32_t g_s_launch = 0;
 
-const uint32_t gc_ns_target = 1000000000 / FPS;
-static uint32_t g_ns_start = 0; 
+const uint32_t gc_ms_target = 1000 / FPS;
+static uint32_t g_ms_start = 0; 
 
 /*
  * @return 1 if init was successful and 0 otherwise.
@@ -109,20 +109,14 @@ uint32_t graphics_get_ms() {
 }
 
 void graphics_loop_start() {
-   struct timespec spec;
-
-   clock_gettime( CLOCK_MONOTONIC, &spec );
-
-   g_ns_start = spec.tv_nsec;
+   g_ms_start = graphics_get_ms();
 }
 
 void graphics_loop_end() {
    int16_t delta = 0;
-   struct timespec spec;
 
    do {
-      clock_gettime( CLOCK_MONOTONIC, &spec );
-      delta = gc_ns_target - (spec.tv_nsec - g_ns_start);
+      delta = gc_ms_target - (graphics_get_ms() - g_ms_start);
    } while( 0 < delta );  
 }
 

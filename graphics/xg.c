@@ -17,7 +17,7 @@ Visual* g_visual;
 char* g_buffer_bits = NULL;
 int g_buffer_bits_sz = 0;
 
-volatile uint32_t g_ms;
+uint32_t g_s_launch = 0;
 
 const uint32_t gc_ns_target = 1000000000 / FPS;
 static uint32_t g_ns_start = 0; 
@@ -26,6 +26,7 @@ static uint32_t g_ns_start = 0;
  * @return 1 if init was successful and 0 otherwise.
  */
 int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
+   struct timespec spec;
 
    g_display = XOpenDisplay( NULL );
    if( NULL == g_display ) {
@@ -65,6 +66,9 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
       SCREEN_W, SCREEN_H, 32, 0 );
    assert( NULL != g_buffer );
 
+   clock_gettime( CLOCK_MONOTONIC, &spec );
+   g_s_launch = spec.tv_sec;
+
    return 1;
 }
 
@@ -90,10 +94,18 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
 
 uint32_t graphics_get_ms() {
    struct timespec spec;
+   uint32_t ms_out = 0,
+      ms_launch_delta = 0;
    
    clock_gettime( CLOCK_MONOTONIC, &spec );
 
-   return spec.tv_nsec * 1000;
+   /* Get the seconds since program launched. Multiply by 1000, so we want a
+    * smaller number than seconds since the epoch. */
+   ms_launch_delta = spec.tv_sec - g_s_launch;
+   ms_out += ms_launch_delta * 1000;
+   ms_out += spec.tv_nsec / 1000000;
+
+   return ms_out;
 }
 
 void graphics_loop_start() {

@@ -88,6 +88,14 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
       0, 0, 0, 0, SCREEN_W, SCREEN_H );
 }
 
+uint32_t graphics_get_ms() {
+   struct timespec spec;
+   
+   clock_gettime( CLOCK_MONOTONIC, &spec );
+
+   return spec.tv_nsec * 1000;
+}
+
 void graphics_loop_start() {
    struct timespec spec;
 

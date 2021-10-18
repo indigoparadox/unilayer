@@ -101,7 +101,7 @@ static LRESULT CALLBACK WndProc(
          g_running = g_loop_iter( g_loop_data, g_loop_gargs );
 
          /* Kind of a hack so that we can have a cheap timer. */
-         g_ms += 1000;
+         g_ms += 100;
          break;
 
       default:

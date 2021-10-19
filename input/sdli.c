@@ -7,13 +7,20 @@ int input_init() {
 
 int input_poll() {
    SDL_Event event;
+   int eres = 0,
+      sym_out = 0;
 
    memset( &event, 0, sizeof( SDL_Event ) );
 
    SDL_PollEvent( &event );
 
    if( SDL_KEYDOWN == event.type ) {
-      return event.key.keysym.sym;
+      sym_out = event.key.keysym.sym;
+      
+      /* Flush key buffer to improve responsiveness. */
+      while( eres = SDL_PollEvent( &event ) );
+
+      return sym_out;
    } else if( SDL_QUIT == event.type ) {
       return INPUT_KEY_QUIT;
    }

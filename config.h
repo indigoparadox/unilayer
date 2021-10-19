@@ -18,11 +18,7 @@
 #elif defined( PLATFORM_SDL )
 /* ------ */
 
-#ifdef RESOURCE_FILE
-#include "../gen/sdl-file/resext.h"
-#else
 #include "../gen/sdl/resext.h"
-#endif /* RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_XLIB )

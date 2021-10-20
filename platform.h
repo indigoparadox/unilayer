@@ -36,7 +36,9 @@ loop_globals();
 #  elif defined RESOURCE_HEADER
 #     include "resource/header.h"
 #  else
-#     define RESOURCE_FILE
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
 #     include "resource/file.h"
 #  endif
 #  include "input/dosi.h"
@@ -55,7 +57,9 @@ loop_globals();
 #  elif defined RESOURCE_HEADER
 #     include "resource/header.h"
 #  else
-#     define RESOURCE_FILE
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
 #     include "resource/file.h"
 #  endif
 #  include "input/sdli.h"
@@ -75,7 +79,9 @@ loop_globals();
 #  elif defined RESOURCE_HEADER
 #     include "resource/header.h"
 #  else
-#     define RESOURCE_FILE
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
 #     include "resource/file.h"
 #  endif
 #  include "input/xi.h"
@@ -116,6 +122,7 @@ loop_globals();
 
 #elif defined( PLATFORM_WIN )
 
+/* TODO: Don't force windows resources! */
 #  ifdef RESOURCE_FILE
 #     undef RESOURCE_FILE
 #  endif
@@ -169,7 +176,9 @@ loop_globals();
 #  elif defined RESOURCE_HEADER
 #     include "resource/header.h"
 #  else
-#     define RESOURCE_FILE
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
 #     include "resource/file.h"
 #  endif
 #  include "input/mac6i.h"
@@ -191,7 +200,9 @@ loop_globals();
 #  elif defined RESOURCE_HEADER
 #     include "resource/header.h"
 #  else
-#     define RESOURCE_FILE
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
 #     include "resource/file.h"
 #  endif
 #  include "input/ndsi.h"
@@ -210,7 +221,9 @@ loop_globals();
 #  elif defined RESOURCE_HEADER
 #     include "resource/header.h"
 #  else
-#     define RESOURCE_FILE
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
 #     include "resource/file.h"
 #  endif
 #  include "input/gli.h"

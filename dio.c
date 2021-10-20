@@ -565,7 +565,9 @@ int16_t dio_snprintf(
       last = '\0';
    int16_t d = 0,
       idx_in = 0,
-      idx_out = 0;
+      idx_out = 0,
+      idx_spec = 0;
+   char* s = NULL;
 
    /* Quick and dirty debug string formatting function. */
 
@@ -586,6 +588,14 @@ int16_t dio_snprintf(
             d = va_arg( args, int );
             idx_out +=
                dio_itoa( &(buffer[idx_out]), buffer_len - idx_out, d, 16 );
+            break;
+
+         case 's':
+            s = va_arg( args, char* );
+            idx_spec = 0;
+            while( '\0' != s[idx_spec] ) {
+               buffer[idx_out++] = s[idx_spec++];
+            }
             break;
          }
       } else if( '%' != c ) {

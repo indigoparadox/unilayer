@@ -15,6 +15,8 @@
 #define PACKED
 #endif /* __GNUC__ */
 
+#define RESOURCE_PATH_MAX 64
+
 #if defined( __GNUC__ ) && !defined( _POSIX_C_SOURCE )
 /* For strnlen(). */
 #define _POSIX_C_SOURCE 200809L

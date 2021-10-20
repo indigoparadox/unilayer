@@ -238,7 +238,16 @@ loop_globals();
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
-#  include "resource/nullr.h"
+#  if defined RESOURCE_DRC
+#     include "resource/drcr.h"
+#  elif defined RESOURCE_HEADER
+#     include "resource/header.h"
+#  else
+#     ifndef RESOURCE_FILE
+#        define RESOURCE_FILE
+#     endif /* !RESOURCE_FILE */
+#     include "resource/file.h"
+#  endif
 #  include "input/nulli.h"
 #  include "graphics/nullg.h"
 

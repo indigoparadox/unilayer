@@ -25,80 +25,36 @@ typedef int (*loop_iter)( void*, struct GRAPHICS_ARGS* );
 
 #ifdef PLATFORM_DOS
 
-#  define NEWLINE_STR "\n"
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logdos.txt"
 #  include "types/x86.h"
 loop_globals();
 #  include "memory/fakem.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/dosi.h"
 #  include "graphics/dosg.h"
 
 #elif defined( PLATFORM_SDL )
 
-#  ifndef NEWLINE_STR
-#    define NEWLINE_STR "\n"
-#  endif /* !NEWLINE_STR */
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/sdli.h"
 #  include "graphics/sdlg.h"
 
 #elif defined( PLATFORM_XLIB )
 
-#  ifndef NEWLINE_STR
-#    define NEWLINE_STR "\n"
-#  endif /* !NEWLINE_STR */
 #  include <X11/Xlib.h>
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/xi.h"
 #  include "graphics/xg.h"
 
 #elif defined( PLATFORM_PALM )
 
-#  ifdef RESOURCE_FILE
-#     undef RESOURCE_FILE
-#  endif
-#  ifdef RESOURCE_HEADER
-#     undef RESOURCE_HEADER
-#  endif
-#  ifdef RESOURCE_DRC
-#     undef RESOURCE_DRC
-#  endif
-#  define NEWLINE_STR "\n"
 #  define USE_SOFT_ASSERT
 #  define DISABLE_FILESYSTEM
 #  define LOG_TO_FILE
@@ -116,23 +72,12 @@ loop_globals();
 #  include "types/palmt.h"
 loop_globals();
 #  include "memory/palmm.h"
-#  include "resource/palmr.h"
+#  include "resinc.h"
 #  include "input/palmi.h"
 #  include "graphics/palmg.h"
 
 #elif defined( PLATFORM_WIN )
 
-/* TODO: Don't force windows resources! */
-#  ifdef RESOURCE_FILE
-#     undef RESOURCE_FILE
-#  endif
-#  ifdef RESOURCE_HEADER
-#     undef RESOURCE_HEADER
-#  endif
-#  ifdef RESOURCE_DRC
-#     undef RESOURCE_DRC
-#  endif
-#  define NEWLINE_STR "\n"
 #  define LOG_TO_FILE
 #  ifdef PLATFORM_WIN16
 #     define LOG_FILE_NAME "logwin16.txt"
@@ -151,7 +96,7 @@ loop_globals();
 #  include "types/x86.h"
 loop_globals();
 #  include "memory/winm.h"
-#  include "resource/winr.h"
+#  include "resinc.h"
 #  include "input/wini.h"
 #  include "graphics/wing.h"
 
@@ -171,87 +116,46 @@ HWND g_window = (HWND)NULL;
 #  include <stdint.h>
 loop_globals();
 #  include "memory/mac6m.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/mac6i.h"
 #  include "graphics/mac6g.h"
 
 #elif defined( PLATFORM_NDS )
 
-#  ifndef NEWLINE_STR
-#    define NEWLINE_STR "\n"
-#  endif /* !NEWLINE_STR */
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "lognds.txt"
 #  include <nds.h>
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/ndsi.h"
 #  include "graphics/ndsg.h"
 
 #elif defined( PLATFORM_GL )
 
-#  ifndef NEWLINE_STR
-#    define NEWLINE_STR "\n"
-#  endif /* !NEWLINE_STR */
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/gli.h"
 #  include "graphics/glg.h"
 
 #else
 
-#  ifndef NEWLINE_STR
-/*! \brief Newline string on the current platform. */
-#    define NEWLINE_STR "\n"
-#  endif /* !NEWLINE_STR */
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
-#  if defined RESOURCE_DRC
-#     include "resource/drcr.h"
-#  elif defined RESOURCE_HEADER
-#     include "resource/header.h"
-#  else
-#     ifndef RESOURCE_FILE
-#        define RESOURCE_FILE
-#     endif /* !RESOURCE_FILE */
-#     include "resource/file.h"
-#  endif
+#  include "resinc.h"
 #  include "input/nulli.h"
 #  include "graphics/nullg.h"
 
 #endif
+
+#ifndef NEWLINE_STR
+/*! \brief Newline string on the current platform. */
+#  define NEWLINE_STR "\n"
+#endif /* !NEWLINE_STR */
 
 #ifndef PLATFORM_DIR_SEP
 #define PLATFORM_DIR_SEP '/'

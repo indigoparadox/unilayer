@@ -2,6 +2,14 @@
 #ifndef RESINC_H
 #define RESINC_H
 
+#if defined PLATFORM_WIN16 && defined RESOURCE_FILE
+#error "WIN16 has insufficent memory to use JSON parser.
+#endif
+
+#if defined PLATFORM_DOS && defined RESOURCE_FILE
+#error "DOS has insufficent memory to use JSON parser.
+#endif
+
 #if defined RESOURCE_DRC
 #   define RESOURCES "DRC"
 #   include "resource/drcr.h"

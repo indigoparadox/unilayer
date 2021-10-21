@@ -1,4 +1,5 @@
 
+#define RESOURCE_C
 #include "../unilayer.h"
 
 static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id, char type[4] ) {

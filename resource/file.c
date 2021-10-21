@@ -9,7 +9,7 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    uint8_t* buffer = NULL;
    int32_t res_sz = 0,
       read = 0;
-   MEMORY_HANDLE res_handle = NULL;
+   MEMORY_HANDLE res_handle = (MEMORY_HANDLE)0;
    char asset_path[JSON_PATH_SZ];
 
    dio_snprintf( asset_path, JSON_PATH_SZ, "%s%s", ASSETS_PATH, id );
@@ -17,7 +17,7 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    res_file = fopen( id, "rb" );
    if( NULL == res_file ) {
       error_printf( "unable to load resource: %s", asset_path );
-      return NULL;
+      return (MEMORY_HANDLE)0;
    }
 
    fseek( res_file, 0, SEEK_END );
@@ -31,7 +31,7 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    debug_printf( 2, "opened resource: %s (%d bytes)", asset_path, res_sz );
 
    res_handle = memory_alloc( res_sz, 1 );
-   if( NULL == res_handle ) {
+   if( (MEMORY_HANDLE)0 == res_handle ) {
       error_printf( "could not allocate resource buffer" );
       goto cleanup;
    }

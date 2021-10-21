@@ -2,6 +2,10 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#ifndef NO_RESEXT
+#include <resext.h>
+#endif /* !NO_RESEXT */
+
 /*! \file resource.h
  *  \brief Platform-general function prototypes for loading assets.
  */

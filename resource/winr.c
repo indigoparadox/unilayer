@@ -1,4 +1,5 @@
 
+#define RESOURCE_C
 #include "../unilayer.h"
 
 extern HINSTANCE g_instance;
@@ -10,6 +11,7 @@ RESOURCE_BITMAP_HANDLE resource_get_bitmap_handle( uint32_t id ) {
    return LoadBitmap( g_instance, MAKEINTRESOURCE( id ) );
 }
 
+#if 0
 #ifdef USE_JSON_MAPS
 RESOURCE_JSON_HANDLE resource_get_json_handle( uint32_t id ) {
    char* buffer = NULL;
@@ -27,6 +29,7 @@ RESOURCE_JSON_HANDLE resource_get_json_handle( uint32_t id ) {
    buffer = memory_unlock( handle_out );
 }
 #endif /* USE_JSON_MAPS */
+#endif
 
 MEMORY_PTR resource_lock_handle( MEMORY_HANDLE handle ) {
    return memory_lock( handle );

@@ -1,4 +1,5 @@
 
+#define RESOURCE_C
 #include "../unilayer.h"
 
 /**

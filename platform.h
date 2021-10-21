@@ -253,6 +253,10 @@ loop_globals();
 
 #endif
 
+#ifndef PLATFORM_DIR_SEP
+#define PLATFORM_DIR_SEP '/'
+#endif /* !PLATFORM_DIR_SEP */
+
 #if !defined( unilayer_main ) && defined( DISABLE_MAIN_PARMS )
 #  define unilayer_main() void main()
 #elif !defined( unilayer_main ) && !defined( DISABLE_MAIN_PARMS )

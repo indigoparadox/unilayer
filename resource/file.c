@@ -10,16 +10,16 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    int32_t res_sz = 0,
       read = 0;
    MEMORY_HANDLE res_handle = NULL;
-   /* char asset_path[JSON_PATH_SZ];
+   char asset_path[JSON_PATH_SZ];
 
-   dio_snprintf( asset_path, JSON_PATH_SZ, "%s/%s", ASSETS_PATH, id );
-   res_file = fopen( asset_path, "rb" ); */
+   dio_snprintf( asset_path, JSON_PATH_SZ, "%s%s", ASSETS_PATH, id );
+   res_file = fopen( asset_path, "rb" );
    res_file = fopen( id, "rb" );
    if( NULL == res_file ) {
-      error_printf( "unable to load resource %s", id );
+      error_printf( "unable to load resource %s", asset_path );
       return NULL;
    }
-   debug_printf( 3, "opened resource %s", id );
+   debug_printf( 2, "opened resource %s", asset_path );
 
    fseek( res_file, 0, SEEK_END );
    res_sz = ftell( res_file );

@@ -7,9 +7,7 @@
  */
 
 RESOURCE_BITMAP_HANDLE resource_get_bitmap_handle( RESOURCE_ID id );
-#ifdef USE_JSON_MAPS
 RESOURCE_JSON_HANDLE resource_get_json_handle( RESOURCE_ID id );
-#endif /* USE_JSON_MAPS */
 void resource_free_handle( MEMORY_HANDLE );
 
 /**

@@ -16,10 +16,9 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    res_file = fopen( asset_path, "rb" );
    res_file = fopen( id, "rb" );
    if( NULL == res_file ) {
-      error_printf( "unable to load resource %s", asset_path );
+      error_printf( "unable to load resource: %s", asset_path );
       return NULL;
    }
-   debug_printf( 2, "opened resource %s", asset_path );
 
    fseek( res_file, 0, SEEK_END );
    res_sz = ftell( res_file );
@@ -29,11 +28,15 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
       goto cleanup;
    }
 
+   debug_printf( 2, "opened resource: %s (%d bytes)", asset_path, res_sz );
+
    res_handle = memory_alloc( res_sz, 1 );
    if( NULL == res_handle ) {
       error_printf( "could not allocate resource buffer" );
       goto cleanup;
    }
+
+   debug_printf( 1, "allocated resource buffer: %s", asset_path );
 
    buffer = memory_lock( res_handle );
    if( NULL == buffer ) {
@@ -41,12 +44,16 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
       goto cleanup;
    }
 
+   debug_printf( 1, "locked resource buffer: %s", asset_path );
+
    read = fread( buffer, 1, res_sz, res_file );
    if( read != res_sz ) {
       error_printf( "read invalid resource data (%u bytes vs %u bytes)",
          read, res_sz );
       goto cleanup;
    }
+
+   debug_printf( 1, "read resource into memory: %s", asset_path );
 
 cleanup:
 

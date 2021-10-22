@@ -437,6 +437,8 @@ int16_t graphics_platform_load_bitmap(
    uint8_t* buffer = NULL;
    int32_t buffer_sz = 0;
 
+   /* TODO: Fix this if RESOURCE_FILE is used. */
+
    /* Load resource into bitmap. */
    if( (RESOURCE_BITMAP_HANDLE)NULL != res_handle ) {
       /* TODO: Handle non-Windows resources. */

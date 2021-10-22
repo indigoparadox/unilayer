@@ -7,12 +7,23 @@
 static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    FILE* res_file = NULL;
    uint8_t* buffer = NULL;
+   int16_t i = 0;
    int32_t res_sz = 0,
       read = 0;
    MEMORY_HANDLE res_handle = (MEMORY_HANDLE)0;
    char asset_path[JSON_PATH_SZ];
 
    dio_snprintf( asset_path, JSON_PATH_SZ, "%s%s", ASSETS_PATH, id );
+
+   #if 0
+   for( i = 0 ; strlen( asset_path ) > i ; i++ ) {
+      if( '/' == asset_path[i] ) {
+         asset_path[i] = PLATFORM_DIR_SEP;
+      }
+   }
+   debug_printf( 3, "asset path: %s\n", asset_path );
+   #endif
+
    res_file = fopen( asset_path, "rb" );
    res_file = fopen( id, "rb" );
    if( NULL == res_file ) {

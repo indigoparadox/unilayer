@@ -25,6 +25,7 @@ typedef int (*loop_iter)( void*, struct GRAPHICS_ARGS* );
 
 #ifdef PLATFORM_DOS
 
+#  define PLATFORM_DIR_SEP '\\'
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logdos.txt"
 #  include "types/x86.h"

@@ -5,7 +5,7 @@
 
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
    MEMORY_HANDLE handle = NULL;
-   uint32_t handle_sz = 0,
+   int32_t handle_sz = 0,
       new_sz = 0;
    MEMORY_PTR ptr = NULL;
 
@@ -50,7 +50,8 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
 }
 
 void memory_copy_ptr( MEMORY_PTR dest, CONST_MEMORY_PTR src, uint32_t sz ) {
-   memcpy( dest, src, sz );
+   /* memcpy( dest, src, sz ); */
+   MemMove( dest, src, sz );
 }
 
 void memory_zero_ptr( MEMORY_PTR ptr, uint32_t sz ) {

@@ -18,13 +18,21 @@
 #elif defined( PLATFORM_SDL )
 /* ------ */
 
+#ifdef RESOURCE_FILE
+#include "../gen-file/sdl/resext.h"
+#else
 #include "../gen/sdl/resext.h"
+#endif /* RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_XLIB )
 /* ------ */
 
+#ifdef RESOURCE_FILE
+#include "../gen-file/xlib/resext.h"
+#else
 #include "../gen/xlib/resext.h"
+#endif /* RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_PALM )
@@ -42,7 +50,11 @@
 #elif defined( PLATFORM_WIN16 )
 /* ------ */
 
+#ifdef RESOURCE_FILE
+#include "../gen-file/win16/resext.h"
+#else
 #include "../gen/win16/resext.h"
+#endif /* RESOURCE_FILE */
 
 #define PLATFORM_WIN
 
@@ -62,7 +74,11 @@
 #elif defined( PLATFORM_WIN32 )
 /* ------ */
 
+#ifdef RESOURCE_FILE
+#include "../gen-file/win32/resext.h"
+#else
 #include "../gen/win32/resext.h"
+#endif /* RESOURCE_FILE */
 
 #define PLATFORM_WIN
 

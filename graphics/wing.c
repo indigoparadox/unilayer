@@ -16,6 +16,8 @@ volatile uint32_t g_ms;
 const uint32_t gc_ms_target = 1000 / FPS;
 static uint32_t g_ms_start = 0; 
 
+#define bmp_int( type, buf, offset ) *((type*)&(buf[offset]))
+
 static LRESULT CALLBACK WndProc(
    HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 ) {
@@ -436,13 +438,51 @@ int16_t graphics_platform_load_bitmap(
 ) {
    uint8_t* buffer = NULL;
    int32_t buffer_sz = 0;
+#ifdef RESOURCE_FILE
+   int x, y, w, h, bpp, offset;
+   char* buf = NULL;
+   HDC hdc;
+   BITMAPINFOHEADER* bmih = NULL;
+   BITMAPINFO info;
+#endif /* RESOURCE_FILE */
 
    /* TODO: Fix this if RESOURCE_FILE is used. */
 
    /* Load resource into bitmap. */
    if( (RESOURCE_BITMAP_HANDLE)NULL != res_handle ) {
       /* TODO: Handle non-Windows resources. */
+#ifdef RESOURCE_FILE
+
+#ifdef PLATFORM_WIN16
+      buf = memory_lock( res_handle );
+
+      bmih = (BITMAPINFOHEADER*)&(buf[sizeof( BITMAPFILEHEADER )]);
+
+      bpp = bmp_int( uint16_t, buf, 28 );
+      offset = bmp_int( uint32_t, buf, 10 );
+      debug_printf( 3, "bitmap is %dx%x, %dbpp",
+         bmih->biWidth, bmih->biHeight, bpp );
+
+      info.bmiHeader = *bmih;
+
+      hdc = CreateCompatibleDC( NULL );
+      b->bitmap = CreateCompatibleBitmap( hdc, bmih->biWidth, bmih->biHeight );
+
+      SetDIBits( hdc, b->bitmap, 0, bmih->biHeight, &(buf[offset]), &info,
+         DIB_PAL_COLORS );
+
+      buf = memory_unlock( buf );
+
+      DeleteDC( hdc );
+
+      resource_free_handle( res_handle );
+#else
+      b->bitmap = LoadImage( NULL, b->id, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+#endif /* PLATFORM_WIN16 */
+
+#else
       b->bitmap = res_handle;
+#endif /* RESOURCE_FILE */
       /* free( res_handle ); */
    } else {
       error_printf( "NULL handle returned" );

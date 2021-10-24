@@ -3,6 +3,12 @@
 
 #include <string.h>
 
+#ifdef WINM_MOVEABLE
+#define WINM_FLAG LMEM_MOVEABLE
+#else
+#define WINM_FLAG LMEM_FIXED
+#endif
+
 int32_t memory_init() {
    return 1;
 }
@@ -11,7 +17,7 @@ void memory_shutdown() {
 }
 
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
-   return LocalAlloc( LMEM_MOVEABLE | LMEM_ZEROINIT, sz * count );
+   return LocalAlloc( WINM_FLAG | LMEM_ZEROINIT, sz * count );
 }
 
 void memory_free( MEMORY_HANDLE handle ) {
@@ -32,7 +38,7 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
       return 0;
    }
 
-   new_handle = LocalReAlloc( *handle, sz, LMEM_MOVEABLE );
+   new_handle = LocalReAlloc( *handle, sz, WINM_FLAG );
    if( (MEMORY_HANDLE)NULL == new_handle ) {
       error_printf( "unable to resize handle" );
       return sz;
@@ -49,15 +55,18 @@ void memory_zero_ptr( MEMORY_PTR ptr, uint32_t sz ) {
 }
 
 MEMORY_PTR memory_lock( MEMORY_HANDLE handle ) {
+#ifdef WINM_MOVEABLE
    return LocalLock( handle );
+#else
+   return (MEMORY_PTR)handle;
+#endif
 }
 
 MEMORY_PTR memory_unlock( MEMORY_HANDLE handle ) {
-   if( LocalUnlock( handle ) ) {
-      return 0;
-   } else {
-      return 1;
-   }
+#ifdef WINM_MOVEABLE
+   LocalUnlock( handle );
+#endif
+   return NULL;
 }
 
 char* memory_strncpy_ptr( char* dest, const char* src, uint16_t sz ) {

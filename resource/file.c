@@ -43,7 +43,7 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
 
    res_handle = memory_alloc( res_sz, 1 );
    if( (MEMORY_HANDLE)0 == res_handle ) {
-      error_printf( "could not allocate resource buffer" );
+      error_printf( "could not allocate resource buffer of %d bytes", res_sz );
       goto cleanup;
    }
 

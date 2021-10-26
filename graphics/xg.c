@@ -310,7 +310,7 @@ cleanup:
 
 int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    XDestroyImage( b->pixmap );
-   free( b->bits );
+   /* free( b->bits ); */
 
    return 1;
 }

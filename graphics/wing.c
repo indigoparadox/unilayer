@@ -439,7 +439,7 @@ int16_t graphics_platform_load_bitmap(
    uint8_t* buffer = NULL;
    int32_t buffer_sz = 0;
 #ifdef RESOURCE_FILE
-   int x, y, w, h, bpp, offset;
+   int i, x, y, w, h, bpp, offset;
    char* buf = NULL;
    HDC hdc;
    BITMAPINFOHEADER* bmih = NULL;
@@ -458,22 +458,42 @@ int16_t graphics_platform_load_bitmap(
 
       bmih = (BITMAPINFOHEADER*)&(buf[sizeof( BITMAPFILEHEADER )]);
 
+      /*
+      for( i = 0 ; sizeof( BITMAPFILEHEADER ) > i ; i++ ) {
+         printf( "0x%02x ", buf[sizeof( BITMAPFILEHEADER ) + i] );
+      }
+      */
+      bmih = (BITMAPINFOHEADER*)&(buf[sizeof( BITMAPFILEHEADER )]);
+
       bpp = bmp_int( uint16_t, buf, 28 );
       offset = bmp_int( uint32_t, buf, 10 );
-      debug_printf( 3, "bitmap is %dx%x, %dbpp",
+      /*
+      debug_printf( 2, "bitmap is %d x %d, %d bpp",
          bmih->biWidth, bmih->biHeight, bpp );
+      */
+
+      assert( 0 < bmih->biWidth );
+      assert( 0 < bmih->biHeight );
+      assert( 0 == bmih->biWidth % 8 );
+      assert( 0 == bmih->biHeight % 8 );
 
       info.bmiHeader = *bmih;
 
+      /*
       hdc = CreateCompatibleDC( NULL );
+      */
+      hdc = GetDC( g_window );
       b->bitmap = CreateCompatibleBitmap( hdc, bmih->biWidth, bmih->biHeight );
 
       SetDIBits( hdc, b->bitmap, 0, bmih->biHeight, &(buf[offset]), &info,
-         DIB_PAL_COLORS );
+         DIB_RGB_COLORS );
+      /*
+      SetBitmapBits( b->bitmap, bmih->biSizeImage, &(buf[offset]) );
+      */
 
-      buf = memory_unlock( buf );
+      buf = memory_unlock( res_handle );
 
-      DeleteDC( hdc );
+      ReleaseDC( g_window, hdc );
 
       resource_free_handle( res_handle );
 #else

@@ -12,7 +12,11 @@
 #ifdef PLATFORM_DOS
 /* ------ */
 
+#ifdef RESOURCE_FILE
+#include "../gen-file/dos/resext.h"
+#else
 #include "../gen/dos/resext.h"
+#endif /* RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_SDL )

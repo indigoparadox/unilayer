@@ -7,13 +7,20 @@
 static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    FILE* res_file = NULL;
    uint8_t* buffer = NULL;
-   int16_t i = 0;
+#ifdef PLATFORM_DOS
+   int16_t extension_idx = 0;
+#endif /* PLATFORM_DOS */
    int32_t res_sz = 0,
       read = 0;
    MEMORY_HANDLE res_handle = (MEMORY_HANDLE)0;
    char asset_path[JSON_PATH_SZ];
 
+   debug_printf( 2, "requested resource: %s", id );
+
    dio_snprintf( asset_path, JSON_PATH_SZ, "%s%s", ASSETS_PATH, id );
+
+#ifdef PLATFORM_DOS
+   extension_idx = dio_char_idx_r( asset_path, strlen( asset_path ), '.' );
 
    #if 0
    for( i = 0 ; strlen( asset_path ) > i ; i++ ) {
@@ -24,10 +31,19 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    debug_printf( 3, "asset path: %s\n", asset_path );
    #endif
 
+   /* Use CGA-converted assets in DOS. */
+   debug_printf( 2, "resource extension: %s", &(asset_path[extension_idx]) );
+   if( 0 == strncmp( &(asset_path[extension_idx]), ".bmp", 3 ) ) {
+      asset_path[extension_idx + 1] = 'c';
+      asset_path[extension_idx + 2] = 'g';
+      asset_path[extension_idx + 3] = 'a';
+   }
+#endif /* PLATFORM_DOS */
+
    res_file = fopen( asset_path, "rb" );
-   res_file = fopen( id, "rb" );
    if( NULL == res_file ) {
-      error_printf( "unable to load resource: %s", asset_path );
+      error_printf( "unable to load resource: %s (error: %d)",
+         asset_path, errno );
       return (MEMORY_HANDLE)0;
    }
 
@@ -67,6 +83,10 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    debug_printf( 1, "read resource into memory: %s", asset_path );
 
 cleanup:
+
+   if( NULL != res_file ) {
+      fclose( res_file );
+   }
 
    if( NULL != buffer ) {
       buffer = memory_unlock( res_handle );

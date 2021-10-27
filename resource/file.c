@@ -20,7 +20,8 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    dio_snprintf( asset_path, JSON_PATH_SZ, "%s%s", ASSETS_PATH, id );
 
 #ifdef PLATFORM_DOS
-   extension_idx = dio_char_idx_r( asset_path, strlen( asset_path ), '.' );
+   extension_idx = dio_char_idx_r( asset_path,
+      memory_strnlen_ptr( asset_path, RESOURCE_PATH_MAX ), '.' );
 
    #if 0
    for( i = 0 ; strlen( asset_path ) > i ; i++ ) {

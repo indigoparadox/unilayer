@@ -12,6 +12,10 @@
 #define GRAPHICS_MODE      0x05
 #endif /* !GRAPHICS_MODE */
 
+#ifndef TEXT_MODE
+#define TEXT_MODE      0x03
+#endif /* !TEXT_MODE */
+
 #ifndef CGA_COLD
 #define CGA_COLD           0x01
 #endif /* CGA_COLD */
@@ -138,7 +142,15 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 }
 
 void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
+   union REGS r;
+
    graphics_remove_timer();
+
+   memory_zero_ptr( &r, sizeof( union REGS ) );
+
+	r.h.ah = 0;
+	r.h.al = TEXT_MODE;
+	int86( 0x10, &r, &r );
 }
 
 void graphics_flip( struct GRAPHICS_ARGS* args ) {

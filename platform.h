@@ -142,6 +142,18 @@ loop_globals();
 #  include "input/gli.h"
 #  include "graphics/glg.h"
 
+#elif defined( PLATFORM_MEGADRIVE )
+
+#define DISABLE_FILESYSTEM
+
+#  include <stdint.h>
+#  include <types.h>
+loop_globals();
+#  include "memory/fakem.h"
+#  include "resinc.h"
+#  include "input/megadi.h"
+#  include "graphics/megadg.h"
+
 #else
 
 #  include <stdint.h>

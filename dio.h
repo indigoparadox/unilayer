@@ -10,8 +10,7 @@
 #define DIO_STREAM_BUFFER  1
 #define DIO_STREAM_FILE    2
 
-#ifdef PLATFORM_PALM
-#include <PalmOS.h>
+#ifdef DISABLE_FILESYSTEM
 
 #define SEEK_SET 0
 #define SEEK_CUR 1
@@ -27,7 +26,7 @@
       0 <= stream->id && \
       ((DIO_STREAM_BUFFER == stream->type && NULL != stream->buffer.bytes ) || \
       (DIO_STREAM_FILE == stream->type && NULL != stream->buffer.file )) )
-#endif /* PLATFORM_PALM */
+#endif /* DISABLE_FILESYSTEM */
 
 union DIO_BUFFER {
 #ifndef DISABLE_FILESYSTEM

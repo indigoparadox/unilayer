@@ -14,6 +14,9 @@
 #elif defined RESOURCE_HEADER
 #   define RESOURCES "HEADER"
 #   include "resource/header.h"
+#elif defined PLATFORM_MEGADRIVE
+#   define RESOURCES "MEGAD"
+#   include "resource/megadr.h"
 #elif defined PLATFORM_WIN && !defined RESOURCE_FILE
 #   define RESOURCES "WIN"
 #   include "resource/winr.h"

@@ -47,7 +47,15 @@ WARN_UNUSED MEMORY_PTR memory_lock( MEMORY_HANDLE handle );
 WARN_UNUSED MEMORY_PTR memory_unlock( MEMORY_HANDLE );
 char* memory_strncpy_ptr( char*, const char*, uint16_t );
 int16_t memory_strncmp_ptr( const char*, const char*, uint16_t );
-int16_t memory_strnlen_ptr( const char*, uint16_t );
+
+/**
+ * \brief Get the size of a string, up to a specified maximum.
+ * \param s ::MEMORY_PTR to a string to get the size of.
+ * \param l Maximum possible size of string s.
+ * \return Position of the NULL terminator in string s, or if none is found
+ *         under l characters, l.
+ */
+int16_t memory_strnlen_ptr( const char* s, uint16_t l );
 
 #endif /* !MEMORY_H */
 

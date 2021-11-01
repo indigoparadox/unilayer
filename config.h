@@ -8,45 +8,37 @@
 #define PLATFORM_GL
 #endif /* PLATFORM_WEB */
 
+#ifndef NO_RESEXT
+#  ifdef GEN_RESEXT_H
+#     include GEN_RESEXT_H
+#  elif defined( GEN_RESIDX_H ) && defined( GEN_RESEMB_H )
+#     include GEN_RESIDX_H
+#     include GEN_RESEMB_H
+#  else
+#     error "Resource definitions missing!"
+#  endif
+#endif
+
 /* ------ */
 #ifdef PLATFORM_DOS
 /* ------ */
-
-#ifdef RESOURCE_FILE
-#include "../gen-file/dos/resext.h"
-#else
-#include "../gen/dos/resext.h"
-#endif /* RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_SDL )
 /* ------ */
 
-#ifdef RESOURCE_FILE
-#include "../gen-file/sdl/resext.h"
-#else
-#include "../gen/sdl/resext.h"
-#endif /* RESOURCE_FILE */
-
 /* ------ */
 #elif defined( PLATFORM_XLIB )
 /* ------ */
-
-#ifdef RESOURCE_FILE
-#include "../gen-file/xlib/resext.h"
-#else
-#include "../gen/xlib/resext.h"
-#endif /* RESOURCE_FILE */
 
 /* ------ */
 #elif defined( PLATFORM_PALM )
 /* ------ */
 
+/*
 #include <PalmOS.h>
 
-#include "../gen/palm/resext.h"
-
-/* #define stringify_line( line ) #line
+#define stringify_line( line ) #line
 
 #define assert( test ) ErrFatalDisplayIf( !(test), __FILE__ ": " stringify_line( __LINE__ ) ": assert failure" ) */
 
@@ -54,45 +46,23 @@
 #elif defined( PLATFORM_WIN16 )
 /* ------ */
 
-#ifdef RESOURCE_FILE
-#include "../gen-file/win16/resext.h"
-#else
-#include "../gen/win16/resext.h"
-#endif /* RESOURCE_FILE */
-
 #define PLATFORM_WIN
-
-#define SCREEN_BPP 4
 
 /* ------ */
 #elif defined( PLATFORM_WINCE )
 /* ------ */
 
-#include "../gen/win16/resext.h"
-
 #define PLATFORM_WIN
-
-#define SCREEN_BPP 4
 
 /* ------ */
 #elif defined( PLATFORM_WIN32 )
 /* ------ */
 
-#ifdef RESOURCE_FILE
-#include "../gen-file/win32/resext.h"
-#else
-#include "../gen/win32/resext.h"
-#endif /* RESOURCE_FILE */
-
 #define PLATFORM_WIN
-
-#define SCREEN_BPP 4
 
 /* ------ */
 #elif defined( PLATFORM_MAC6 )
 /* ------ */
-
-#include "../gen/mac6/resext.h"
 
 #define DRC_TOC_INITIAL_ALLOC 50 /* Fake it until we have realloc. */
 #define LOG_TO_FILE
@@ -101,17 +71,9 @@
 #elif defined( PLATFORM_NDS )
 /* ------ */
 
-#include "../gen/nds/resext.h"
-
 /* ------ */
 #elif defined( PLATFORM_GL )
 /* ------ */
-
-#ifdef PLATFORM_WEB
-#include "../gen/web/resext.h"
-#else
-#include "../gen/gl/resext.h"
-#endif /* PLATFORM_WEB */
 
 /* ------ */
 #endif /* PLATFORM_DOS, PLATFORM_SDL, PLATFORM_PALM, PLATFORM_WIN16 */

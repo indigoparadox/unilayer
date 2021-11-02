@@ -173,12 +173,14 @@ int16_t graphics_blit_at(
       goto cleanup;
    }
 
+   /*
    if( 0 == s_x && 0 == s_y ) {
       retval = graphics_platform_blit_at( bitmap_blit, d_x, d_y, w, h );
    } else {
+   */
       retval = graphics_platform_blit_partial_at(
          bitmap_blit, s_x, s_y, d_x, d_y, w, h );
-   }
+   /* } */
    if( !retval ) {
       /* error_printf( "failed to blit bitmap" ); */
       goto cleanup;

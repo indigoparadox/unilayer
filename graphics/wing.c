@@ -43,7 +43,7 @@ static LRESULT CALLBACK WndProc(
          if( 0 == g_screen.initialized ) {
             debug_printf( 2, "creating screen buffer..." );
             g_screen.bitmap = CreateCompatibleBitmap( hdcScreen,
-               SCREEN_REAL_W, SCREEN_REAL_H );
+               SCREEN_W, SCREEN_H );
             g_screen.initialized = 1;
          }
          if( (HBITMAP)NULL == g_screen.bitmap ) {
@@ -65,13 +65,14 @@ static LRESULT CALLBACK WndProc(
          debug_printf( 0, "blitting buffer bitmap (%d x %d)",
             srcBitmap.bmWidth, srcBitmap.bmHeight );
 
-         BitBlt(
+         StretchBlt(
             hdcScreen,
+            0, 0,
+            SCREEN_REAL_W, SCREEN_REAL_H,
+            hdcBuffer,
             0, 0,
             srcBitmap.bmWidth,
             srcBitmap.bmHeight,
-            hdcBuffer,
-            0, 0,
             SRCCOPY
          );
 
@@ -186,11 +187,13 @@ int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
+#if 0
    HDC hdcBuffer = (HDC)NULL;
    HDC hdcSrc = (HDC)NULL;
    BITMAP srcBitmap;
    HBITMAP oldHbmSrc = (HBITMAP)NULL;
    HBITMAP oldHbmBuffer = (HBITMAP)NULL;
+   HBITMAP oldHbmSrcMask = (HBITMAP)NULL;
 
    if( (struct GRAPHICS_BITMAP*)NULL == bmp || (HBITMAP)NULL == bmp->bitmap ) {
       error_printf( "blit bmp is NULL" );
@@ -210,6 +213,16 @@ int16_t graphics_platform_blit_at(
 
    GetObject( bmp->bitmap, sizeof( BITMAP ), &srcBitmap );
 
+   /*
+   BitBlt(
+      hdcBuffer,
+      x, y, w, h,
+      hdcSrc,
+      0, 0,
+      SRCCOPY
+   );
+   */
+
    StretchBlt(
       hdcBuffer,
       x * SCREEN_SCALE, y * SCREEN_SCALE,
@@ -228,8 +241,8 @@ int16_t graphics_platform_blit_at(
 
    DeleteDC( hdcSrc );
    DeleteDC( hdcBuffer );
-
-   return 1;
+#endif
+   return 0;
 }
 
 /*
@@ -242,9 +255,12 @@ int16_t graphics_platform_blit_partial_at(
 ) {
    HDC hdcBuffer = (HDC)NULL;
    HDC hdcSrc = (HDC)NULL;
-   BITMAP srcBitmap;
+   HDC hdcSrcMask = (HDC)NULL;
+   /* BITMAP srcBitmap;
+   BITMAP srcBitmapMask; */
    HBITMAP oldHbmSrc = (HBITMAP)NULL;
    HBITMAP oldHbmBuffer = (HBITMAP)NULL;
+   HBITMAP oldHbmSrcMask = (HBITMAP)NULL;
 
    if( (struct GRAPHICS_BITMAP*)NULL == bmp || (HBITMAP)NULL == bmp->bitmap ) {
       error_printf( "blit bmp is NULL" );
@@ -262,23 +278,37 @@ int16_t graphics_platform_blit_partial_at(
    hdcSrc = CreateCompatibleDC( (HDC)NULL );
    oldHbmSrc = SelectObject( hdcSrc, bmp->bitmap );
 
-   GetObject( bmp->bitmap, sizeof( BITMAP ), &srcBitmap );
+   /* Create HDC for source bitmap mask compatible with the buffer. */
+   hdcSrcMask = CreateCompatibleDC( (HDC)NULL );
+   oldHbmSrcMask = SelectObject( hdcSrcMask, bmp->mask );
 
-   StretchBlt(
+   /* GetObject( bmp->bitmap, sizeof( BITMAP ), &srcBitmap );
+   GetObject( bmp->mask, sizeof( BITMAP ), &srcBitmapMask ); */
+
+#ifdef DEPTH_VGA
+
+   BitBlt(
       hdcBuffer,
-      d_x * SCREEN_SCALE, d_y * SCREEN_SCALE,
-      w * SCREEN_SCALE,
-      h * SCREEN_SCALE,
+      d_x, d_y, w, h,
+      hdcSrcMask,
+      s_x, s_y,
+      SRCAND
+   );
+
+   BitBlt(
+      hdcBuffer,
+      d_x, d_y, w, h,
       hdcSrc,
       s_x, s_y,
-      w,
-      h,
-      SRCCOPY
+      SRCPAINT
    );
+
+#endif /* DEPTH_VGA */
 
    /* Reselect the initial objects into the provided DCs. */
    SelectObject( hdcSrc, oldHbmSrc );
    SelectObject( hdcBuffer, oldHbmBuffer );
+   SelectObject( hdcSrcMask, oldHbmSrcMask );
 
    DeleteDC( hdcSrc );
    DeleteDC( hdcBuffer );
@@ -298,7 +328,7 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    }
    oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
 
-   SetPixel( hdcBuffer, x * SCREEN_SCALE, y * SCREEN_SCALE, color );
+   SetPixel( hdcBuffer, x, y, color );
 
    /* Reselect the initial objects into the provided DCs. */
    SelectObject( hdcBuffer, oldHbmBuffer );
@@ -361,7 +391,7 @@ void graphics_draw_rect(
    }
    oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
 
-   pen = CreatePen( PS_SOLID, thickness * SCREEN_SCALE, color );
+   pen = CreatePen( PS_SOLID, thickness, color );
    if( (HPEN)NULL == pen ) {
       error_printf( "pen is NULL" );
       return;
@@ -369,20 +399,20 @@ void graphics_draw_rect(
    oldPen = SelectObject( hdcBuffer, pen );
    /* MoveTo( hdcBuffer, x1, y1 );
    LineTo( hdcBuffer, x2, y2 );*/
-   points[0].x = SCREEN_SCALE * (x_orig);
-   points[0].y = SCREEN_SCALE * (y_orig);
+   points[0].x = (x_orig);
+   points[0].y = (y_orig);
    
-   points[1].x = SCREEN_SCALE * (x_orig);
-   points[1].y = SCREEN_SCALE * (y_orig + h);
+   points[1].x = (x_orig);
+   points[1].y = (y_orig + h);
 
-   points[2].x = SCREEN_SCALE * (x_orig + w);
-   points[2].y = SCREEN_SCALE * (y_orig + h);
+   points[2].x = (x_orig + w);
+   points[2].y = (y_orig + h);
    
-   points[3].x = SCREEN_SCALE * (x_orig + w);
-   points[3].y = SCREEN_SCALE * (y_orig);
+   points[3].x = (x_orig + w);
+   points[3].y = (y_orig);
 
-   points[4].x = SCREEN_SCALE * (x_orig);
-   points[4].y = SCREEN_SCALE * (y_orig);
+   points[4].x = (x_orig);
+   points[4].y = (y_orig);
    Polyline( hdcBuffer, points, 5 );
    SelectObject( hdcBuffer, oldPen );
    DeleteObject( pen );
@@ -437,13 +467,15 @@ int16_t graphics_platform_load_bitmap(
    RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    uint8_t* buffer = NULL;
+   int16_t retval = 1;
    int32_t buffer_sz = 0;
+   HDC hdc;
+   HDC hdc_mask;
+   BITMAP bm;
 #ifdef RESOURCE_FILE
    int i, x, y, w, h, bpp, offset;
    char* buf = NULL;
-   HDC hdc;
-   BITMAPINFOHEADER* bmih = NULL;
-   BITMAPINFO info;
+   BITMAPINFO* bmi = NULL;
 #endif /* RESOURCE_FILE */
 
    /* TODO: Fix this if RESOURCE_FILE is used. */
@@ -456,14 +488,14 @@ int16_t graphics_platform_load_bitmap(
 #ifdef PLATFORM_WIN16
       buf = memory_lock( res_handle );
 
-      bmih = (BITMAPINFOHEADER*)&(buf[sizeof( BITMAPFILEHEADER )]);
+      bmi = (BITMAPINFO*)&(buf[sizeof( BITMAPFILEHEADER )]);
 
       /*
       for( i = 0 ; sizeof( BITMAPFILEHEADER ) > i ; i++ ) {
          printf( "0x%02x ", buf[sizeof( BITMAPFILEHEADER ) + i] );
       }
       */
-      bmih = (BITMAPINFOHEADER*)&(buf[sizeof( BITMAPFILEHEADER )]);
+      bmi = (BITMAPINFO*)&(buf[sizeof( BITMAPFILEHEADER )]);
 
       bpp = bmp_int( uint16_t, buf, 28 );
       offset = bmp_int( uint32_t, buf, 10 );
@@ -472,20 +504,20 @@ int16_t graphics_platform_load_bitmap(
          bmih->biWidth, bmih->biHeight, bpp );
       */
 
-      assert( 0 < bmih->biWidth );
-      assert( 0 < bmih->biHeight );
-      assert( 0 == bmih->biWidth % 8 );
-      assert( 0 == bmih->biHeight % 8 );
-
-      info.bmiHeader = *bmih;
+      assert( 0 < bmi->bmiHeader.biWidth );
+      assert( 0 < bmi->bmiHeader.biHeight );
+      assert( 0 == bmi->bmiHeader.biWidth % 8 );
+      assert( 0 == bmi->bmiHeader.biHeight % 8 );
 
       /*
       hdc = CreateCompatibleDC( NULL );
       */
       hdc = GetDC( g_window );
-      b->bitmap = CreateCompatibleBitmap( hdc, bmih->biWidth, bmih->biHeight );
+      b->bitmap = CreateCompatibleBitmap( hdc,
+         bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight );
 
-      SetDIBits( hdc, b->bitmap, 0, bmih->biHeight, &(buf[offset]), &info,
+      SetDIBits( hdc, b->bitmap, 0,
+         bmi->bmiHeader.biHeight, &(buf[offset]), bmi,
          DIB_RGB_COLORS );
       /*
       SetBitmapBits( b->bitmap, bmih->biSizeImage, &(buf[offset]) );
@@ -506,11 +538,42 @@ int16_t graphics_platform_load_bitmap(
       /* free( res_handle ); */
    } else {
       error_printf( "NULL handle returned" );
+      retval = 0;
+      goto cleanup;
    }
    if( !b->bitmap ) {
       error_printf( "unable to load resource" );
-      return 0;
+      retval = 0;
+      goto cleanup;
    }
+
+#ifdef DEPTH_VGA
+
+   /* Setup transparency. */
+
+   GetObject( b->bitmap, sizeof( BITMAP ), &bm );
+
+   b->mask = CreateBitmap( bm.bmWidth, bm.bmHeight, 1, 1, NULL );
+
+   hdc = CreateCompatibleDC( 0 );
+   hdc_mask = CreateCompatibleDC( 0 );
+
+   SelectObject( hdc, b->bitmap );
+   SelectObject( hdc_mask, b->mask );
+
+   SetBkColor( hdc, 0x00ff55ff ); /* Magenta */
+
+   BitBlt( hdc_mask, 0, 0, bm.bmWidth, bm.bmHeight, hdc, 0, 0, SRCCOPY );
+   BitBlt( hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdc_mask, 0, 0, SRCINVERT );
+
+   DeleteDC( hdc );
+   DeleteDC( hdc_mask );
+
+   /* TODO: Restore old HDC contents. */
+
+#endif /* DEPTH_VGA */
+
+cleanup:
 
    return 1;
 }
@@ -584,10 +647,10 @@ void graphics_string_at(
 
    str_len = memory_strnlen_ptr( str, str_sz );
    GetTextExtentPoint( hdcBuffer, str, str_len, &sz );
-   rect.left = x_orig * SCREEN_SCALE;
-   rect.top = y_orig * SCREEN_SCALE;
-   rect.right = (x_orig + sz.cx) * SCREEN_SCALE;
-   rect.bottom = (y_orig + sz.cy) * SCREEN_SCALE;
+   rect.left = x_orig;
+   rect.top = y_orig;
+   rect.right = (x_orig + sz.cx);
+   rect.bottom = (y_orig + sz.cy);
 
    if( 0 == DrawText( hdcBuffer, str, str_len, &rect, 0 ) ) {
       error_printf( "unable to draw string at %u, %u", x_orig, y_orig );

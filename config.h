@@ -9,14 +9,7 @@
 #endif /* PLATFORM_WEB */
 
 #ifndef NO_RESEXT
-#  ifdef GEN_RESEXT_H
-#     include GEN_RESEXT_H
-#  elif defined( GEN_RESIDX_H ) && defined( GEN_RESEMB_H )
-#     include GEN_RESIDX_H
-#     include GEN_RESEMB_H
-#  else
-#     error "Resource definitions missing!"
-#  endif
+#include <resext.h>
 #endif
 
 /* ------ */

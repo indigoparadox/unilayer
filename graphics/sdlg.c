@@ -92,36 +92,6 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    }
 }
 
-int16_t graphics_platform_blit_at(
-   const struct GRAPHICS_BITMAP* bmp,
-   uint16_t x, uint16_t y, uint16_t w, uint16_t h
-) {
-   /* TODO: Delete. */
-   #if 0
-   SDL_Rect dest_rect = {
-      x * SCREEN_SCALE, 
-      y * SCREEN_SCALE,
-      w * SCREEN_SCALE, 
-      h * SCREEN_SCALE};
-   SDL_Rect src_rect = {
-      0, 0, w, h };
-
-   if( NULL == bmp || NULL == bmp->texture ) {
-      error_printf( "NULL bitmap passed" );
-      return 0;
-   }
-
-   debug_printf( 0, "blitting resource #%d to %d, %d x %d, %d...",
-      bmp->id, x, y, w, h );
-   SDL_RenderCopy( g_renderer, bmp->texture, &src_rect, &dest_rect );
-   #endif
-
-   return 1;
-}
-
-/*
- * @return 1 if blit was successful and 0 otherwise.
- */
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t s_x, uint16_t s_y,

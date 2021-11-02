@@ -129,8 +129,6 @@ void graphics_blit_masked_at(
    const struct GRAPHICS_BITMAP*, const uint8_t*, uint16_t,
    uint16_t, uint16_t, uint16_t, uint16_t );
 #ifdef GRAPHICS_C
-int16_t graphics_platform_blit_at(
-   const struct GRAPHICS_BITMAP*, uint16_t, uint16_t, uint16_t, uint16_t );
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP*,
    uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );

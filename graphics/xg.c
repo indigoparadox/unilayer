@@ -123,54 +123,6 @@ void graphics_loop_end() {
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
 }
 
-/*
- * @return 1 if blit was successful and 0 otherwise.
- */
-int16_t graphics_platform_blit_at(
-   const struct GRAPHICS_BITMAP* b,
-   uint16_t x, uint16_t y, uint16_t w, uint16_t h
-) {
-   /* TODO: Delete */
-#if 0
-   int retval = 1,
-      screen_bytes_per_pixel = 0,
-      b_bytes_per_pixel = 0,
-      screen_xy_byte = 0,
-      src_xy_byte = 0,
-      offset_y = 0;
-
-   if( NULL == b->pixmap || NULL == b->pixmap->data ) {
-      return 0;
-   }
-
-   /* Copy the image line by line into the buffer. */
-   screen_bytes_per_pixel = g_buffer->bits_per_pixel / 8;
-   b_bytes_per_pixel = b->pixmap->bits_per_pixel / 8;
-   assert( screen_bytes_per_pixel == b_bytes_per_pixel );
-   for( offset_y = 0 ; h > offset_y ; offset_y++ ) {
-      /* Multiply offsets by px byte size. */
-      screen_xy_byte = 
-         ((y + offset_y) * (SCREEN_W * screen_bytes_per_pixel)) +
-         (x * screen_bytes_per_pixel);
-   
-      assert( screen_xy_byte < g_buffer_bits_sz );
-
-      src_xy_byte = offset_y * (b->pixmap->width * b_bytes_per_pixel);
-
-      /* Perform the blit. */
-      memcpy(
-         &(g_buffer_bits[screen_xy_byte]),
-         &(b->pixmap->data[src_xy_byte]),
-         w * screen_bytes_per_pixel );
-   }
-#endif
-
-   return 0;
-}
-
-/*
- * @return 1 if blit was successful and 0 otherwise.
- */
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP* b,
    uint16_t s_x, uint16_t s_y,

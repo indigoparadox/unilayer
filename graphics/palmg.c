@@ -56,9 +56,10 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    WinPaintPixel( x, y );
 }
 
-int16_t graphics_platform_blit_at(
+int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP* bmp,
-   uint16_t x, uint16_t y, uint16_t w, uint16_t h
+   uint16_t s_x, uint16_t s_y,
+   uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
    int retval = 1;
    MEMORY_HANDLE rsrc = NULL;
@@ -66,7 +67,7 @@ int16_t graphics_platform_blit_at(
    RectangleType screen_rect;
 
    if( NULL == bmp || !bmp->initialized ) {
-      WinDrawChars( "X", 1, x, y );
+      WinDrawChars( "X", 1, d_x, d_y );
       retval = 0;
       goto cleanup;
    }
@@ -74,19 +75,19 @@ int16_t graphics_platform_blit_at(
    rsrc = resource_get_bitmap_handle( bmp->id );
 
    if( NULL == rsrc ) {
-      WinDrawChars( "Z", 1, x, y );
+      WinDrawChars( "Z", 1, d_x, d_y );
       retval = 0;
       goto cleanup;
    }
 
-   screen_rect.topLeft.x = x;
-   screen_rect.topLeft.y = y;
+   screen_rect.topLeft.x = d_x;
+   screen_rect.topLeft.y = d_y;
    screen_rect.extent.x = w;
    screen_rect.extent.y = h;
    WinSetClip( &screen_rect );
 
    ptr = resource_lock_handle( rsrc );
-   WinDrawBitmap( ptr, x, y );
+   WinDrawBitmap( ptr, d_x, d_y );
    ptr = resource_unlock_handle( rsrc );
 
    WinResetClip();
@@ -98,14 +99,6 @@ cleanup:
    }
 
    return retval;
-}
-
-int16_t graphics_platform_blit_partial_at(
-   const struct GRAPHICS_BITMAP* bmp,
-   uint16_t s_x, uint16_t s_y,
-   uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
-) {
-   graphics_platform_blit_at( bmp, d_x, d_y, w, h );
 }
 
 void graphics_draw_block(

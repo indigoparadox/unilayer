@@ -92,13 +92,12 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    }
 }
 
-/*
- * @return 1 if blit was successful and 0 otherwise.
- */
 int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
+   /* TODO: Delete. */
+   #if 0
    SDL_Rect dest_rect = {
       x * SCREEN_SCALE, 
       y * SCREEN_SCALE,
@@ -115,6 +114,7 @@ int16_t graphics_platform_blit_at(
    debug_printf( 0, "blitting resource #%d to %d, %d x %d, %d...",
       bmp->id, x, y, w, h );
    SDL_RenderCopy( g_renderer, bmp->texture, &src_rect, &dest_rect );
+   #endif
 
    return 1;
 }
@@ -214,6 +214,13 @@ int16_t graphics_platform_load_bitmap(
       goto cleanup;
    }
    debug_printf( 1, "SDL loaded surface for bitmap" );
+
+#ifdef DEPTH_VGA
+   /* Setup transparency if we're using VGA. */
+   SDL_SetColorKey( b->surface, SDL_TRUE, SDL_MapRGB( b->surface->format,
+      0xff, 0x55, 0xff ) );
+#endif /* DEPTH_VGA */
+
    b->texture = SDL_CreateTextureFromSurface( g_renderer, b->surface );
    if( NULL == b->texture ) {
       error_printf( "SDL unable to create texture: %s", SDL_GetError() );

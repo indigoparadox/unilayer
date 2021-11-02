@@ -2,6 +2,8 @@
 #define GRAPHICS_C
 #include "../unilayer.h"
 
+/* TODO: VGA mode. */
+
 #define GRAPHICS_M_320_200_4_CGA  0x05
 #define GRAPHICS_M_320_200_256_V  0x13
 
@@ -223,6 +225,8 @@ int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
+   /* TODO: Delete. */
+#if 0
 	int y_offset = 0;
    uint16_t screen_byte_offset = 0;
    /* Still not sure why copy seems to start w/2px in? */
@@ -255,8 +259,9 @@ int16_t graphics_platform_blit_at(
       plane_2 += bmp->w / 8;
 	}
 #endif /* GRAPHICS_MODE */
+#endif
 
-   return 1;
+   return 0;
 }
 
 /*

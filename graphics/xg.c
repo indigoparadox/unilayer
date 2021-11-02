@@ -130,6 +130,8 @@ int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* b,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
+   /* TODO: Delete */
+#if 0
    int retval = 1,
       screen_bytes_per_pixel = 0,
       b_bytes_per_pixel = 0,
@@ -161,8 +163,9 @@ int16_t graphics_platform_blit_at(
          &(b->pixmap->data[src_xy_byte]),
          w * screen_bytes_per_pixel );
    }
+#endif
 
-   return retval;
+   return 0;
 }
 
 /*
@@ -184,6 +187,8 @@ int16_t graphics_platform_blit_partial_at(
    if( NULL == b->pixmap || NULL == b->pixmap->data ) {
       return 0;
    }
+
+   /* TODO: Use transparency. */
 
    /* Copy the image line by line into the buffer. */
    screen_bytes_per_pixel = g_buffer->bits_per_pixel / 8;
@@ -247,6 +252,8 @@ int16_t graphics_platform_load_bitmap(
       px_offset = 0,
       x = 0,
       y = 0;
+
+   /* TODO: Load transparency. */
 
    buffer_sz = memory_sz( res_handle );
    if( 0 == buffer_sz ) {

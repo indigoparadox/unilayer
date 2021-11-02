@@ -180,13 +180,11 @@ void graphics_loop_start() {
 void graphics_loop_end() {
 }
 
-/*
- * @return 1 if blit was successful and 0 otherwise.
- */
 int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
+   /* TODO: Delete. */
 #if 0
    HDC hdcBuffer = (HDC)NULL;
    HDC hdcSrc = (HDC)NULL;
@@ -245,9 +243,6 @@ int16_t graphics_platform_blit_at(
    return 0;
 }
 
-/*
- * @return 1 if blit was successful and 0 otherwise.
- */
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
@@ -255,12 +250,14 @@ int16_t graphics_platform_blit_partial_at(
 ) {
    HDC hdcBuffer = (HDC)NULL;
    HDC hdcSrc = (HDC)NULL;
-   HDC hdcSrcMask = (HDC)NULL;
    /* BITMAP srcBitmap;
    BITMAP srcBitmapMask; */
    HBITMAP oldHbmSrc = (HBITMAP)NULL;
    HBITMAP oldHbmBuffer = (HBITMAP)NULL;
+#ifdef DEPTH_VGA
+   HDC hdcSrcMask = (HDC)NULL;
    HBITMAP oldHbmSrcMask = (HBITMAP)NULL;
+#endif /* DEPTH_VGA */
 
    if( (struct GRAPHICS_BITMAP*)NULL == bmp || (HBITMAP)NULL == bmp->bitmap ) {
       error_printf( "blit bmp is NULL" );
@@ -278,14 +275,16 @@ int16_t graphics_platform_blit_partial_at(
    hdcSrc = CreateCompatibleDC( (HDC)NULL );
    oldHbmSrc = SelectObject( hdcSrc, bmp->bitmap );
 
-   /* Create HDC for source bitmap mask compatible with the buffer. */
-   hdcSrcMask = CreateCompatibleDC( (HDC)NULL );
-   oldHbmSrcMask = SelectObject( hdcSrcMask, bmp->mask );
-
    /* GetObject( bmp->bitmap, sizeof( BITMAP ), &srcBitmap );
    GetObject( bmp->mask, sizeof( BITMAP ), &srcBitmapMask ); */
 
 #ifdef DEPTH_VGA
+
+   /* Create HDC for source bitmap mask compatible with the buffer. */
+   hdcSrcMask = CreateCompatibleDC( (HDC)NULL );
+   oldHbmSrcMask = SelectObject( hdcSrcMask, bmp->mask );
+
+   /* Use mask to blit transparency. */
 
    BitBlt(
       hdcBuffer,
@@ -303,12 +302,26 @@ int16_t graphics_platform_blit_partial_at(
       SRCPAINT
    );
 
+   /* Reselect the initial objects into the provided DC. */
+   SelectObject( hdcSrcMask, oldHbmSrcMask );
+   DeleteDC( hdcSrcMask );
+
+#else
+
+   /* Simple blit without transparency. */
+   BitBlt(
+      hdcBuffer,
+      d_x, d_y, w, h,
+      hdcSrc,
+      s_x, s_y,
+      SRCCOPY
+   );
+
 #endif /* DEPTH_VGA */
 
    /* Reselect the initial objects into the provided DCs. */
    SelectObject( hdcSrc, oldHbmSrc );
    SelectObject( hdcBuffer, oldHbmBuffer );
-   SelectObject( hdcSrcMask, oldHbmSrcMask );
 
    DeleteDC( hdcSrc );
    DeleteDC( hdcBuffer );
@@ -469,6 +482,7 @@ int16_t graphics_platform_load_bitmap(
    uint8_t* buffer = NULL;
    int16_t retval = 1;
    int32_t buffer_sz = 0;
+   uint32_t txp_color = 0;
    HDC hdc;
    HDC hdc_mask;
    BITMAP bm;
@@ -561,8 +575,15 @@ int16_t graphics_platform_load_bitmap(
    SelectObject( hdc, b->bitmap );
    SelectObject( hdc_mask, b->mask );
 
-   SetBkColor( hdc, 0x00ff55ff ); /* Magenta */
+   /* Convert the color key into bitmap format. */
+   txp_color |= (GRAPHICS_TXP_B & 0xff);
+   txp_color <<= 8;
+   txp_color |= (GRAPHICS_TXP_G & 0xff);
+   txp_color <<= 8;
+   txp_color |= (GRAPHICS_TXP_R & 0xff);
+   SetBkColor( hdc, txp_color );
 
+   /* Create the mask from the color key. */
    BitBlt( hdc_mask, 0, 0, bm.bmWidth, bm.bmHeight, hdc, 0, 0, SRCCOPY );
    BitBlt( hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdc_mask, 0, 0, SRCINVERT );
 

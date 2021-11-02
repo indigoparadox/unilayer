@@ -6,6 +6,18 @@
  *  \brief Platform-general abstractions for graphics.
  */
 
+#ifndef GRAPHICS_TXP_R
+#define GRAPHICS_TXP_R 0xff
+#endif /* !GRAPHICS_TXP_R */
+
+#ifndef GRAPHICS_TXP_G
+#define GRAPHICS_TXP_G 0x55
+#endif /* !GRAPHICS_TXP_G */
+
+#ifndef GRAPHICS_TXP_B
+#define GRAPHICS_TXP_B 0xff
+#endif /* !GRAPHICS_TXP_B */
+
 /**
  * \brief Struct representing a graphical rectangle.
  */

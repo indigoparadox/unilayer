@@ -1,5 +1,5 @@
 
-#include "sdli.h"
+#include "../unilayer.h"
 
 int input_init() {
    return 1;
@@ -10,7 +10,7 @@ int input_poll() {
    int eres = 0,
       sym_out = 0;
 
-   memset( &event, 0, sizeof( SDL_Event ) );
+   memory_zero_ptr( &event, sizeof( SDL_Event ) );
 
    SDL_PollEvent( &event );
 

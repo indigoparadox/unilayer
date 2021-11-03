@@ -1,6 +1,5 @@
 
-#include "../input.h"
-#include "palmi.h"
+#include "../unilayer.h"
 
 #include <PalmOS.h>
 

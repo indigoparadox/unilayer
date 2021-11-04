@@ -18,7 +18,7 @@ int input_poll() {
       sym_out = event.key.keysym.sym;
       
       /* Flush key buffer to improve responsiveness. */
-      while( eres = SDL_PollEvent( &event ) );
+      while( (eres = SDL_PollEvent( &event )) );
 
       return sym_out;
    } else if( SDL_QUIT == event.type ) {

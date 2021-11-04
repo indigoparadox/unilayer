@@ -6,6 +6,29 @@
 #include <resext.h>
 #endif /* !NO_RESEXT */
 
+/* ! */
+#ifdef ANCIENT_C
+/* ! */
+
+#  define resource_debug_printf
+#  define resource_error_printf
+
+/* ! */
+#else
+/* ! */
+
+#ifndef resource_debug_printf
+#define resource_debug_printf( lvl, fmt, rsrc, ... ) debug_printf( lvl, "resource %d: " fmt, rsrc, __VA_ARGS__ )
+#endif /* !resource_printf */
+
+#ifndef resource_error_printf
+#define resource_error_printf( fmt, rsrc, ... ) error_printf( "resource %d: " fmt, rsrc, __VA_ARGS__ )
+#endif /* !resource_printf */
+
+/* ! */
+#endif
+/* ! */
+
 /*! \file resource.h
  *  \brief Platform-general function prototypes for loading assets.
  */

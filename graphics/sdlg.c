@@ -110,7 +110,7 @@ int16_t graphics_platform_blit_partial_at(
       return 0;
    }
 
-   debug_printf( 0, "blitting resource #%d to %d, %d x %d, %d...",
+   resource_debug_printf( 0, "blitting to %d, %d x %d, %d...",
       bmp->id, d_x, d_y, w, h );
    SDL_RenderCopy( g_renderer, bmp->texture, &src_rect, &dest_rect );
 
@@ -225,8 +225,8 @@ int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    }
    b->ref_count--;
    if( 0 >= b->ref_count ) {
-      debug_printf( 2, "unloading texture and surface for bitmap resource %d",
-         b->id );
+      resource_debug_printf( 2, "unloading texture and surface for %s",
+         b->id, "bitmap" );
       SDL_DestroyTexture( b->texture );
       SDL_FreeSurface( b->surface );
       b->initialized = 0;

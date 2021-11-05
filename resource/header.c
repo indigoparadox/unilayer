@@ -5,11 +5,11 @@
 #ifdef RESOURCE_HEADER
 
 RESOURCE_BITMAP_HANDLE resource_get_bitmap_handle( RESOURCE_ID id ) {
-   return gsc_resources[id];
+   return (RESOURCE_BITMAP_HANDLE)gsc_resources[id];
 }
 
 RESOURCE_JSON_HANDLE resource_get_json_handle( RESOURCE_ID id ) {
-   return gsc_resources[id];
+   return (RESOURCE_JSON_HANDLE)gsc_resources[id];
 }
 
 MEMORY_PTR resource_lock_handle( MEMORY_HANDLE handle ) {

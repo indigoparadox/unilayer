@@ -37,6 +37,8 @@ void graphics_clear_cache() {
          dropped_count++;
       }
    }
+   memory_zero_ptr( bitmaps,
+      sizeof( struct GRAPHICS_BITMAP ) * gs_graphics_cache_sz );
    bitmaps = (struct GRAPHICS_BITMAP*)memory_unlock( gs_graphics_cache_handle );
    
    debug_printf( 2, "graphics cache cleared (%d of %d items)",

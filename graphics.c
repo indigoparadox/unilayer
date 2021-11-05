@@ -141,9 +141,6 @@ cleanup:
    return retval;
 }
 
-/**
- * @return 1 if blit was successful and 0 otherwise.
- */
 int16_t graphics_blit_at(
    RESOURCE_ID res_id,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,

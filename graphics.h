@@ -7,14 +7,17 @@
  */
 
 #ifndef GRAPHICS_TXP_R
+/*! \brief Red value for transparency color in VGA DEPTH. */
 #define GRAPHICS_TXP_R 0xff
 #endif /* !GRAPHICS_TXP_R */
 
 #ifndef GRAPHICS_TXP_G
+/*! \brief Green value for transparency color in VGA DEPTH. */
 #define GRAPHICS_TXP_G 0x55
 #endif /* !GRAPHICS_TXP_G */
 
 #ifndef GRAPHICS_TXP_B
+/*! \brief Blue value for transparency color in VGA DEPTH. */
 #define GRAPHICS_TXP_B 0xff
 #endif /* !GRAPHICS_TXP_B */
 
@@ -113,8 +116,22 @@ void graphics_string_at(
    const char*, uint16_t, uint16_t, uint16_t, const GRAPHICS_COLOR, uint8_t );
 void graphics_string_sz(
    const char*, uint16_t, uint8_t, struct GRAPHICS_RECT* );
+
+/**
+ * \brief Copy part or all of a ::GRAPHICS_BITMAP image to the screen.
+ * \param res_id ::RESOURCE_ID of the image to copy.
+ * \param s_x Horizontal location of upper-left corner of copy source rectangle.
+ * \param s_y Vertical location of upper-left corner of copy source rectangle.
+ * \param d_x Horizontal location of upper-left corner of destination rectangle.
+ * \param d_y Vertical location of upper-left corner of destination rectangle.
+ * \param w Pixel width of copy rectangle.
+ * \param h Pixel height of copy rectangle.
+ * \return 1 if blit was successful or 0 otherwise.
+ */
 int16_t graphics_blit_at(
-   RESOURCE_ID, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );
+   RESOURCE_ID res_id,
+   uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
+   uint16_t w, uint16_t h );
 
 /** 
  * \brief Load the graphics asset into a handle and pass that into the
@@ -124,8 +141,19 @@ int16_t graphics_blit_at(
  */
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b );
 
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* );
+/**
+ * \brief Free up the platform-specific resources associated with a loaded
+ *        graphical asset.
+ * \param b ::MEMORY_PTR to the ::GRAPHICS_BITMAP to unload. Will not be
+ *          deallocated if dynamic.
+ * \return 1 if unload was successful or 0 otherwise.
+ */
+int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b );
 
+/**
+ * \brief Free up graphics and resources used by loaded assets. Should only be
+ *        called as part of cleanup (i.e. between maps).
+ */
 void graphics_clear_cache();
 
 #ifdef GRAPHICS_C

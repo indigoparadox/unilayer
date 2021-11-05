@@ -25,20 +25,27 @@ cleanup:
    return retval;
 }
 
-void graphics_shutdown( struct GRAPHICS_ARGS* args ) {
-   int16_t i = 0;
+void graphics_clear_cache() {
+   int16_t i = 0,
+      dropped_count = 0;
    struct GRAPHICS_BITMAP* bitmaps = NULL;
 
    bitmaps = (struct GRAPHICS_BITMAP*)memory_lock( gs_graphics_cache_handle );
    for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
       if( 1 == bitmaps[i].initialized ) {
          graphics_unload_bitmap( &(bitmaps[i]) );
+         dropped_count++;
       }
    }
    bitmaps = (struct GRAPHICS_BITMAP*)memory_unlock( gs_graphics_cache_handle );
+   
+   debug_printf( 2, "graphics cache cleared (%d of %d items)",
+      dropped_count, gs_graphics_cache_sz );
+}
 
+void graphics_shutdown( struct GRAPHICS_ARGS* args ) {
+   graphics_clear_cache();
    memory_free( gs_graphics_cache_handle );
-
    graphics_platform_shutdown( args );
 }
 

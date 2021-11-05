@@ -125,9 +125,9 @@ int16_t graphics_blit_at(
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b );
 
 int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* );
-void graphics_blit_masked_at(
-   const struct GRAPHICS_BITMAP*, const uint8_t*, uint16_t,
-   uint16_t, uint16_t, uint16_t, uint16_t );
+
+void graphics_clear_cache();
+
 #ifdef GRAPHICS_C
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP*,

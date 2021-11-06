@@ -20,6 +20,10 @@
 #define _POSIX_C_SOURCE 200809L
 #endif /* __GNUC__ */
 
+#define stringize_internal( inp ) #inp
+
+#define stringize( inp ) stringize_internal( inp )
+
 #include <stddef.h>
 
 #include <errno.h>

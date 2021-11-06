@@ -107,6 +107,102 @@ void graphics_string_sz(
 
 #endif /* USE_SOFTWARE_TEXT */
 
+#ifdef USE_SOFTWARE_PRIMITIVES
+
+void graphics_draw_block(
+   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
+   const GRAPHICS_COLOR color
+) {
+   /* TODO: Draw block. */
+}
+
+void graphics_draw_rect(
+   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
+   uint16_t thickness, const GRAPHICS_COLOR color
+) {
+   /* TODO: Handle thickness. */
+
+   /* Left Wall */
+   graphics_draw_line( x_orig, y_orig, x_orig, y_orig + h, thickness, color );
+   /* Bottom Wall */
+   graphics_draw_line(
+      x_orig, y_orig + h, x_orig + w, y_orig + h, thickness, color );
+   /* Right Wall */
+   graphics_draw_line(
+      x_orig + w, y_orig + h, x_orig + w, y_orig, thickness, color );
+   /* Top Wall */
+   graphics_draw_line( x_orig, y_orig, x_orig + w, y_orig, thickness, color );
+}
+
+void graphics_draw_line(
+   uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t thickness,
+   const GRAPHICS_COLOR color
+) {
+   #define LINE_AXIS_X 0
+   #define LINE_AXIS_Y 1
+
+   int16_t delta[2],
+      start[2],
+      end[2],
+      iter[2],
+      delta_p = 0;
+   uint8_t inc_axis = 0,
+      off_axis = 0;
+
+   /* TODO: Handle thickness. */
+
+   /* Keep coordinates positive. */
+   if( x1 > x2 ) {
+      start[LINE_AXIS_X] = x2;
+      end[LINE_AXIS_X] = x1;
+   } else {
+      start[LINE_AXIS_X] = x1;
+      end[LINE_AXIS_X] = x2;
+   }
+   if( y1 > y2 ) {
+      start[LINE_AXIS_Y] = y2;
+      end[LINE_AXIS_Y] = y1;
+   } else {
+      start[LINE_AXIS_Y] = y1;
+      end[LINE_AXIS_Y] = y2;
+   }
+
+   /* Select an axis that will DEFINITELY be incrementing. */
+   if( end[LINE_AXIS_X] > start[LINE_AXIS_X] ) {
+      inc_axis = LINE_AXIS_X;
+      off_axis = LINE_AXIS_Y;
+   } else {
+      inc_axis = LINE_AXIS_Y;
+      off_axis = LINE_AXIS_X;
+   }
+
+   /* Bresenham's line algorithm. */
+
+   delta[LINE_AXIS_X] = end[LINE_AXIS_X] - start[LINE_AXIS_X];
+   delta[LINE_AXIS_Y] = end[LINE_AXIS_Y] - start[LINE_AXIS_Y];
+   delta_p = (2 * delta[off_axis]) - delta[inc_axis];
+   iter[off_axis] = start[off_axis];
+   
+   /* Iterate the incremented axis. */
+   for(
+      iter[inc_axis] = start[inc_axis] ;
+      end[inc_axis] > iter[inc_axis] ;
+      iter[inc_axis]++
+   ) {
+      debug_printf(
+         3, "px %d, %d (%d)", iter[LINE_AXIS_X], iter[LINE_AXIS_Y], delta_p );
+      graphics_draw_px( iter[LINE_AXIS_X], iter[LINE_AXIS_Y], color );
+      if( 0 < delta_p ) {
+         iter[off_axis] += 1;
+         delta_p += (2 * (delta[off_axis] - delta[inc_axis]));
+      } else {
+         delta_p += (2 * delta[off_axis]);
+      }
+   }
+}
+
+#endif /* !USE_SOFTWARE_PRIMITIVES */
+
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
    RESOURCE_BITMAP_HANDLE bitmap_handle = (RESOURCE_BITMAP_HANDLE)NULL;

@@ -170,24 +170,6 @@ int16_t graphics_platform_blit_partial_at(
    return retval;
 }
 
-void graphics_draw_block(
-   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
-   const GRAPHICS_COLOR color
-) {
-}
-
-void graphics_draw_rect(
-   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
-   uint16_t thickness, const GRAPHICS_COLOR color
-) {
-}
-
-void graphics_draw_line(
-   uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
-   uint16_t thickness, const GRAPHICS_COLOR color
-) {
-}
-
 int16_t graphics_platform_load_bitmap(
    RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {

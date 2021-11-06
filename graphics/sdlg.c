@@ -117,6 +117,8 @@ int16_t graphics_platform_blit_partial_at(
    return 1;
 }
 
+#ifndef USE_SOFTWARE_PRIMITIVES
+
 void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    const GRAPHICS_COLOR color
@@ -153,14 +155,17 @@ void graphics_draw_line(
    uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t thickness,
    const GRAPHICS_COLOR color
 ) {
+   int i = 0;
+
    SDL_SetRenderDrawColor( g_renderer, color->r, color->g, color->b, 255 );
    /* TODO: Handle thickness. */
-   SDL_RenderDrawLine( g_renderer, x1, y1, x2, y2 );
+   for( i = 0 ; thickness > i ; i++ ) {
+      SDL_RenderDrawLine( g_renderer, x1 + i, y1 + i, x2 + i, y2 + i );
+   }
 }
 
-/**
- * @return 1 if bitmap is loaded and 0 otherwise.
- */
+#endif /* !USE_SOFTWARE_PRIMITIVES */
+
 int16_t graphics_platform_load_bitmap(
    RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {

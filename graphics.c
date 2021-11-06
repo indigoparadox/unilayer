@@ -190,7 +190,7 @@ void graphics_draw_line(
       iter[inc_axis]++
    ) {
       debug_printf(
-         3, "px %d, %d (%d)", iter[LINE_AXIS_X], iter[LINE_AXIS_Y], delta_p );
+         0, "px %d, %d (%d)", iter[LINE_AXIS_X], iter[LINE_AXIS_Y], delta_p );
       graphics_draw_px( iter[LINE_AXIS_X], iter[LINE_AXIS_Y], color );
       if( 0 < delta_p ) {
          iter[off_axis] += 1;

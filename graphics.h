@@ -21,6 +21,14 @@
 #define GRAPHICS_TXP_B 0xff
 #endif /* !GRAPHICS_TXP_B */
 
+#ifndef graphics_blit_sprite_at
+#define graphics_blit_sprite_at( res_id, s_x, s_y, d_x, d_y, w, h ) graphics_blit_at( res_id, s_x, s_y, d_x, d_y, w, h )
+#endif /* !graphics_blit_sprite_at */
+
+#ifndef graphics_blit_tile_at
+#define graphics_blit_tile_at( res_id, s_x, s_y, d_x, d_y, w, h ) graphics_blit_at( res_id, s_x, s_y, d_x, d_y, w, h )
+#endif /* !graphics_blit_tile_at */
+
 /**
  * \brief Struct representing a graphical rectangle.
  */

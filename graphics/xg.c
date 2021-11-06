@@ -121,6 +121,7 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
+   XPutPixel( g_buffer, x, y, color );
 }
 
 int16_t graphics_platform_blit_partial_at(

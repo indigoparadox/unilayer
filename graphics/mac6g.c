@@ -244,7 +244,7 @@ int16_t graphics_platform_load_bitmap(
       }
    }
 
-   SetPort( &prev_port );
+   SetPort( prev_port );
 
 cleanup:
 

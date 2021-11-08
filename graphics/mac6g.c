@@ -260,7 +260,7 @@ cleanup:
 
 }
 
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    /* if( NULL != b->pict ) { */
       /* resource_free_handle( b->pict );
       b->pict = NULL; */

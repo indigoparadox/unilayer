@@ -53,16 +53,10 @@ void graphics_draw_line(
 ) {
 }
 
-/*
- * @return 1 if bitmap is loaded and 0 otherwise.
- */
 int32_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
 }
 
-/*
- * @return 1 if bitmap is unloaded and 0 otherwise.
- */
-int32_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int32_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
 }
 
 #ifndef USE_SOFTWARE_TEXT

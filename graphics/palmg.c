@@ -101,9 +101,6 @@ cleanup:
    return retval;
 }
 
-/*
- * @return 1 if bitmap is loaded and 0 otherwise.
- */
 int16_t graphics_platform_load_bitmap(
    RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
@@ -120,10 +117,7 @@ cleanup:
    return retval;
 }
 
-/*
- * @return 1 if bitmap is unloaded and 0 otherwise.
- */
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    if( NULL == b ) {
       return 0;
    }

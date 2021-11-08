@@ -250,7 +250,7 @@ cleanup:
    return retval;
 }
 
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    XDestroyImage( b->pixmap );
    /* free( b->bits ); */
 

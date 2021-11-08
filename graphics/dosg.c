@@ -364,7 +364,7 @@ cleanup:
 /*
  * @return 1 if bitmap is unloaded and 0 otherwise.
  */
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    assert( NULL != b );
    b->ref_count--;
    if( 0 == b->ref_count ) {

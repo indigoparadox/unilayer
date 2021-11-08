@@ -33,7 +33,7 @@ void graphics_clear_cache() {
    bitmaps = (struct GRAPHICS_BITMAP*)memory_lock( gs_graphics_cache_handle );
    for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
       if( 1 == bitmaps[i].initialized ) {
-         graphics_unload_bitmap( &(bitmaps[i]) );
+         graphics_platform_unload_bitmap( &(bitmaps[i]) );
          dropped_count++;
       }
    }
@@ -203,6 +203,7 @@ void graphics_draw_line(
 
 #endif /* !USE_SOFTWARE_PRIMITIVES */
 
+static
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
    RESOURCE_BITMAP_HANDLE bitmap_handle = (RESOURCE_BITMAP_HANDLE)NULL;

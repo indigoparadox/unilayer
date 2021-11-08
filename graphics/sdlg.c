@@ -21,6 +21,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 #ifdef DEBUG_CGA_EMU
    SDL_Rect area;
 #endif /* DEBUG_CGA_EMU */
+   time_t tm;
 
    if( SDL_Init( SDL_INIT_EVERYTHING ) ) {
       error_printf( "error initializing SDL: %s", SDL_GetError() );
@@ -52,6 +53,8 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    SDL_RenderFillRect( g_renderer, &area );
 #endif /* DEBUG_CGA_EMU */
 
+   srand( (unsigned int)time( &tm ) );
+
    return 1;
 }
 
@@ -62,6 +65,10 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 
 void graphics_flip( struct GRAPHICS_ARGS* args ) {
    SDL_UpdateWindowSurface( g_window );
+}
+
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   return start + (rand() % range);
 }
 
 uint32_t graphics_get_ms() {
@@ -224,7 +231,7 @@ cleanup:
 /*
  * @return 1 if bitmap is unloaded and 0 otherwise.
  */
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    if( NULL == b ) {
       return 0;
    }

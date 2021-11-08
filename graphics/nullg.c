@@ -62,7 +62,7 @@ int16_t graphics_platform_load_bitmap(
    return 0;
 }
 
-int16_t graphics_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    return 0;
 }
 

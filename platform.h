@@ -133,15 +133,6 @@ loop_globals();
 #  include "input/ndsi.h"
 #  include "graphics/ndsg.h"
 
-#elif defined( PLATFORM_GL )
-
-#  include <stdint.h>
-loop_globals();
-#  include "memory/fakem.h"
-#  include "resinc.h"
-#  include "input/gli.h"
-#  include "graphics/glg.h"
-
 #elif defined( PLATFORM_MEGADRIVE )
 
 #define DISABLE_FILESYSTEM

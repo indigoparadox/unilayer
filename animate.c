@@ -30,39 +30,25 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
       }
    }
    
-   debug_printf( 3, "%d, %d", a->x, a->y );
-
    for( y = 0 ; a->h - 1 > y ; y++ ) {
       /* debug_printf( 3, "%d, %d: %d", 0, y, data[(y * a->w)] ); */
       for( x = 0 ; a->w > x ; x++ ) {
          idx = (y * a->w) + x;
-         data[idx] = data[idx + a->w] - graphics_get_random( 10, 20 );
+         if( 3 >= data[idx + a->w] ) {
+            data[idx] = 0;
+         } else {
+            data[idx] = data[idx + a->w] - graphics_get_random( 2, 3 );
+         }
 
-         if( 50 < data[idx] ) {
+         if( 90 < data[idx] ) {
             graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_WHITE );
-         } else if( 40 < data[idx] ) {
+         } else if( 60 < data[idx] ) {
             graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_CYAN );
          } else if( 30 < data[idx] ) {
             graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_MAGENTA );
-         } else {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_BLACK );
          }
       }
    }
-
-   /*
-   for( y = 0 ; a->h - 1 > y ; y++ ) {
-      for( x = 0 ; a->w > x ; x++ ) {
-         data[(y * a->w) + x] = data[((y + 1) * a->w) + x];
-         if( (sector * 2) <= data[(y * a->w) + x] ) {
-            data[(y * a->w) + x] = GRAPHICS_COLOR_MAGENTA;
-         } else if( sector <= data[(y * a->w) + x] ) {
-            data[(y * a->w) + x] = GRAPHICS_COLOR_WHITE;
-         } else {
-            
-      }
-   }
-   */
 
 cleanup:
 

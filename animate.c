@@ -13,7 +13,8 @@ void animate_draw_CIRCLE( struct ANIMATION* a ) {
 void animate_draw_FIRE( struct ANIMATION* a ) {
    int x = 0,
       y = 0,
-      idx = 0;
+      idx = 0,
+      next_idx = 0;
    uint8_t* data = NULL;
 
    data = memory_lock( a->data );
@@ -34,10 +35,20 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
       /* debug_printf( 3, "%d, %d: %d", 0, y, data[(y * a->w)] ); */
       for( x = 0 ; a->w > x ; x++ ) {
          idx = (y * a->w) + x;
-         if( 3 >= data[idx + a->w] ) {
+
+         /* Make sure we don't overflow the buffer. */
+         if( 2 < x && a->w - 2 > x ) {
+            next_idx = idx + a->w + graphics_get_random( -1, 3 );
+         } else {
+            next_idx = idx + a->w;
+         }
+
+         /* Make sure integers don't rollover. */
+         if( 3 >= data[next_idx] ) {
             data[idx] = 0;
          } else {
-            data[idx] = data[idx + a->w] - graphics_get_random( 2, 3 );
+            /* Propagate heat. */
+            data[idx] = data[next_idx] - graphics_get_random( 2, 3 );
          }
 
 #ifdef DEPTH_VGA

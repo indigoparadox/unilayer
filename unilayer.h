@@ -55,6 +55,7 @@
 #include "memory.h"
 #include "resource.h"
 #include "graphics.h"
+#include "animate.h"
 #include "input.h"
 #include "dio.h"
 #include "drc.h"

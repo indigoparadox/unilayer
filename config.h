@@ -88,6 +88,14 @@
 #define SCREEN_SCALE 1
 #endif /* !SCREEN_SCALE */
 
+#ifndef ANIMATE_ANIMATIONS_MAX
+#define ANIMATE_ANIMATIONS_MAX 5
+#endif /* !ANIMATE_ANIMATIONS_MAX */
+
+#ifndef ANIMATE_FRAMES_MAX
+#define ANIMATE_FRAMES_MAX 5
+#endif /* !ANIMATE_FRAMES_MAX */
+
 #ifndef FPS
 #define FPS 15
 #endif /* !FPS */

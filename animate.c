@@ -40,6 +40,15 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
             data[idx] = data[idx + a->w] - graphics_get_random( 2, 3 );
          }
 
+#ifdef DEPTH_VGA
+         if( 90 < data[idx] ) {
+            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_WHITE );
+         } else if( 60 < data[idx] ) {
+            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_YELLOW );
+         } else if( 30 < data[idx] ) {
+            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_RED );
+         }
+#else
          if( 90 < data[idx] ) {
             graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_WHITE );
          } else if( 60 < data[idx] ) {
@@ -47,6 +56,7 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
          } else if( 30 < data[idx] ) {
             graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_MAGENTA );
          }
+#endif /* DEPTH_VGA */
       }
    }
 

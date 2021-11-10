@@ -2,6 +2,10 @@
 #define GRAPHICS_C
 #include "../unilayer.h"
 
+/* For rand() */
+#include <time.h>
+#include <stdlib.h>
+
 #include <string.h>
 
 extern uint8_t g_running;
@@ -155,6 +159,8 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    debug_printf( 2, "set graphics update timer %d to %dms",
       WIN_GFX_TIMER_ID, (int)(1000 / FPS) );
 
+   srand( (unsigned int)time( NULL ) );
+
    ShowWindow( g_window, args->cmd_show );
 
    return 1;
@@ -168,6 +174,10 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
    if( (HWND)NULL != g_window ) {
       InvalidateRect( g_window, 0, TRUE );
    }
+}
+
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   return start + (rand() % range);
 }
 
 uint32_t graphics_get_ms() {

@@ -38,6 +38,10 @@ int8_t animate_create_animation(
 
 void animation_frame();
 
+void animation_stop( int8_t idx );
+
+void animation_stop_all();
+
 #define ANIMATE_CB_TABLE_DRAW_PROTOTYPES( idx, name ) void animate_draw_ ## name( struct ANIMATION* );
 
 ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_DRAW_PROTOTYPES );

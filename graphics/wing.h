@@ -25,10 +25,33 @@ struct GRAPHICS_ARGS {
 
 #define WIN_GFX_TIMER_ID 6001
 
+#ifdef DEPTH_VGA
+
+#define GRAPHICS_COLOR_BLACK        RGB(0,   0,   0)
+#define GRAPHICS_COLOR_DARKBLUE     RGB(0, 0, 170)
+#define GRAPHICS_COLOR_DARKGREEN    RGB(0, 170, 0)
+#define GRAPHICS_COLOR_TEAL         RGB(0, 170, 170)
+#define GRAPHICS_COLOR_DARKRED      RGB(170, 0, 0)
+#define GRAPHICS_COLOR_VIOLET       RGB(170, 0, 170)
+#define GRAPHICS_COLOR_BROWN        RGB(170, 85, 0)
+#define GRAPHICS_COLOR_GRAY         RGB(170, 170, 170)
+#define GRAPHICS_COLOR_DARKGRAY     RGB(85, 85, 85)
+#define GRAPHICS_COLOR_BLUE         RGB(85, 85, 255)
+#define GRAPHICS_COLOR_GREEN        RGB(85, 255, 85)
+#define GRAPHICS_COLOR_CYAN         RGB(85, 255, 255)
+#define GRAPHICS_COLOR_RED          RGB(255, 85, 85)
+#define GRAPHICS_COLOR_MAGENTA      RGB(255, 85, 255)
+#define GRAPHICS_COLOR_YELLOW       RGB(255, 255, 85)
+#define GRAPHICS_COLOR_WHITE        RGB(255, 255, 255)
+
+#else
+                                         
 #define GRAPHICS_COLOR_BLACK        RGB(0, 0, 0)
 #define GRAPHICS_COLOR_CYAN         RGB(0, 255, 255)
 #define GRAPHICS_COLOR_MAGENTA      RGB(255, 0, 255)
 #define GRAPHICS_COLOR_WHITE        RGB(255, 255, 255)
+
+#endif /* DEPTH_VGA */
 
 #ifdef MAIN_C
 static void win_process_messages() {

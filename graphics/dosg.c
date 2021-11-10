@@ -124,6 +124,7 @@ static void graphics_remove_timer() {
  */
 int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    union REGS r;
+   time_t tm;
 
    memory_zero_ptr( &r, sizeof( union REGS ) );
 
@@ -139,6 +140,8 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 	int86( 0x10, &r, &r );
 
    graphics_install_timer();
+
+   srand( (unsigned int)time( &tm ) );
 
    return 1;
 }
@@ -165,6 +168,10 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
       _fmemcpy( (char far *)0xB8000000, g_buffer, 16000 );
 #endif /* GRAPHICS_MODE */
 #endif /* USE_DOUBLEBUF */
+}
+
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   return start + (rand() % range);
 }
 
 uint32_t graphics_get_ms() {

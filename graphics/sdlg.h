@@ -27,22 +27,22 @@ struct GRAPHICS_ARGS {
 
 #ifdef DEPTH_VGA
 
-const SDL_Color gc_black =    {0,   0,   0};
-const SDL_Color gc_darkblue = {0, 0, 170};
-const SDL_Color gc_darkgreen = {0, 170, 0};
-const SDL_Color gc_teal = {0, 170, 170};
-const SDL_Color gc_darkred = {170, 0, 0};
-const SDL_Color gc_violet = {170, 0, 170};
-const SDL_Color gc_brown = {170, 85, 0};
-const SDL_Color gc_gray = {170, 170, 170};
-const SDL_Color gc_darkgray = {85, 85, 85};
-const SDL_Color gc_blue = {85, 85, 255};
-const SDL_Color gc_green = {85, 255, 85};
-const SDL_Color gc_cyan = {85, 255, 255};
-const SDL_Color gc_red = {255, 85, 85};
-const SDL_Color gc_magenta = {255, 85, 255};
-const SDL_Color gc_yellow = {255, 255, 85};
-const SDL_Color gc_white = {255, 255, 255};
+const SDL_Color gc_black =       {0,   0,   0};
+const SDL_Color gc_darkblue =    {0, 0, 170};
+const SDL_Color gc_darkgreen =   {0, 170, 0};
+const SDL_Color gc_teal =        {0, 170, 170};
+const SDL_Color gc_darkred =     {170, 0, 0};
+const SDL_Color gc_violet =      {170, 0, 170};
+const SDL_Color gc_brown =       {170, 85, 0};
+const SDL_Color gc_gray =        {170, 170, 170};
+const SDL_Color gc_darkgray =    {85, 85, 85};
+const SDL_Color gc_blue =        {85, 85, 255};
+const SDL_Color gc_green =       {85, 255, 85};
+const SDL_Color gc_cyan =        {85, 255, 255};
+const SDL_Color gc_red =         {255, 85, 85};
+const SDL_Color gc_magenta =     {255, 85, 255};
+const SDL_Color gc_yellow =      {255, 255, 85};
+const SDL_Color gc_white =       {255, 255, 255};
 
 #else
 

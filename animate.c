@@ -124,6 +124,22 @@ void animation_frame() {
       }
       gc_animate_draw[g_animations[i].type]( &(g_animations[i]) );
    }
+}
 
+void animation_stop( int8_t idx ) {
+   if( (MEMORY_HANDLE)NULL != g_animations[idx].data ) {
+      memory_free( g_animations[idx].data );
+      g_animations[idx].data = (MEMORY_HANDLE)NULL;
+   }
+
+   memory_zero_ptr( &(g_animations[idx]), sizeof( struct ANIMATION ) );
+}
+
+void animation_stop_all() {
+   int8_t i = 0;
+
+   for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
+      animation_stop( i );
+   }
 }
 

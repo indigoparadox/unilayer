@@ -20,10 +20,10 @@ struct GRAPHICS_BITMAP {
 struct GRAPHICS_ARGS {
 };
 
-#define GRAPHICS_COLOR_BLACK     1
-#define GRAPHICS_COLOR_CYAN      2
-#define GRAPHICS_COLOR_MAGENTA   3
-#define GRAPHICS_COLOR_WHITE     4
+#define GRAPHICS_COLOR_BLACK     0x00000000
+#define GRAPHICS_COLOR_CYAN      0x0000ffff
+#define GRAPHICS_COLOR_MAGENTA   0x00ff00ff
+#define GRAPHICS_COLOR_WHITE     0x00ffffff
 
 #endif /* XG_H */
 

@@ -27,6 +27,7 @@ static uint32_t g_ms_start = 0;
  */
 int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    struct timespec spec;
+   time_t tm;
 
    g_display = XOpenDisplay( NULL );
    if( NULL == g_display ) {
@@ -69,6 +70,8 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    clock_gettime( CLOCK_MONOTONIC, &spec );
    g_s_launch = spec.tv_sec;
 
+   srand( (unsigned int)time( &tm ) );
+
    return 1;
 }
 
@@ -90,6 +93,10 @@ void graphics_flip( struct GRAPHICS_ARGS* args ) {
       DefaultGC( g_display, g_screen ),
       g_buffer,
       0, 0, 0, 0, SCREEN_W, SCREEN_H );
+}
+
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   return start + (rand() % range);
 }
 
 uint32_t graphics_get_ms() {

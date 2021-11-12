@@ -2,6 +2,34 @@
 #define ANIMATE_C
 #include "unilayer.h"
 
+#if defined( PLATFORM_PALM ) || defined( PLATFORM_MAC6 )
+
+void animate_draw_RECTANGLE( struct ANIMATION* a ) {
+}
+
+void animate_draw_CIRCLE( struct ANIMATION* a ) {
+}
+
+void animate_draw_FIRE( struct ANIMATION* a ) {
+}
+
+int8_t animate_create_animation(
+   uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
+) {
+   return 0;
+}
+
+void animation_frame() {
+}
+
+void animation_stop( int8_t idx ) {
+}
+
+void animation_stop_all() {
+}
+
+#else
+
 void animate_draw_RECTANGLE( struct ANIMATION* a ) {
 
 }
@@ -142,4 +170,6 @@ void animation_stop_all() {
       animation_stop( i );
    }
 }
+
+#endif /* PLATFORM_PALM */
 

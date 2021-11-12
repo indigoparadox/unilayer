@@ -124,7 +124,6 @@ static void graphics_remove_timer() {
  */
 int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    union REGS r;
-   time_t tm;
 
    memory_zero_ptr( &r, sizeof( union REGS ) );
 
@@ -141,7 +140,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 
    graphics_install_timer();
 
-   srand( (unsigned int)time( &tm ) );
+   srand( (unsigned int)time( NULL ) );
 
    return 1;
 }

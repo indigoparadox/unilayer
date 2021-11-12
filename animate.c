@@ -13,6 +13,9 @@ void animate_draw_CIRCLE( struct ANIMATION* a ) {
 void animate_draw_FIRE( struct ANIMATION* a ) {
 }
 
+void animate_draw_FRAMES( struct ANIMATION* a ) {
+}
+
 int8_t animate_create_animation(
    uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
@@ -31,11 +34,11 @@ void animation_stop_all() {
 #else
 
 void animate_draw_RECTANGLE( struct ANIMATION* a ) {
-
+   /* TODO */
 }
 
 void animate_draw_CIRCLE( struct ANIMATION* a ) {
-
+   /* TODO */
 }
 
 void animate_draw_FIRE( struct ANIMATION* a ) {
@@ -108,11 +111,15 @@ cleanup:
    return;
 }
 
+void animate_draw_FRAMES( struct ANIMATION* a ) {
+   /* TODO */
+}
+
 int8_t animate_create_animation(
    uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
    int8_t i = 0,
-      idx_out = -1;
+      idx_out = ANIMATE_ERROR;
 
    for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
       if( !(g_animations[i].flags & ANIMATE_FLAG_ACTIVE) ) {

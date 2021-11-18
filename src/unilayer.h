@@ -58,7 +58,6 @@
 #include "animate.h"
 #include "input.h"
 #include "dio.h"
-#include "drc.h"
 
 /**
  * \brief Setup the main loop function and data arguments.

@@ -2,6 +2,12 @@
 #ifndef NULLG_H
 #define NULLG_H
 
+/**
+ * \addtogroup unilayer_graphics
+ *
+ * \{
+ */
+
 /*! \file nullg.h
  *  \brief Platform-overridden typedefs and macros for drawing graphics.
  */
@@ -11,6 +17,7 @@ typedef int GRAPHICS_COLOR;
 
 /**
  * \brief Struct representing a bitmap on the current platform.
+ * \extends GRAPHICS_BITMAP_BASE
  *
  * This should match the size of the GRAPHICS_BITMAP_BASE.
  */
@@ -53,6 +60,8 @@ struct GRAPHICS_ARGS {
 #define GRAPHICS_COLOR_MAGENTA   2
 /*! \brief GRAPHICS_COLOR value for white on the current platform. */
 #define GRAPHICS_COLOR_WHITE     3
+
+/*! \} */
 
 #endif /* !NULLG_H */
 

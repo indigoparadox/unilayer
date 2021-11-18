@@ -2,6 +2,12 @@
 #ifndef RESOURCE_NULL_H
 #define RESOURCE_NULL_H
 
+/**
+ * \addtogroup unilayer_resource
+ *
+ * \}
+ */
+
 /*! \file nullr.h
  *  \brief Platform-overridden typedefs and macros for loading assets.
  */
@@ -21,6 +27,8 @@ typedef MEMORY_HANDLE RESOURCE_JSON_HANDLE;
  * \brief Set the content of ::RESOURCE_ID dest to the same as source.
  */
 #define resource_assign_id( dest, source ) dest = source
+
+/* \} */
 
 #endif /* RESOURCE_NULL_H */
 

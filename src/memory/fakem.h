@@ -2,6 +2,12 @@
 #ifndef MEMORY_FAKEM_H
 #define MEMORY_FAKEM_H
 
+/**
+ * \addtogroup unilayer_memory
+ *
+ * \{
+ */
+
 /*! \file fakem.h
  *  \brief Platform-overridden typedefs and macros for handling memory.
  */
@@ -49,6 +55,7 @@ typedef const void* CONST_MEMORY_FAR_PTR;
 
 #endif /* ANCIENT_C */
 
+/*! \} */
 
 #endif /* !MEMORY_FAKEM_H */
 

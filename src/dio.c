@@ -543,6 +543,8 @@ int16_t dio_atoi( const char* a, int base ) {
    return out;
 }
 
+#if 0
+
 int16_t dio_strncmp( const char* a, const char* b, uint16_t len, char sep ) {
    int i = 0;
 
@@ -556,6 +558,8 @@ int16_t dio_strncmp( const char* a, const char* b, uint16_t len, char sep ) {
 
    return 0;
 }
+
+#endif
 
 int16_t dio_snprintf(
    char* buffer, int buffer_len, const char* fmt, ...

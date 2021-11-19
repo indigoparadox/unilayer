@@ -3,7 +3,7 @@
 #define ANIMATE_H
 
 /**
- * \addtogroup unilayer_animation Unilayer Animation Layer
+ * \addtogroup unilayer_animate Unilayer Animation Layer
  * \brief Collection of common animation effects and related utilities.
  *
  * \{
@@ -14,33 +14,33 @@
  */
 
 /**
- * \addtogroup unilayer_animation_effects_sect Unilayer Animation Effects
+ * \addtogroup unilayer_animate_effects_sect Unilayer Animation Effects
  * \{
  *
- * \page unilayer_animation_effects Unilayer Animation Effects
+ * \page unilayer_animate_effects Unilayer Animation Effects
  * \tableofcontents
  *
- * \section unilayer_animation_effects_circle CIRCLE
+ * \section unilayer_animate_effects_circle CIRCLE
  * Circle starting at center and radiating to w, h.
  * 
- * \section unilayer_animation_effects_rectangle RECTANGLE
+ * \section unilayer_animate_effects_rectangle RECTANGLE
  * (TODO) Rectangle starting at center and radiating to w, h.
  *
- * \section unilayer_animation_effects_fire FIRE
+ * \section unilayer_animate_effects_fire FIRE
  * \image html firecga.png
  * Gradient of fire propagating upwards.
  *
- * \section unilayer_animation_effects_snow SNOW
+ * \section unilayer_animate_effects_snow SNOW
  * (TODO) Dots moving from top left to bottom right.
  *
- * \section unilayer_animation_effects_frames FRAMES
+ * \section unilayer_animate_effects_frames FRAMES
  * (TODO) Individual bitmap frames from ::RESOURCE_ID.
  *
  * \}
  */
 #define ANIMATE_CB_TABLE( f ) f( 0, CIRCLE ) f( 1, RECTANGLE ) f( 2, FIRE ) f( 3, SNOW ) f( 4, FRAMES )
 
-/*! \brief Return from animate_create_animation() indicating a problem. */
+/*! \brief Return from animate_create() indicating a problem. */
 #define ANIMATE_ERROR -1
 
 /*! \brief ::ANIMATION::flags indicating animation is active and playing. */
@@ -66,7 +66,7 @@ struct ANIMATION_FRAME {
 #endif
 
 /*! \brief Internal representation of an animation. Do not call directly; use
- *         animate_create_animation() instead.
+ *         animate_create() instead.
  */
 struct ANIMATION {
    /*! \brief Type of animation this is (See ::ANIMATE_CB_TABLE). */
@@ -97,7 +97,7 @@ typedef void (*ANIMATE_CB)( struct ANIMATION* a );
  * \param h Height of animation on screen in pixels.
  * \return Internal index of newly created animation or ::ANIMATE_ERROR.
  */
-int8_t animate_create_animation(
+int8_t animate_create(
    uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h );
 
 /**
@@ -108,18 +108,18 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig );
 /**
  * \brief Should be called during every frame to overlay animations on screen.
  */
-void animation_frame();
+void animate_frame();
 
 /**
  * \brief Stop the animation with the given internal index.
- * \param idx Index to stop as returned from animate_create_animation().
+ * \param idx Index to stop as returned from animate_create().
  */
-void animation_stop( int8_t idx );
+void animate_stop( int8_t idx );
 
 /**
  * \brief Stop all currently running animations on screen.
  */
-void animation_stop_all();
+void animate_stop_all();
 
 #define ANIMATE_CB_TABLE_DRAW_PROTOTYPES( idx, name ) void animate_draw_ ## name( struct ANIMATION* );
 

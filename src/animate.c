@@ -19,19 +19,19 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
 void animate_draw_FRAMES( struct ANIMATION* a ) {
 }
 
-int8_t animate_create_animation(
+int8_t animate_create(
    uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
    return 0;
 }
 
-void animation_frame() {
+void animate_frame() {
 }
 
-void animation_stop( int8_t idx ) {
+void animate_stop( int8_t idx ) {
 }
 
-void animation_stop_all() {
+void animate_stop_all() {
 }
 
 #else
@@ -91,7 +91,8 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
    int16_t
       x = 0,
       y = 0,
-      idx = 0;
+      idx = 0,
+      new_idx = 0;
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
       /* Create initial snowflakes along the left side of the tile. */
@@ -111,16 +112,20 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
             /* Hide the snowflake's previous position. */
             a->tile[idx] = 0;
 
-            /* Move the snowflake down and maybe to the right. */
-            idx += ANIMATE_TILE_W + graphics_get_random( 0, 3 );
+            do {
+               /* Move the snowflake down and maybe to the right. */
+               new_idx = idx + ANIMATE_TILE_W + graphics_get_random( 0, 3 );
 
-            /* Wrap the snowflake if it moves off-tile. */
-            if( idx >= ANIMATE_TILE_SZ ) {
-               idx -= ANIMATE_TILE_SZ;
-            }
+                  /* Wrap the snowflake if it moves off-tile. */
+               if( new_idx >= ANIMATE_TILE_SZ ) {
+                  new_idx -= ANIMATE_TILE_SZ;
+               }
+
+            /* Don't let snowflakes merge over time. */
+            } while( a->tile[new_idx] );
             
             /* Show the snowflake at its new position. */
-            a->tile[idx] = 1;
+            a->tile[new_idx] = 1;
          }
       }
    }
@@ -132,7 +137,7 @@ void animate_draw_FRAMES( struct ANIMATION* a ) {
    /* TODO */
 }
 
-int8_t animate_create_animation(
+int8_t animate_create(
    uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
    int8_t i = 0,
@@ -214,7 +219,7 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
    }
 }
 
-void animation_frame() {
+void animate_frame() {
    int i = 0;
 
    for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
@@ -225,15 +230,15 @@ void animation_frame() {
    }
 }
 
-void animation_stop( int8_t idx ) {
+void animate_stop( int8_t idx ) {
    memory_zero_ptr( &(g_animations[idx]), sizeof( struct ANIMATION ) );
 }
 
-void animation_stop_all() {
+void animate_stop_all() {
    int8_t i = 0;
 
    for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
-      animation_stop( i );
+      animate_stop( i );
    }
 }
 

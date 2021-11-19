@@ -131,11 +131,22 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    const GRAPHICS_COLOR color
 ) {
+   /*
+   GC gc;
+   XGCValues gc_values;
+
+   gc_values.foreground = color;
+
+   gc = XCreateGC( g_display, g_buffer, GCForeground, &gc_values );
+
    XFillRectangle(
       g_display,
       g_buffer,
-      DefaultGC( g_display, g_screen ),
-      x_orig, y_orig, width, height );
+      gc,
+      x_orig, y_orig, w, h );
+
+   XFreeGC( g_display, gc );
+   */
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {

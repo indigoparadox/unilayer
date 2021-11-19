@@ -49,148 +49,83 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
       y = 0,
       idx = 0,
       next_idx = 0;
-   uint8_t* data = NULL;
-
-   /* TODO: Use a tesselated tile for the data. */
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
-      a->data = memory_alloc( a->w, a->h );
-      if( (MEMORY_HANDLE)NULL == a->data ) {
-         error_printf( "unable to allocate animation scratch!" );
-         goto cleanup;
+      for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
+         idx = ((ANIMATE_TILE_H - 1) * ANIMATE_TILE_W) + x;
+         a->tile[idx] = 100;
       }
-
-      data = memory_lock( a->data );
-
-      for( x = 0 ; a->w > x ; x++ ) {
-         idx = ((a->h - 1) * a->w) + x;
-         data[idx] = 100;
-      }
-
-      data = memory_unlock( a->data );
 
       a->flags |= ANIMATE_FLAG_INIT;
    }
    
-   data = memory_lock( a->data );
-   if( NULL == data ) {
-      error_printf( "could not lock animation data!" );
-      goto cleanup;
-   }
-
-   for( y = 0 ; a->h - 1 > y ; y++ ) {
+   for( y = 0 ; ANIMATE_TILE_H - 1 > y ; y++ ) {
       /* debug_printf( 3, "%d, %d: %d", 0, y, data[(y * a->w)] ); */
-      for( x = 0 ; a->w > x ; x++ ) {
-         idx = (y * a->w) + x;
+      for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
+         idx = (y * ANIMATE_TILE_W) + x;
 
          /* Make sure we don't overflow the buffer. */
-         if( 2 < x && a->w - 2 > x ) {
-            next_idx = idx + a->w + graphics_get_random( -1, 3 );
+         if( 2 < x && ANIMATE_TILE_W - 2 > x ) {
+            next_idx = idx + ANIMATE_TILE_W + graphics_get_random( -1, 3 );
          } else {
-            next_idx = idx + a->w;
+            next_idx = idx + ANIMATE_TILE_W;
          }
 
          /* Make sure integers don't rollover. */
-         if( 3 >= data[next_idx] ) {
-            data[idx] = 0;
+         if( ANIMATE_FIRE_COOLING_MAX + 3 >= a->tile[next_idx] ) {
+            a->tile[idx] = 0;
          } else {
             /* Propagate heat. */
-            data[idx] = data[next_idx] - graphics_get_random( 2, 3 );
+            a->tile[idx] = a->tile[next_idx] - graphics_get_random(
+               ANIMATE_FIRE_COOLING_MIN, ANIMATE_FIRE_COOLING_MAX );
          }
-
-#ifdef DEPTH_VGA
-         if( 90 < data[idx] ) {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_WHITE );
-         } else if( 60 < data[idx] ) {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_YELLOW );
-         } else if( 30 < data[idx] ) {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_RED );
-         }
-#else
-         if( 90 < data[idx] ) {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_WHITE );
-         } else if( 60 < data[idx] ) {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_CYAN );
-         } else if( 30 < data[idx] ) {
-            graphics_draw_px( a->x + x, a->y + y, GRAPHICS_COLOR_MAGENTA );
-         }
-#endif /* DEPTH_VGA */
       }
    }
 
-cleanup:
+   /* Only tesselate the bottom row. */
+   animate_tesselate( a, a->h - ANIMATE_TILE_H );
 
-   if( NULL != data ) {
-      data = memory_unlock( a->data );
-   }
 }
 
 void animate_draw_SNOW( struct ANIMATION* a ) {
-   uint8_t* data = NULL;
    int16_t
       x = 0,
       y = 0,
-      idx = 0,
-      t_x = 0,
-      t_y = 0,
-      next_idx = 0;
+      idx = 0;
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
-      a->data = memory_alloc( ANIMATE_TILE_W, ANIMATE_TILE_H );
-      if( (MEMORY_HANDLE)NULL == a->data ) {
-         error_printf( "unable to allocate animation scratch!" );
-         goto cleanup;
-      }
-
-      data = memory_lock( a->data );
-
+      /* Create initial snowflakes along the left side of the tile. */
       for( y = 0 ; ANIMATE_TILE_H > y ; y += 4 ) {
          idx = (y * ANIMATE_TILE_W);
          debug_printf( 3, "%d", y );
-         data[idx] = 1;
+         a->tile[idx] = 1;
       }
-
-      data = memory_unlock( a->data );
 
       a->flags |= ANIMATE_FLAG_INIT;
    }
  
-   data = memory_lock( a->data );
-
    for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
       for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
          idx = (y * ANIMATE_TILE_W) + x;
-         if( data[idx] ) {
-            data[idx] = 0;
+         if( a->tile[idx] ) {
+            /* Hide the snowflake's previous position. */
+            a->tile[idx] = 0;
+
+            /* Move the snowflake down and maybe to the right. */
             idx += ANIMATE_TILE_W + graphics_get_random( 0, 3 );
+
+            /* Wrap the snowflake if it moves off-tile. */
             if( idx >= ANIMATE_TILE_SZ ) {
                idx -= ANIMATE_TILE_SZ;
             }
-            data[idx] = 1;
+            
+            /* Show the snowflake at its new position. */
+            a->tile[idx] = 1;
          }
       }
    }
 
-   for( t_y = 0 ; a->h > t_y ; t_y += ANIMATE_TILE_H ) {
-      for( t_x = 0 ; a->w > t_x ; t_x += ANIMATE_TILE_W ) {
-         for( y = 0 ; ANIMATE_TILE_H > y ; y++ ) {
-            for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
-               idx = (y * ANIMATE_TILE_W) + x;
-
-               if( data[idx] ) {
-                  graphics_draw_px( 
-                     a->x + t_x + x, a->y + t_y + y, GRAPHICS_COLOR_WHITE );
-               }
-            }
-         }
-      }
-   }
-
-cleanup:
-
-   if( NULL != data ) {
-      data = memory_unlock( a->data );
-   }
+   animate_tesselate( a, 0 );
 }
 
 void animate_draw_FRAMES( struct ANIMATION* a ) {
@@ -221,10 +156,62 @@ int8_t animate_create_animation(
    g_animations[i].w = w;
    g_animations[i].h = h;
    g_animations[i].type = type;
-   g_animations[i].data = NULL;
+   memory_zero_ptr( &(g_animations[i].tile), ANIMATE_TILE_SZ );
 
 cleanup:
    return idx_out;
+}
+
+void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
+   int8_t
+      /* Address of the current pixel rel to top-left corner of tile. */
+      x = 0,
+      y = 0;
+   int16_t
+      idx = 0,
+      /* Address of the current tile's top-left corner rel to animation. */
+      t_x = 0,
+      t_y = 0,
+      /* Address of the current pixel rel to screen. */
+      p_x = 0,
+      p_y = 0;
+
+   /* Iterate over every tile covered by the animation's screen area. */
+   for( t_y = y_orig ; a->h > t_y ; t_y += ANIMATE_TILE_H ) {
+      for( t_x = 0 ; a->w > t_x ; t_x += ANIMATE_TILE_W ) {
+         /* Iterate over every pixel of the animation grid. */
+         for( y = 0 ; ANIMATE_TILE_H > y ; y++ ) {
+            for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
+               idx = (y * ANIMATE_TILE_W) + x;
+
+               /* TODO: Try to trim animation to its area. */
+
+               p_x = a->x + t_x + x;
+               p_y = a->y + t_y + y;
+
+               if( a->tile[idx] && ANIMATE_TYPE_SNOW == a->type ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
+ #ifdef DEPTH_VGA
+               } else if( 90 < a->tile[idx] ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
+               } else if( 60 < a->tile[idx] ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_YELLOW );
+               } else if( 30 < a->tile[idx] ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_RED );
+               }
+#else
+               } else if( 90 < a->tile[idx] ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
+               } else if( 60 < a->tile[idx] ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_CYAN );
+               } else if( 30 < a->tile[idx] ) {
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_MAGENTA );
+               }
+#endif /* DEPTH_VGA */
+            }
+         }
+      }
+   }
 }
 
 void animation_frame() {
@@ -239,11 +226,6 @@ void animation_frame() {
 }
 
 void animation_stop( int8_t idx ) {
-   if( (MEMORY_HANDLE)NULL != g_animations[idx].data ) {
-      memory_free( g_animations[idx].data );
-      g_animations[idx].data = (MEMORY_HANDLE)NULL;
-   }
-
    memory_zero_ptr( &(g_animations[idx]), sizeof( struct ANIMATION ) );
 }
 

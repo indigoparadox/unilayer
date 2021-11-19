@@ -52,6 +52,9 @@
 #define ANIMATE_TILE_H 16
 #define ANIMATE_TILE_SZ (ANIMATE_TILE_W * ANIMATE_TILE_H)
 
+#define ANIMATE_FIRE_COOLING_MAX 10
+#define ANIMATE_FIRE_COOLING_MIN 5
+
 #if 0
 /*! \brief Used with FRAMES ::ANIMATION::type ANIMATION::data to list frames to
  *         play. */
@@ -79,7 +82,7 @@ struct ANIMATION {
    /*! \brief Bitfield indicating properties of animation. */
    uint8_t flags;
    /*! \brief Data specific to particular animation playing. */
-   MEMORY_HANDLE data;
+   uint8_t tile[ANIMATE_TILE_SZ];
 };
 
 /*! \brief Callback to call on active animations for every frame. */
@@ -96,6 +99,11 @@ typedef void (*ANIMATE_CB)( struct ANIMATION* a );
  */
 int8_t animate_create_animation(
    uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h );
+
+/**
+ * \brief Draw the animation tile to the screen, tiled to fill its area.
+ */
+void animate_tesselate( struct ANIMATION* a, int16_t y_orig );
 
 /**
  * \brief Should be called during every frame to overlay animations on screen.

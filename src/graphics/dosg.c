@@ -275,7 +275,6 @@ int16_t graphics_platform_blit_partial_at(
    return 1;
 }
 
-#if 0
 void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    GRAPHICS_COLOR color
@@ -299,7 +298,6 @@ void graphics_draw_block(
 #endif /* GRAPHICS_MODE */
 
 }
-#endif
 
 /*
  * @return 1 if bitmap is loaded and 0 otherwise.

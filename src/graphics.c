@@ -107,14 +107,7 @@ void graphics_string_sz(
 
 #endif /* USE_SOFTWARE_TEXT */
 
-#ifdef USE_SOFTWARE_PRIMITIVES
-
-void graphics_draw_block(
-   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
-   const GRAPHICS_COLOR color
-) {
-   /* TODO: Draw block. */
-}
+#ifdef USE_SOFTWARE_LINES
 
 void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
@@ -201,7 +194,7 @@ void graphics_draw_line(
    }
 }
 
-#endif /* !USE_SOFTWARE_PRIMITIVES */
+#endif /* !USE_SOFTWARE_LINES */
 
 static
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {

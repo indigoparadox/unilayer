@@ -124,8 +124,6 @@ int16_t graphics_platform_blit_partial_at(
    return 1;
 }
 
-#ifndef USE_SOFTWARE_PRIMITIVES
-
 void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    const GRAPHICS_COLOR color
@@ -140,6 +138,8 @@ void graphics_draw_block(
    SDL_SetRenderDrawColor( g_renderer,  color->r, color->g, color->b, 255 );
    SDL_RenderFillRect( g_renderer, &area );
 }
+
+#ifndef USE_SOFTWARE_LINES
 
 void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
@@ -171,7 +171,7 @@ void graphics_draw_line(
    }
 }
 
-#endif /* !USE_SOFTWARE_PRIMITIVES */
+#endif /* !USE_SOFTWARE_LINES */
 
 int16_t graphics_platform_load_bitmap(
    RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b

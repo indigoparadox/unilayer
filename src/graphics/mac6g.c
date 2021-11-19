@@ -130,6 +130,8 @@ void graphics_draw_block(
    /* TODO */
 }
 
+#ifndef USE_SOFTWARE_LINES
+
 void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    uint16_t thickness, const GRAPHICS_COLOR color
@@ -141,6 +143,8 @@ void graphics_draw_line(
    uint16_t thickness, const GRAPHICS_COLOR color
 ) {
 }
+
+#endif /* !USE_SOFTWARE_LINES */
 
 int16_t graphics_platform_load_bitmap(
    RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b

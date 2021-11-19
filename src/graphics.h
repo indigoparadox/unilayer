@@ -122,7 +122,7 @@ void graphics_loop_end();
  * \param color The color of the point to plot.
  *
  * On some platforms, namely those using USE_SOFTWARE_TEXT and
- * USE_SOFTWARE_PRIMITIVES, this is the only primitive that must be defined
+ * USE_SOFTWARE_LINES, this is the only primitive that must be defined
  * in the implementation-specific module (e.g. nullg.h). Other primitives are
  * then implemented using this (e.g. graphics_draw_line()).
  */

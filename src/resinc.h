@@ -8,10 +8,7 @@
 #endif
 #endif
 
-#if defined RESOURCE_DRC
-#   define RESOURCES "DRC"
-#   include "resource/drcr.h"
-#elif defined RESOURCE_HEADER
+#if defined RESOURCE_HEADER
 #   define RESOURCES "HEADER"
 #   include "resource/header.h"
 #elif defined PLATFORM_MEGADRIVE

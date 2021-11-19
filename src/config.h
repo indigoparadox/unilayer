@@ -57,7 +57,6 @@
 #elif defined( PLATFORM_MAC6 )
 /* ------ */
 
-#define DRC_TOC_INITIAL_ALLOC 50 /* Fake it until we have realloc. */
 #define LOG_TO_FILE
 
 /* ------ */
@@ -112,10 +111,6 @@
 #define NAMEBUF_MAX 255
 #endif /* !NAMEBUF_MAX */
 
-#ifndef DRC_COPY_BLOCK_SZ
-#define DRC_COPY_BLOCK_SZ 1024
-#endif /* !DRC_COPY_BLOCK_SZ */
-
 #ifndef DEBUG_THRESHOLD
 #define DEBUG_THRESHOLD 2
 #endif /* !DEBUG_THRESHOLD */
@@ -127,10 +122,6 @@
 #ifndef FAKE_HEAP_SIZE
 #define FAKE_HEAP_SIZE 524288
 #endif /* !FAKE_HEAP_SIZE */
-
-#ifndef DRC_TOC_INITIAL_ALLOC
-#define DRC_TOC_INITIAL_ALLOC 50
-#endif /* !DRC_TOC_INITIAL_ALLOC */
 
 #ifndef DIO_PATH_MAX
 #define DIO_PATH_MAX 254

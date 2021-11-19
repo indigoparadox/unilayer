@@ -269,40 +269,6 @@ int32_t dio_char_idx_r( const char* str, int32_t str_sz, char c ) {
    return -1;
 }
 
-#ifdef USE_DIO_PRINT_GRID
-
-void dio_print_grid( struct CONVERT_GRID* grid ) {
-   size_t x = 0,
-      y = 0;
-   /* Display the bitmap on the console. */
-   dio_printf( "\npreview:\n" );
-   for( y = 0 ; grid->sz_y > y ; y++ ) {
-      dio_printf( "\n" );
-      for( x = 0 ; grid->sz_x > x ; x++ ) {
-         if( 0 == grid->data[(y * grid->sz_x) + x] ) {
-            dio_printf( " ," );
-         } else {
-            dio_printf( "%x,", grid->data[(y * grid->sz_x) + x] );
-         }
-      }
-   }
-   dio_printf( "\n" );
-}
-
-#endif /* USE_DIO_PRINT_GRID */
-
-void dio_print_binary( uint8_t byte_in ) {
-   printf( "bin: %d%d%d%d%d%d%d%d\n",
-      byte_in & 0x80 ? 1 : 0,
-      byte_in & 0x40 ? 1 : 0,
-      byte_in & 0x20 ? 1 : 0,
-      byte_in & 0x10 ? 1 : 0,
-      byte_in & 0x08 ? 1 : 0,
-      byte_in & 0x04 ? 1 : 0,
-      byte_in & 0x02 ? 1 : 0,
-      byte_in & 0x01 ? 1 : 0 );
-}
-
 #ifndef DISABLE_FILESYSTEM
 
 int16_t dio_mktemp_path( char* buf, uint16_t buf_sz, const char* tmpfilename ) {
@@ -543,24 +509,6 @@ int16_t dio_atoi( const char* a, int base ) {
    return out;
 }
 
-#if 0
-
-int16_t dio_strncmp( const char* a, const char* b, uint16_t len, char sep ) {
-   int i = 0;
-
-   while( len > i && sep != a[i] && sep != b[i] ) {
-      if( a[i] != b[i] ) {
-         return a[i] - b[i];
-      }
-
-      i++;
-   }
-
-   return 0;
-}
-
-#endif
-
 int16_t dio_snprintf(
    char* buffer, int buffer_len, const char* fmt, ...
 ) {
@@ -582,6 +530,9 @@ int16_t dio_snprintf(
 
       if( '%' == last ) {
          switch( c ) {
+
+         /* TODO: Implement b for binary. */
+
          case 'd':
             d = va_arg( args, int );
             idx_out +=

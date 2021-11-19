@@ -58,10 +58,14 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
          goto cleanup;
       }
 
+      data = memory_lock( a->data );
+
       for( x = 0 ; a->w > x ; x++ ) {
          idx = ((a->h - 1) * a->w) + x;
          data[idx] = 100;
       }
+
+      data = memory_unlock( a->data );
 
       a->flags |= ANIMATE_FLAG_INIT;
    }

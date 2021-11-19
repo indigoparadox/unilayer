@@ -2,29 +2,55 @@
 #ifndef ANIMATE_H
 #define ANIMATE_H
 
+/**
+ * \addtogroup unilayer_animation Unilayer Animation Layer
+ * \brief Collection of common animation effects and related utilities.
+ *
+ * \{
+ */
+
 /*! \file animate.h
  *  \brief Tools for making common animations and effects.
  */
 
 /**
- * \brief Available animation types.
+ * \addtogroup unilayer_animation_effects_sect Unilayer Animation Effects
+ * \{
  *
- * | Type      | Description
- * |-----------|--------------------------------------------------------------
- * | CIRCLE    | (TODO) Circle starting at center and radiating to w, h.
- * | RECTANGLE | (TODO) Rectangle starting at center and radiating to w, h.
- * | FIRE      | Gradient of fire propagating upwards.
- * | SNOW      | (TODO) Dots moving from top left to bottom right.
- * | FRAMES    | (TODO) Individual bitmap frames from ::RESOURCE_ID.
+ * \page unilayer_animation_effects Unilayer Animation Effects
+ * \tableofcontents
+ *
+ * \section unilayer_animation_effects_circle CIRCLE
+ * Circle starting at center and radiating to w, h.
+ * 
+ * \section unilayer_animation_effects_rectangle RECTANGLE
+ * (TODO) Rectangle starting at center and radiating to w, h.
+ *
+ * \section unilayer_animation_effects_fire FIRE
+ * \image html firecga.png
+ * Gradient of fire propagating upwards.
+ *
+ * \section unilayer_animation_effects_snow SNOW
+ * (TODO) Dots moving from top left to bottom right.
+ *
+ * \section unilayer_animation_effects_frames FRAMES
+ * (TODO) Individual bitmap frames from ::RESOURCE_ID.
+ *
+ * \}
  */
 #define ANIMATE_CB_TABLE( f ) f( 0, CIRCLE ) f( 1, RECTANGLE ) f( 2, FIRE ) f( 3, SNOW ) f( 4, FRAMES )
 
 /*! \brief Return from animate_create_animation() indicating a problem. */
 #define ANIMATE_ERROR -1
+
 /*! \brief ::ANIMATION::flags indicating animation is active and playing. */
 #define ANIMATE_FLAG_ACTIVE   1
 /*! \brief ::ANIMATION::flags indicating animation has been initialized. */
 #define ANIMATE_FLAG_INIT     2
+
+#define ANIMATE_TILE_W 16
+#define ANIMATE_TILE_H 16
+#define ANIMATE_TILE_SZ (ANIMATE_TILE_W * ANIMATE_TILE_H)
 
 #if 0
 /*! \brief Used with FRAMES ::ANIMATION::type ANIMATION::data to list frames to
@@ -99,13 +125,26 @@ const ANIMATE_CB gc_animate_draw[] = {
    ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_LIST )
 };
 
+#define ANIMATE_CB_TABLE_TYPES( idx, name ) const uint8_t ANIMATE_TYPE_ ## name = idx;
+
+ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_TYPES );
+
 struct ANIMATION g_animations[ANIMATE_ANIMATIONS_MAX];
+
 #else
+
 /*! \brief Internal animation callback table. */
 extern const ANIMATE_CB gc_animate_draw[];
 /*! \brief Internal running animation list. */
 extern struct ANIMATION g_animations[ANIMATE_ANIMATIONS_MAX];
+
+#define ANIMATE_CB_TABLE_TYPES( idx, name ) extern const uint8_t ANIMATE_TYPE_ ## name;
+
+ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_TYPES );
+
 #endif /* ANIMATE_C */
+
+/*! \} */
 
 #endif /* !ANIMATE_H */
 

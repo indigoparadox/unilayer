@@ -51,6 +51,8 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
       next_idx = 0;
    uint8_t* data = NULL;
 
+   /* TODO: Use a tesselated tile for the data. */
+
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
       a->data = memory_alloc( a->w, a->h );
       if( (MEMORY_HANDLE)NULL == a->data ) {
@@ -125,11 +127,65 @@ cleanup:
 
 void animate_draw_SNOW( struct ANIMATION* a ) {
    uint8_t* data = NULL;
+   int16_t
+      x = 0,
+      y = 0,
+      idx = 0,
+      t_x = 0,
+      t_y = 0,
+      next_idx = 0;
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
+      a->data = memory_alloc( ANIMATE_TILE_W, ANIMATE_TILE_H );
+      if( (MEMORY_HANDLE)NULL == a->data ) {
+         error_printf( "unable to allocate animation scratch!" );
+         goto cleanup;
+      }
+
+      data = memory_lock( a->data );
+
+      for( y = 0 ; ANIMATE_TILE_H > y ; y += 4 ) {
+         idx = (y * ANIMATE_TILE_W);
+         debug_printf( 3, "%d", y );
+         data[idx] = 1;
+      }
+
+      data = memory_unlock( a->data );
+
       a->flags |= ANIMATE_FLAG_INIT;
    }
  
+   data = memory_lock( a->data );
+
+   for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
+      for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
+         idx = (y * ANIMATE_TILE_W) + x;
+         if( data[idx] ) {
+            data[idx] = 0;
+            idx += ANIMATE_TILE_W + graphics_get_random( 0, 3 );
+            if( idx >= ANIMATE_TILE_SZ ) {
+               idx -= ANIMATE_TILE_SZ;
+            }
+            data[idx] = 1;
+         }
+      }
+   }
+
+   for( t_y = 0 ; a->h > t_y ; t_y += ANIMATE_TILE_H ) {
+      for( t_x = 0 ; a->w > t_x ; t_x += ANIMATE_TILE_W ) {
+         for( y = 0 ; ANIMATE_TILE_H > y ; y++ ) {
+            for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
+               idx = (y * ANIMATE_TILE_W) + x;
+
+               if( data[idx] ) {
+                  graphics_draw_px( 
+                     a->x + t_x + x, a->y + t_y + y, GRAPHICS_COLOR_WHITE );
+               }
+            }
+         }
+      }
+   }
+
 cleanup:
 
    if( NULL != data ) {

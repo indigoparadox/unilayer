@@ -48,12 +48,14 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
    int x = 0,
       y = 0,
       idx = 0,
+      next_x = 0,
       next_idx = 0;
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
+      /* Setup initial "heat line" from which fire is drawn. */
       for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
          idx = ((ANIMATE_TILE_H - 1) * ANIMATE_TILE_W) + x;
-         a->tile[idx] = 100;
+         a->tile[idx] = graphics_get_random( 70, 101 );
       }
 
       a->flags |= ANIMATE_FLAG_INIT;
@@ -65,11 +67,14 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
          idx = (y * ANIMATE_TILE_W) + x;
 
          /* Make sure we don't overflow the buffer. */
-         if( 2 < x && ANIMATE_TILE_W - 2 > x ) {
-            next_idx = idx + ANIMATE_TILE_W + graphics_get_random( -1, 3 );
-         } else {
-            next_idx = idx + ANIMATE_TILE_W;
+         next_x = x + graphics_get_random( -1, 3 );
+         if( 0 > next_x ) {
+            next_x = ANIMATE_TILE_W - 1;
+         } else if( ANIMATE_TILE_W <= next_x ) {
+            next_x = 0;
          }
+
+         next_idx = ((y + 1) * ANIMATE_TILE_W) + next_x;
 
          /* Make sure integers don't rollover. */
          if( ANIMATE_FIRE_COOLING_MAX + 3 >= a->tile[next_idx] ) {

@@ -54,6 +54,7 @@
 
 #define ANIMATE_FIRE_COOLING_MAX 10
 #define ANIMATE_FIRE_COOLING_MIN 5
+#define ANIMATE_FIRE_WIND 1
 
 #if 0
 /*! \brief Used with FRAMES ::ANIMATION::type ANIMATION::data to list frames to

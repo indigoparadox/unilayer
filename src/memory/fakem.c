@@ -85,6 +85,8 @@ MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
       iter->ptr = calloc( 1, new_sz );
    }
 
+   assert( iter->ptr_sz == sz * count );
+
    return iter;
 }
 
@@ -123,7 +125,7 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
 uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    MEMORY_PTR new_ptr = NULL;
 
-   if( NULL == handle || NULL == *handle ) {
+   if( NULL == handle || NULL == *handle || NULL == (*handle)->ptr ) {
       return 0;
    }
 
@@ -133,7 +135,7 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    new_ptr = realloc( (*handle)->ptr, sz );
    if( NULL == new_ptr ) {
       error_printf( "unable to reallocate handle" );
-      goto cleanup;
+      return 0;
    }
 
    (*handle)->ptr = new_ptr;

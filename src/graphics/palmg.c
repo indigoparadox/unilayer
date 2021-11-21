@@ -56,6 +56,13 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    WinPaintPixel( x, y );
 }
 
+void graphics_draw_block(
+   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
+   const GRAPHICS_COLOR color
+) {
+   /* TODO */
+}
+
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t s_x, uint16_t s_y,

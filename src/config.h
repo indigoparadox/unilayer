@@ -135,14 +135,6 @@
 #define GRAPHICS_CACHE_INITIAL_SZ 50
 #endif /* !GRAPHICS_CACHE_INITIAL_SZ */
 
-#ifndef JSON_TOKENS_MAX
-#define JSON_TOKENS_MAX 2048
-#endif /* !JSON_TOKENS_MAX */
-
-#ifndef JSON_PATH_SZ
-#define JSON_PATH_SZ 255
-#endif /* !JSON_PATH_SZ */
-
 /* Graphics Parameters */
 
 #define FONT_W 8

@@ -13,11 +13,11 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    int32_t res_sz = 0,
       read = 0;
    MEMORY_HANDLE res_handle = (MEMORY_HANDLE)0;
-   char asset_path[JSON_PATH_SZ];
+   char asset_path[RESOURCE_PATH_MAX];
 
    debug_printf( 2, "requested resource: %s", id );
 
-   dio_snprintf( asset_path, JSON_PATH_SZ, "%s%s", ASSETS_PATH, id );
+   dio_snprintf( asset_path, RESOURCE_PATH_MAX, "%s%s", ASSETS_PATH, id );
 
 #ifdef PLATFORM_DOS
    extension_idx = dio_char_idx_r( asset_path,

@@ -80,8 +80,7 @@ void graphics_string_at(
 ) {
    int16_t i = 0,
       x_o = 0, /* X offset. */
-      y_o = 0,
-      escape = 0;
+      y_o = 0;
 
    while(
       '\0' != str[i]
@@ -91,22 +90,16 @@ void graphics_string_at(
       y_orig + FONT_H < SCREEN_REAL_H    /* On-screen (y-axis). */
 #endif /* SCREEN_REAL_W && SCREEN_REAL_H */
    ) {
-      if( '\\' == str[i] && !escape ) {
-         escape = 1;
-
-      } else if( escape && 'n' == str[i] ) {
+      if( '\n' == str[i] ) {
          /* Shift the "cursor" down and back. */
          x_o = 0;
          y_o += FONT_H + FONT_SPACE;
-         escape = 0;
 
       } else if( graphics_char_is_printable( str[i] ) ) {
          graphics_char_at( str[i], x_orig + x_o, y_orig + y_o, color, scale );
 
          /* Shift the "cursor" to the right. */
          x_o += FONT_W + FONT_SPACE;
-
-         escape = 0;
       }
       i++;
    }
@@ -116,8 +109,7 @@ void graphics_string_sz(
    const char* str, uint16_t str_sz, uint8_t scale, struct GRAPHICS_RECT* sz_out
 ) {
    int16_t row_x_w = 0,
-      i = 0,
-      escape = 0;
+      i = 0;
 
    #if 0
    sz_out->w = memory_strnlen_ptr( str, str_sz ) * (FONT_W + FONT_SPACE);
@@ -126,14 +118,10 @@ void graphics_string_sz(
    sz_out->h = FONT_H + FONT_SPACE; /* At least one line high. */
    sz_out->w = 0;
    while( '\0' != str[i] ) {
-      if( '\\' == str[i] && !escape ) {
-         escape = 1;
-
-      } else if( escape && 'n' == str[i] ) {
+      if( '\n' == str[i] ) {
          /* Shift the "cursor" down and reset row width. */
          sz_out->h += FONT_H + FONT_SPACE;
          row_x_w = 0;
-         escape = 0;
 
       } else if( graphics_char_is_printable( str[i] ) ) {
          row_x_w += FONT_W + FONT_SPACE;
@@ -141,7 +129,6 @@ void graphics_string_sz(
             /* Shift the "cursor" to the right if row is widest so far. */
             sz_out->w = row_x_w;
          }
-         escape = 0;
       }
       i++;
    }

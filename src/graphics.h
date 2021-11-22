@@ -43,6 +43,8 @@
 #define graphics_blit_tile_at( res_id, s_x, s_y, d_x, d_y, w, h ) graphics_blit_at( res_id, s_x, s_y, d_x, d_y, w, h )
 #endif /* !graphics_blit_tile_at */
 
+#define graphics_char_is_printable( c ) (('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || ('0' <= c && '9' >= c) || '.' == c || ',' == c || ':' == c || ';' == c || '!' == c || '/' == c || ' ' == c)
+
 /**
  * \brief Struct representing a graphical rectangle.
  */

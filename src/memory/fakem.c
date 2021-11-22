@@ -141,7 +141,6 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    (*handle)->ptr = new_ptr;
    (*handle)->ptr_sz = sz;
 
-cleanup:
    return (*handle)->ptr_sz;
 }
 

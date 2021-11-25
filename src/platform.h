@@ -44,6 +44,14 @@ loop_globals();
 #  include "input/sdli.h"
 #  include "graphics/sdlg.h"
 
+#  ifdef PLATFORM_WASM
+
+#include <emscripten.h>
+
+#define unilayer_loop_set( iter, data ) emscripten_cancel_main_loop(); emscripten_set_main_loop_arg( iter, data, 0, 0 );
+
+#  endif /* PLATFORM_WASM */
+
 #elif defined( PLATFORM_XLIB )
 
 #  include <X11/Xlib.h>
@@ -186,7 +194,6 @@ loop_globals();
  */
 #define unilayer_loop_set( iter, data ) g_loop_iter = (loop_iter)iter; g_loop_data = (void*)data;
 #endif /* !unilayer_loop_set */
-
 
 #ifndef platform_init
 /*! \brief Platform-specific setup function (e.g. create window). */

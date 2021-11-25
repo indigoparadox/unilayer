@@ -14,13 +14,13 @@
 struct GRAPHICS_ARGS;
 
 /*! \brief Implementation-specific main loop iteration function. */
-typedef int (*loop_iter)( void*, struct GRAPHICS_ARGS* );
+typedef int (*loop_iter)( void* );
 
 #ifdef MAIN_C
-#define loop_globals() uint8_t g_running = 1; loop_iter g_loop_iter = NULL; void* g_loop_data = NULL; struct GRAPHICS_ARGS* g_loop_gargs = NULL;
+#define loop_globals() uint8_t g_running = 1; loop_iter g_loop_iter = NULL; void* g_loop_data = NULL;
 #else
 /*! \brief Declare the globals that hold the main loop pointer and args. */
-#define loop_globals() extern uint8_t g_running; extern loop_iter g_loop_iter; extern void* g_loop_data; extern struct GRAPHICS_ARGS* g_loop_gargs;
+#define loop_globals() extern uint8_t g_running; extern loop_iter g_loop_iter; extern void* g_loop_data;
 #endif /* MAIN_C */
 
 #ifdef PLATFORM_DOS
@@ -68,7 +68,7 @@ loop_globals();
 #  define platform_fflush HostFFlush
 #  define platform_fclose HostFClose
 #  define unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags )
-#  define platform_init( graphics_arg, icon ) if( cmd == sysAppLaunchCmdNormalLaunch ) {
+#  define platform_init( icon ) if( cmd == sysAppLaunchCmdNormalLaunch ) {
 #  define platform_shutdown() }
 #  include "types/palmt.h"
 loop_globals();
@@ -90,9 +90,9 @@ loop_globals();
 #     define LOG_FILE_NAME "logwin32.txt"
 #     define PLATFORM_API WINAPI
 #  endif /* PLATFORM_WIN16, PLATFORM_WIN32 */
-#  define unilayer_main() int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+#  define unilayer_main() extern struct GRAPHICS_ARGS g_graphics_args; int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 #  define unilayer_loop_iter() win_process_messages()
-#  define platform_init( graphics_args, icon ) g_instance = hInstance; graphics_args.cmd_show = nCmdShow; graphics_args.icon_res = icon; if( hPrevInstance ) { error_printf( "previous instance detected" ); return 1; }
+#  define platform_init( icon ) g_instance = hInstance; g_graphics_args.cmd_show = nCmdShow; g_graphics_args.icon_res = icon; if( hPrevInstance ) { error_printf( "previous instance detected" ); return 1; }
 #  include <windows.h>
 #  include "types/x86.h"
 loop_globals();
@@ -175,12 +175,22 @@ loop_globals();
 
 #ifndef unilayer_loop_iter
 /*! \brief Call the main loop for one iteration. */
-#define unilayer_loop_iter() g_running = g_loop_iter( g_loop_data, g_loop_gargs )
+#define unilayer_loop_iter() g_running = g_loop_iter( g_loop_data )
 #endif /* !unilayer_loop_iter() */
+
+#ifndef unilayer_loop_set
+/**
+ * \brief Setup the main loop function and data arguments.
+ * \param iter Function pointer to the main loop iteration function.
+ * \param data MEMORY_HANDLE for implementation-specific data/state struct.
+ */
+#define unilayer_loop_set( iter, data ) g_loop_iter = (loop_iter)iter; g_loop_data = (void*)data;
+#endif /* !unilayer_loop_set */
+
 
 #ifndef platform_init
 /*! \brief Platform-specific setup function (e.g. create window). */
-#define platform_init( graphics_args, icon )
+#define platform_init( icon )
 #endif /* !platform_init() */
 
 #ifndef platform_shutdown

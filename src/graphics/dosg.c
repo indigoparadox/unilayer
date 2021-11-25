@@ -122,7 +122,7 @@ static void graphics_remove_timer() {
 /*
  * @return 1 if init was successful and 0 otherwise.
  */
-int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
+int16_t graphics_platform_init() {
    union REGS r;
 
    memory_zero_ptr( &r, sizeof( union REGS ) );
@@ -145,7 +145,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    return 1;
 }
 
-void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
+void graphics_platform_shutdown() {
    union REGS r;
 
    graphics_remove_timer();
@@ -157,7 +157,7 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
 	int86( 0x10, &r, &r );
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
+void graphics_flip() {
 #ifdef USE_DOUBLEBUF
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
       _fmemcpy( GRAPHICS_M_320_200_256_VGA_A,

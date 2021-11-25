@@ -9,10 +9,10 @@
 static MEMORY_HANDLE gs_graphics_cache_handle = (MEMORY_HANDLE)NULL;
 static int16_t gs_graphics_cache_sz = 0;
 
-int16_t graphics_init( struct GRAPHICS_ARGS* args ) {
+int16_t graphics_init() {
    int16_t retval = 1;
 
-   retval = graphics_platform_init( args );
+   retval = graphics_platform_init();
    if( !retval ) {
       goto cleanup;
    }
@@ -45,10 +45,10 @@ void graphics_clear_cache() {
       dropped_count, gs_graphics_cache_sz );
 }
 
-void graphics_shutdown( struct GRAPHICS_ARGS* args ) {
+void graphics_shutdown() {
    graphics_clear_cache();
    memory_free( gs_graphics_cache_handle );
-   graphics_platform_shutdown( args );
+   graphics_platform_shutdown();
 }
 
 #ifdef USE_SOFTWARE_TEXT

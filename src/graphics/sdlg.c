@@ -4,6 +4,8 @@
 #include "../unilayer.h"
 
 #include <SDL.h>
+#include <time.h> /* For time() and time_t. */
+#include <stdlib.h> /* For rand(). */
 
 SDL_Window* g_window = NULL;
 SDL_Surface* g_screen = NULL;
@@ -17,7 +19,7 @@ static uint32_t g_ms_start = 0;
 /*
  * @return 1 if init was successful and 0 otherwise.
  */
-int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
+int16_t graphics_platform_init() {
 #ifdef DEBUG_CGA_EMU
    SDL_Rect area;
 #endif /* DEBUG_CGA_EMU */
@@ -58,12 +60,12 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    return 1;
 }
 
-void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
+void graphics_platform_shutdown() {
    SDL_DestroyWindow( g_window );
    SDL_Quit();
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
+void graphics_flip() {
    SDL_UpdateWindowSurface( g_window );
 }
 

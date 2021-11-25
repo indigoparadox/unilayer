@@ -4,7 +4,7 @@
 /*
  * @return 1 if init was successful and 0 otherwise.
  */
-int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
+int16_t graphics_platform_init() {
    powerOn( POWER_ALL );
    vramSetBankA( VRAM_A_LCD );
    videoSetMode( MODE_FB0 );
@@ -12,11 +12,11 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    return 1;
 }
 
-void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
+void graphics_platform_shutdown() {
    /* TODO */
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
+void graphics_flip() {
    /* TODO */
 }
 

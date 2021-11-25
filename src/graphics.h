@@ -87,14 +87,14 @@ struct GRAPHICS_BITMAP_BASE {
    uint8_t res4;
 };
 
-int16_t graphics_init( struct GRAPHICS_ARGS* args );
+int16_t graphics_init();
 
-void graphics_shutdown( struct GRAPHICS_ARGS* args );
+void graphics_shutdown();
 
 /**
  * \brief Draw the current graphics buffer on-screen.
  */
-void graphics_flip( struct GRAPHICS_ARGS* args );
+void graphics_flip();
 
 /**
  * \return A constantly increasing number of ticks since program start.
@@ -273,8 +273,8 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b );
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP*,
    uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );
-int16_t graphics_platform_init( struct GRAPHICS_ARGS* );
-void graphics_platform_shutdown( struct GRAPHICS_ARGS* );
+int16_t graphics_platform_init();
+void graphics_platform_shutdown();
 #endif /* GRAPHICS_C */
 
 /*! \} */

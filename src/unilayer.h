@@ -9,7 +9,9 @@
 
 #ifdef __GNUC__
 #define WARN_UNUSED __attribute__( (warn_unused_result) )
+#ifndef PLATFORM_NDS
 #define PACKED __attribute__( (__packed__) )
+#endif /* !PLATFORM_NDS */
 #else
 #define WARN_UNUSED
 #define PACKED
@@ -58,14 +60,6 @@
 #include "animate.h"
 #include "input.h"
 #include "dio.h"
-
-/**
- * \brief Setup the main loop function and data arguments.
- * \param iter Function pointer to the main loop iteration function.
- * \param data MEMORY_HANDLE for implementation-specific data/state struct.
- * \param gargs MEMORY_PTR for platform-specific graphics args struct.
- */
-#define loop_set( iter, data, gargs ) g_loop_iter = (loop_iter)iter; g_loop_data = (void*)data; g_loop_gargs = gargs;
 
 #endif /* UNILAYER_H */
 

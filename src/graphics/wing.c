@@ -17,6 +17,8 @@ extern MEMORY_HANDLE g_state_handle;
 struct GRAPHICS_BITMAP g_screen;
 volatile uint32_t g_ms;
 
+struct GRAPHICS_ARGS g_graphics_args;
+
 const uint32_t gc_ms_target = 1000 / FPS;
 static uint32_t g_ms_start = 0; 
 
@@ -105,7 +107,7 @@ static LRESULT CALLBACK WndProc(
          break;
 
       case WM_TIMER:
-         g_running = g_loop_iter( g_loop_data, g_loop_gargs );
+         g_running = g_loop_iter( g_loop_data );
 
          /* Kind of a hack so that we can have a cheap timer. */
          g_ms += 100;
@@ -118,7 +120,7 @@ static LRESULT CALLBACK WndProc(
    return 0;
 }
 
-int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
+int16_t graphics_platform_init() {
    MSG msg;
    WNDCLASS wc = { 0 };
 
@@ -127,7 +129,8 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 
    wc.lpfnWndProc   = (WNDPROC)&WndProc;
    wc.hInstance     = g_instance;
-   wc.hIcon         = LoadIcon( g_instance, MAKEINTRESOURCE( args->icon_res ) );
+   wc.hIcon         = LoadIcon( g_instance, MAKEINTRESOURCE(
+      g_graphics_args.icon_res ) );
    wc.hCursor       = LoadCursor( 0, IDC_ARROW );
    wc.hbrBackground = (HBRUSH)( COLOR_BTNFACE + 1 );
    /* wc.lpszMenuName  = MAKEINTRESOURCE( IDR_MAINMENU ); */
@@ -161,15 +164,15 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
 
    srand( (unsigned int)time( NULL ) );
 
-   ShowWindow( g_window, args->cmd_show );
+   ShowWindow( g_window, g_graphics_args.cmd_show );
 
    return 1;
 }
 
-void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
+void graphics_platform_shutdown() {
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
+void graphics_flip() {
    /* The closest analog to the actual graphics_flip(): */
    if( (HWND)NULL != g_window ) {
       InvalidateRect( g_window, 0, TRUE );

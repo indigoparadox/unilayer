@@ -25,7 +25,7 @@ static uint32_t g_ms_start = 0;
 /*
  * @return 1 if init was successful and 0 otherwise.
  */
-int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
+int16_t graphics_platform_init() {
    struct timespec spec;
    time_t tm;
 
@@ -75,7 +75,7 @@ int16_t graphics_platform_init( struct GRAPHICS_ARGS* args ) {
    return 1;
 }
 
-void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
+void graphics_platform_shutdown() {
    if( NULL != g_buffer ) {
       XDestroyImage( g_buffer );
    }
@@ -85,7 +85,7 @@ void graphics_platform_shutdown( struct GRAPHICS_ARGS* args ) {
    XCloseDisplay( g_display );
 }
 
-void graphics_flip( struct GRAPHICS_ARGS* args ) {
+void graphics_flip() {
    /* Draw the buffer to the window. */
    XPutImage(
       g_display,

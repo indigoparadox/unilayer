@@ -103,7 +103,6 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
       /* Create initial snowflakes along the left side of the tile. */
       for( y = 0 ; ANIMATE_TILE_H > y ; y += 4 ) {
          idx = (y * ANIMATE_TILE_W);
-         debug_printf( 3, "%d", y );
          a->tile[idx] = 1;
       }
 

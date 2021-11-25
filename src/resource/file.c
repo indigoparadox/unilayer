@@ -2,6 +2,8 @@
 #define RESOURCE_C
 #include "../unilayer.h"
 
+#include <errno.h>
+
 #ifdef RESOURCE_FILE
 
 RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {

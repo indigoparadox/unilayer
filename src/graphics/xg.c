@@ -201,7 +201,7 @@ int16_t graphics_platform_blit_partial_at(
 }
 
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    struct BITMAP_FILE_HEADER* file_header = NULL;
    struct BITMAP_DATA_HEADER* data_header = NULL;

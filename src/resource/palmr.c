@@ -2,14 +2,8 @@
 #define RESOURCE_C
 #include "../unilayer.h"
 
-static RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id, char type[4] ) {
-   debug_printf( 2, "loading resource %u of type %u", id, type );
-
-   return DmGetResource( type, id );
-}
-
 RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
-   return resource_get_handle( id, 'Tbmp' );
+   return DmGetResource( 'Tbmp', id );
 }
 
 MEMORY_PTR resource_lock_handle( RESOURCE_HANDLE handle ) {

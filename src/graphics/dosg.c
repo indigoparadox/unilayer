@@ -35,6 +35,7 @@
 #endif /* NO_I86 */
 #include <dos.h>
 #include <conio.h>
+#include <time.h> /* For rand() */
 
 #ifdef USE_LOOKUPS
 #include "../data/offsets.h"
@@ -303,7 +304,7 @@ void graphics_draw_block(
  * @return 1 if bitmap is loaded and 0 otherwise.
  */
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    uint8_t* buffer = NULL;
    int32_t buffer_sz = 0;
@@ -312,7 +313,7 @@ int16_t graphics_platform_load_bitmap(
    int32_t retval = 1;
    struct CGA_HEADER* header = NULL;
 
-   buffer_sz = memory_sz( res_handle );
+   buffer_sz = resource_sz_handle( res_handle );
    buffer = resource_lock_handle( res_handle );
    header = (struct CGA_HEADER*)buffer;
 

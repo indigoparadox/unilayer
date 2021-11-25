@@ -28,8 +28,6 @@
 
 #include <stddef.h>
 
-#include <errno.h>
-
 #if !defined( offsetof )
 #warn "offsetof not defined in stddef.h; using internal version..."
 #define offsetof( obj, field ) ((int)(&(((obj*)(0))->field)))

@@ -79,7 +79,7 @@ int16_t graphics_platform_blit_partial_at(
       goto cleanup;
    }
 
-   rsrc = resource_get_bitmap_handle( bmp->id );
+   rsrc = resource_get_handle( bmp->id );
 
    if( NULL == rsrc ) {
       WinDrawChars( "Z", 1, d_x, d_y );
@@ -109,7 +109,7 @@ cleanup:
 }
 
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    int retval = 1;
 

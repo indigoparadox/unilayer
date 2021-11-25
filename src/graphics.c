@@ -235,11 +235,11 @@ void graphics_draw_line(
 static
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
-   RESOURCE_BITMAP_HANDLE bitmap_handle = (RESOURCE_BITMAP_HANDLE)NULL;
+   RESOURCE_HANDLE bitmap_handle = (RESOURCE_HANDLE)NULL;
    
    /* Load resource into buffer. */
-   bitmap_handle = resource_get_bitmap_handle( id );
-   if( (RESOURCE_BITMAP_HANDLE)NULL == bitmap_handle ) {
+   bitmap_handle = resource_get_handle( id );
+   if( (RESOURCE_HANDLE)NULL == bitmap_handle ) {
       retval = 0;
       error_printf( "unable to get resource handle" );
       goto cleanup;

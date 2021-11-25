@@ -260,7 +260,7 @@ int16_t graphics_get_random( int16_t start, int16_t range );
  * \return 1 if load was successful or 0 otherwise.
  */
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b );
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b );
 
 /**
  * \brief Free up the platform-specific resources associated with a loaded

@@ -4,7 +4,7 @@
 
 #ifdef RESOURCE_FILE
 
-static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
+RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
    FILE* res_file = NULL;
    uint8_t* buffer = NULL;
 #ifdef PLATFORM_DOS
@@ -12,7 +12,7 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
 #endif /* PLATFORM_DOS */
    int32_t res_sz = 0,
       read = 0;
-   MEMORY_HANDLE res_handle = (MEMORY_HANDLE)0;
+   RESOURCE_HANDLE res_handle = (RESOURCE_HANDLE)0;
    char asset_path[RESOURCE_PATH_MAX];
 
    debug_printf( 2, "requested resource: %s", id );
@@ -45,7 +45,7 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
    if( NULL == res_file ) {
       error_printf( "unable to load resource: %s (error: %d)",
          asset_path, errno );
-      return (MEMORY_HANDLE)0;
+      return (RESOURCE_HANDLE)0;
    }
 
    fseek( res_file, 0, SEEK_END );
@@ -58,15 +58,15 @@ static MEMORY_HANDLE resource_get_handle( RESOURCE_ID id ) {
 
    debug_printf( 2, "opened resource: %s (%d bytes)", asset_path, res_sz );
 
-   res_handle = memory_alloc( res_sz, 1 );
-   if( (MEMORY_HANDLE)0 == res_handle ) {
+   res_handle = (RESOURCE_HANDLE)memory_alloc( res_sz, 1 );
+   if( (RESOURCE_HANDLE)0 == (RESOURCE_HANDLE)res_handle ) {
       error_printf( "could not allocate resource buffer of %d bytes", res_sz );
       goto cleanup;
    }
 
    debug_printf( 1, "allocated resource buffer: %s", asset_path );
 
-   buffer = memory_lock( res_handle );
+   buffer = memory_lock( (MEMORY_HANDLE)res_handle );
    if( NULL == buffer ) {
       error_printf( "could not lock resource buffer" );
       goto cleanup;
@@ -90,29 +90,25 @@ cleanup:
    }
 
    if( NULL != buffer ) {
-      buffer = memory_unlock( res_handle );
+      buffer = memory_unlock( (MEMORY_HANDLE)res_handle );
    }
 
    return res_handle;
 }
 
-RESOURCE_BITMAP_HANDLE resource_get_bitmap_handle( RESOURCE_ID id ) {
-   return resource_get_handle( id );
-}
-
-RESOURCE_JSON_HANDLE resource_get_json_handle( RESOURCE_ID id ) {
-   return resource_get_handle( id );
-}
-
-MEMORY_PTR resource_lock_handle( MEMORY_HANDLE handle ) {
+MEMORY_PTR resource_lock_handle( RESOURCE_HANDLE handle ) {
    return memory_lock( handle );
 }
 
-MEMORY_PTR resource_unlock_handle( MEMORY_HANDLE handle ) {
+MEMORY_PTR resource_unlock_handle( RESOURCE_HANDLE handle ) {
    return memory_unlock( handle );
 }
 
-void resource_free_handle( MEMORY_HANDLE handle ) {
+int32_t resource_sz_handle( RESOURCE_HANDLE handle ) {
+   return memory_sz( handle );
+}
+
+void resource_free_handle( RESOURCE_HANDLE handle ) {
    memory_free( handle );
 }
 

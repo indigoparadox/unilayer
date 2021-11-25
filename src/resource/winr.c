@@ -4,22 +4,25 @@
 
 extern HINSTANCE g_instance;
 
-typedef HBITMAP RESOURCE_BITMAP_HANDLE;
-
-RESOURCE_BITMAP_HANDLE resource_get_bitmap_handle( uint32_t id ) {
+RESOURCE_HANDLE resource_get_handle( uint32_t id ) {
    debug_printf( 2, "loading bitmap resource %u", id );
    return LoadBitmap( g_instance, MAKEINTRESOURCE( id ) );
 }
 
-MEMORY_PTR resource_lock_handle( MEMORY_HANDLE handle ) {
+MEMORY_PTR resource_lock_handle( RESOURCE_HANDLE handle ) {
    return memory_lock( handle );
 }
 
-MEMORY_PTR resource_unlock_handle( MEMORY_HANDLE handle ) {
+MEMORY_PTR resource_unlock_handle( RESOURCE_HANDLE handle ) {
    return memory_unlock( handle );
 }
 
-void resource_free_handle( MEMORY_HANDLE handle ) {
+int32_t resource_sz_handle( RESOURCE_HANDLE handle ) {
+   /* TODO */
+   return 0;
+}
+
+void resource_free_handle( RESOURCE_HANDLE handle ) {
    memory_free( handle );
 }
 

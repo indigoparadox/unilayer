@@ -176,7 +176,7 @@ void graphics_draw_line(
 #endif /* !USE_SOFTWARE_LINES */
 
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    uint8_t* buffer = NULL;
    int16_t retval = 1;
@@ -186,10 +186,11 @@ int16_t graphics_platform_load_bitmap(
    assert( NULL != b );
    assert( 0 == b->ref_count );
 
-   buffer_sz = memory_sz( res_handle );
+   buffer_sz = resource_sz_handle( res_handle );
    buffer = resource_lock_handle( res_handle );
 
    /* Parse buffered resource into SDL. */
+   debug_printf( 0, "SDL loading surface for bitmap... (%d bytes)", buffer_sz );
    bmp_stream = SDL_RWFromMem( buffer, buffer_sz );
    b->surface = SDL_LoadBMP_RW( bmp_stream, 1 ); /* Free stream on close. */
    if( NULL == b->surface ) {
@@ -197,7 +198,6 @@ int16_t graphics_platform_load_bitmap(
       retval = 0;
       goto cleanup;
    }
-   debug_printf( 1, "SDL loaded surface for bitmap" );
 
 #ifdef DEPTH_VGA
    /* Setup transparency if we're using VGA. */

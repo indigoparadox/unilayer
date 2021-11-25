@@ -487,7 +487,7 @@ void graphics_draw_line(
 }
 
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_BITMAP_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    uint8_t* buffer = NULL;
    int16_t retval = 1;
@@ -505,7 +505,7 @@ int16_t graphics_platform_load_bitmap(
    /* TODO: Fix this if RESOURCE_FILE is used. */
 
    /* Load resource into bitmap. */
-   if( (RESOURCE_BITMAP_HANDLE)NULL != res_handle ) {
+   if( (RESOURCE_HANDLE)NULL != res_handle ) {
       /* TODO: Handle non-Windows resources. */
 #ifdef RESOURCE_FILE
 

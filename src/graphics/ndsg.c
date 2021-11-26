@@ -20,6 +20,16 @@ void graphics_flip() {
    /* TODO */
 }
 
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   /* TODO */
+   return 0;
+}
+
+uint32_t graphics_get_ms() {
+   /* TODO */
+   return 0;
+}
+
 void graphics_loop_start() {
    /* TODO */
 }
@@ -32,9 +42,10 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    VRAM_A[(y * SCREEN_H) + x] = color;
 }
 
-int graphics_platform_blit_at(
+int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP* bmp,
-   uint16_t x, uint16_t y, uint16_t w, uint16_t h
+   uint16_t s_x, uint16_t s_y,
+   uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
    /* TODO */
 }
@@ -64,7 +75,7 @@ void graphics_draw_line(
 
 #endif /* !USE_SOFTWARE_LINES */
 
-int32_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
+int32_t graphics_platform_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    /* TODO */
 }
 

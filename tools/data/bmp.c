@@ -8,11 +8,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define BMP_FMT_FILE_HEADER_SZ   14
-#define BMP_FMT_BMP_HEADER_SZ    40
-
-#define bmp_int( type, buf, offset ) *((type*)&(buf[offset]))
-
 /**
  * \return The number of bytes successfully written.
  */
@@ -37,8 +32,8 @@ int32_t bmp_write_file(
    palette_entries = bmp_colors_count( o->bpp );
 
    bmp_buffer_sz = 
-      BMP_FMT_FILE_HEADER_SZ +
-      BMP_FMT_BMP_HEADER_SZ +
+      sizeof( struct BITMAP_FILE_HEADER ) +
+      sizeof( struct BITMAP_DATA_HEADER ) +
       (4 * palette_entries) + /* Palette entries are 32-bit (4 bytes). */
       o->bmp_data_sz;
 

@@ -51,6 +51,8 @@ int cga_write_file(
    int retval = 0;
    uint8_t* cga_buffer = NULL;
    uint32_t cga_buffer_sz = 0;
+
+   cga_buffer_sz = cga_grid_sz( grid, o );
    
    /* TODO: Use memory architecture. */
    cga_buffer = calloc( 1, cga_buffer_sz );

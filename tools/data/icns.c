@@ -106,6 +106,7 @@ int icns_write_file(
    FILE* file_out = NULL;
    int retval = 0;
 
+   icns_buffer_sz = icns_grid_sz( grid, o );
 
    /* TODO: Use memory architecture. */
    icns_buffer = calloc( 1, icns_buffer_sz );

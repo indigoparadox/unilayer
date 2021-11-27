@@ -1,4 +1,5 @@
 
+#define CONVERT_C
 #include "convert.h"
 
 #include "data/bmp.h"
@@ -8,10 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define FMT_BITMAP      1
-#define FMT_CGA         2
-#define FMT_ICNS        9
 
 #define ENDIAN_LITTLE   'l'
 #define ENDIAN_BIG      'b'
@@ -32,9 +29,10 @@
 int main( int argc, char* argv[] ) {
    int retval = 0;
    int i = 0,
+      j = 0,
       state = 0,
-      fmt_in = 0,
-      fmt_out = 0;
+      fmt_in = -1,
+      fmt_out = -1;
    char namebuf_in[NAMEBUF_MAX + 1],
       namebuf_out[NAMEBUF_MAX + 1];
    struct CONVERT_GRID* grid = NULL;
@@ -87,23 +85,29 @@ int main( int argc, char* argv[] ) {
 #endif
 
       case STATE_INFMT:
-         if( 0 == strncmp( argv[i], "bitmap", 6 ) ) {
-            fmt_in = FMT_BITMAP;
-         } else if( 0 == strncmp( argv[i], "cga", 3 ) ) {
-            fmt_in = FMT_CGA;
-         } else if( 0 == strncmp( argv[i], "icns", 4 ) ) {
-            fmt_in = FMT_ICNS;
+         j = 0;
+         while( '\0' != gc_fmt_tokens[j][0] ) {
+            if( 0 == strncmp(
+               argv[i], gc_fmt_tokens[j], strlen( gc_fmt_tokens[j] )
+            ) ) {
+               fmt_in = j;
+               break;
+            }
+            j++;
          }
          state = 0;
          break;
 
       case STATE_OUTFMT:
-         if( 0 == strncmp( argv[i], "bitmap", 6 ) ) {
-            fmt_out = FMT_BITMAP;
-         } else if( 0 == strncmp( argv[i], "cga", 3 ) ) {
-            fmt_out = FMT_CGA;
-         } else if( 0 == strncmp( argv[i], "icns", 4 ) ) {
-            fmt_out = FMT_ICNS;
+         j = 0;
+         while( '\0' != gc_fmt_tokens[j][0] ) {
+            if( 0 == strncmp(
+               argv[i], gc_fmt_tokens[j], strlen( gc_fmt_tokens[j] )
+            ) ) {
+               fmt_out = j;
+               break;
+            }
+            j++;
          }
          state = 0;
          break;
@@ -174,8 +178,8 @@ int main( int argc, char* argv[] ) {
    if(
       0 == strlen( namebuf_in ) ||
       0 == strlen( namebuf_out ) ||
-      0 == fmt_in || 0 == fmt_out ||
-      (FMT_CGA == fmt_in &&
+      -1 == fmt_in || -1 == fmt_out ||
+      (gc_fmt_cga == fmt_in &&
          (0 == options_in.w || 0 == options_in.h) &&
             !options_in.cga_use_header )
    ) {
@@ -201,23 +205,11 @@ int main( int argc, char* argv[] ) {
       return 1;
    }
 
-   if( 0 == options_in.bpp && (FMT_CGA == fmt_in || FMT_CGA == fmt_out) ) {
+   if( 0 == options_in.bpp && (gc_fmt_cga == fmt_in || gc_fmt_cga == fmt_out) ) {
       options_out.bpp = 2;
    }
 
-   switch( fmt_in ) {
-   case FMT_BITMAP:
-      grid = bmp_read_file( namebuf_in, &options_in );
-      break;
-
-   case FMT_CGA:
-      grid = cga_read_file( namebuf_in, &options_in );
-      break;
-
-   case FMT_ICNS:
-      grid = icns_read_file( namebuf_in, &options_in );
-      break;
-   }
+   grid = gc_fmt_read_file_cbs[fmt_in]( namebuf_in, &options_in );
 
    if( NULL == grid ) {
       fprintf( stderr, "unable to open %s\n", namebuf_in );
@@ -231,19 +223,7 @@ int main( int argc, char* argv[] ) {
 
    /* dio_print_grid( grid ); */
 
-   switch( fmt_out ) {
-   case FMT_BITMAP:
-      retval = 0 > bmp_write_file( namebuf_out, grid, &options_out ) ? 1 : 0;
-      break;
-
-   case FMT_CGA:
-      retval = 0 > cga_write_file( namebuf_out, grid, &options_out ) ? 1 : 0;
-      break;
-
-   case FMT_ICNS:
-      retval = 0 > icns_write_file( namebuf_out, grid, &options_out ) ? 1 : 0;
-      break;
-   }
+   retval = 0 > gc_fmt_write_file_cbs[fmt_out]( namebuf_out, grid, &options_out ) ? 1 : 0;
 
    free( grid->data );
    free( grid );

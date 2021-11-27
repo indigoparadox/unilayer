@@ -39,6 +39,11 @@ BITMAP_DATA_HEADER {
 
 #define BMP_COMPRESSION_NONE (0)
 
+/**
+ * \return The byte size of the given ::CONVERT_GRID if written as a bitmap.
+ */
+int32_t bmp_grid_sz(
+   const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
 uint8_t bmp_colors_count( uint8_t );
 int32_t bmp_write_file(
    const char*, const struct CONVERT_GRID*, struct CONVERT_OPTIONS* );

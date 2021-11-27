@@ -8,19 +8,16 @@
 #include <string.h>
 #include <stdlib.h>
 
-/**
- * \return The number of bytes successfully written.
- */
-int32_t bmp_write_file(
-   const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
+int bmp_verify_opts( struct CONVERT_OPTIONS* o ) {
+   return 1;
+}
+
+int32_t bmp_grid_sz(
+   const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
 ) {
-   int32_t bmp_buffer_sz = 0,
-      bmp_row_sz = 0,
+   int32_t bmp_row_sz = 0,
       palette_entries = 0,
-      bmp_file_sz = 0,
-      written = 0;
-   uint8_t* bmp_buffer = NULL;
-   FILE* file_out = NULL;
+      bmp_buffer_sz = 0;
 
    /* Add rows padded out to 4 bytes. */
    bmp_row_sz = (grid->sz_x * o->bpp) / 8;
@@ -36,6 +33,23 @@ int32_t bmp_write_file(
       sizeof( struct BITMAP_DATA_HEADER ) +
       (4 * palette_entries) + /* Palette entries are 32-bit (4 bytes). */
       o->bmp_data_sz;
+
+   return bmp_buffer_sz;
+}
+
+/**
+ * \return The number of bytes successfully written.
+ */
+int32_t bmp_write_file(
+   const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
+) {
+   int32_t bmp_buffer_sz = 0,
+      bmp_file_sz = 0,
+      written = 0;
+   uint8_t* bmp_buffer = NULL;
+   FILE* file_out = NULL;
+
+   bmp_buffer_sz = bmp_grid_sz( grid, o );
 
    /* TODO: Use memory architecture. */
    bmp_buffer = calloc( 1, bmp_buffer_sz );

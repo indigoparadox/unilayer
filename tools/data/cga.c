@@ -11,13 +11,19 @@ const char gc_null = '\0';
 /* #define PX_PER_BYTE 8 */
 #define PX_PER_BYTE 4
 
-int cga_write_file(
-   const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
+int cga_verify_opts( struct CONVERT_OPTIONS* o ) {
+   if( (0 == o->w || 0 == o->h) && !o->cga_use_header ) {
+      printf( "CGA format requires width/height or header input\n" );
+      return 0;
+   }
+
+   return 1;
+}
+
+int32_t cga_grid_sz(
+   const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
 ) {
-   FILE* cga_file = NULL;
-   int retval = 0;
-   uint8_t* cga_buffer = NULL;
-   uint32_t cga_buffer_sz = 0,
+   int32_t cga_buffer_sz = 0,
       cga_buffer_sz_raw = 0;
 
    /* Output BPP is always 2 for now. */
@@ -33,8 +39,19 @@ int cga_write_file(
       printf( "use header\n" );
       cga_buffer_sz += CGA_HEADER_SZ + 1;
    }
-   printf( "CGA buffer size: %u\n", cga_buffer_sz );
+   /* printf( "CGA buffer size: %u\n", cga_buffer_sz ); */
 
+   return cga_buffer_sz;
+}
+
+int cga_write_file(
+   const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
+) {
+   FILE* cga_file = NULL;
+   int retval = 0;
+   uint8_t* cga_buffer = NULL;
+   uint32_t cga_buffer_sz = 0;
+   
    /* TODO: Use memory architecture. */
    cga_buffer = calloc( 1, cga_buffer_sz );
    assert( NULL != cga_buffer );

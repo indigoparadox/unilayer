@@ -6,6 +6,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int icns_verify_opts( struct CONVERT_OPTIONS* o ) {
+   return 1;
+}
+
+int32_t icns_grid_sz(
+   const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
+) {
+   int32_t icns_buffer_sz = 0,
+      icns_canvas_sz = 0;
+
+   icns_canvas_sz = ((grid->sz_x * grid->sz_y * o->bpp) / 8);
+   if( 1 == o->bpp ) {
+      /* Add a mask. */
+      icns_canvas_sz *= 2;
+   }
+
+   icns_buffer_sz = 
+      ICNS_FILE_HEADER_SZ +
+      ICNS_DATA_HEADER_SZ +
+      icns_canvas_sz;
+
+   return icns_buffer_sz;
+}
+
 struct CONVERT_GRID* icns_read_file(
    const char* path, struct CONVERT_OPTIONS* o
 ) {
@@ -77,22 +101,11 @@ struct CONVERT_GRID* icns_read(
 int icns_write_file(
    const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
 ) {
-   uint32_t icns_buffer_sz = 0,
-      icns_canvas_sz = 0;
+   uint32_t icns_buffer_sz = 0;
    uint8_t* icns_buffer = NULL;
    FILE* file_out = NULL;
    int retval = 0;
 
-   icns_canvas_sz = ((grid->sz_x * grid->sz_y * o->bpp) / 8);
-   if( 1 == o->bpp ) {
-      /* Add a mask. */
-      icns_canvas_sz *= 2;
-   }
-
-   icns_buffer_sz = 
-      ICNS_FILE_HEADER_SZ +
-      ICNS_DATA_HEADER_SZ +
-      icns_canvas_sz;
 
    /* TODO: Use memory architecture. */
    icns_buffer = calloc( 1, icns_buffer_sz );

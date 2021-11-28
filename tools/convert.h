@@ -37,8 +37,15 @@ typedef int32_t (*FMT_GRID_SZ)(
 
 typedef int32_t (*FMT_VERIFY_OPTS)( struct CONVERT_OPTIONS* o );
 
+typedef struct CONVERT_GRID* (*FMT_READ)(
+   const uint8_t* buf, uint32_t buf_sz, struct CONVERT_OPTIONS* o );
+
 typedef struct CONVERT_GRID* (*FMT_READ_FILE)(
    const char* path, struct CONVERT_OPTIONS* o );
+
+typedef int (*FMT_WRITE)(
+   uint8_t* buf_ptr, uint32_t buf_sz,
+   const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
 
 typedef int (*FMT_WRITE_FILE)(
    const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
@@ -52,9 +59,17 @@ FORMAT_TABLE( FORMAT_TABLE_SZ_CBS_PROTO )
 
 FORMAT_TABLE( FORMAT_TABLE_OPT_CBS_PROTO )
 
+#define FORMAT_TABLE_READ_CBS_PROTO( idx, fmt ) struct CONVERT_GRID* fmt ## _read( const uint8_t* buf, uint32_t buf_sz, struct CONVERT_OPTIONS* o );
+
+FORMAT_TABLE( FORMAT_TABLE_READ_CBS_PROTO )
+
 #define FORMAT_TABLE_READ_FILE_CBS_PROTO( idx, fmt ) struct CONVERT_GRID* fmt ## _read_file( const char* path, struct CONVERT_OPTIONS* o );
 
 FORMAT_TABLE( FORMAT_TABLE_READ_FILE_CBS_PROTO )
+
+#define FORMAT_TABLE_WRITE_CBS_PROTO( idx, fmt ) int fmt ## _write( uint8_t* buf_ptr, uint32_t buf_sz, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
+
+FORMAT_TABLE( FORMAT_TABLE_WRITE_CBS_PROTO )
 
 #define FORMAT_TABLE_WRITE_FILE_CBS_PROTO( idx, fmt ) int fmt ## _write_file( const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
 
@@ -74,10 +89,22 @@ FMT_VERIFY_OPTS gc_fmt_opt_cbs[] = {
    FORMAT_TABLE( FORMAT_TABLE_OPT_CBS )
 };
 
+#define FORMAT_TABLE_READ_CBS( idx, fmt ) fmt ## _read,
+
+FMT_READ gc_fmt_read_cbs[] = {
+   FORMAT_TABLE( FORMAT_TABLE_READ_CBS )
+};
+
 #define FORMAT_TABLE_READ_FILE_CBS( idx, fmt ) fmt ## _read_file,
 
 FMT_READ_FILE gc_fmt_read_file_cbs[] = {
    FORMAT_TABLE( FORMAT_TABLE_READ_FILE_CBS )
+};
+
+#define FORMAT_TABLE_WRITE_CBS( idx, fmt ) fmt ## _write,
+
+FMT_WRITE gc_fmt_write_cbs[] = {
+   FORMAT_TABLE( FORMAT_TABLE_WRITE_CBS )
 };
 
 #define FORMAT_TABLE_WRITE_FILE_CBS( idx, fmt ) fmt ## _write_file,

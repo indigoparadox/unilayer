@@ -19,7 +19,7 @@ RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
 
    debug_printf( 2, "requested resource: %s", id );
 
-   dio_snprintf( asset_path, RESOURCE_PATH_MAX, "%s%s", ASSETS_PATH, id );
+   dio_snprintf( asset_path, RESOURCE_PATH_MAX, "%s", id );
 
 #ifdef PLATFORM_DOS
    extension_idx = dio_char_idx_r( asset_path,

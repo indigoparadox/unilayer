@@ -3,6 +3,8 @@ ifeq ($(STAMPFILE),)
 STAMPFILE := .stamp
 endif
 
+# === Convert Utility ===
+
 CONVERT_C_FILES := \
    unilayer/tools/convert.c \
    unilayer/src/memory/fakem.c \

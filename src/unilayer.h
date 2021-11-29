@@ -58,6 +58,9 @@
 #include "animate.h"
 #include "input.h"
 #include "dio.h"
+#ifdef NETWORK_SOCKET
+#include "network.h"
+#endif /* UNILAYER_NETWORK */
 
 #endif /* UNILAYER_H */
 

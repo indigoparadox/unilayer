@@ -124,7 +124,7 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
             /* Presume hiding was done. */
             a->tile[idx] = 0;
 
-         } else if( a->tile[idx] ) {
+         } else if( 0 < a->tile[idx] ) {
             /* Hide the snowflake's previous position. */
             a->tile[idx] = -1;
 
@@ -154,7 +154,7 @@ void animate_draw_FRAMES( struct ANIMATION* a ) {
 }
 
 int8_t animate_create(
-   uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
+   uint8_t type, uint8_t flags, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
    int8_t i = 0,
       idx_out = ANIMATE_ERROR;
@@ -171,7 +171,7 @@ int8_t animate_create(
       goto cleanup;
    }
 
-   g_animations[i].flags = ANIMATE_FLAG_ACTIVE;
+   g_animations[i].flags = ANIMATE_FLAG_ACTIVE | flags;
    g_animations[i].x = x;
    g_animations[i].y = y;
    g_animations[i].w = w;
@@ -210,12 +210,13 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
                p_x = a->x + t_x + x;
                p_y = a->y + t_y + y;
 
-               if( -1 == a->tile[idx] ) {
-#ifdef DEPTH_CGA
+               if(
+                  -1 == a->tile[idx] &&
+                  ANIMATE_FLAG_CLEANUP == (ANIMATE_FLAG_CLEANUP & a->flags)
+               ) {
                   graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_BLACK );
-#endif /* DEPTH_CGA */
 
-               } else if( a->tile[idx] && ANIMATE_TYPE_SNOW == a->type ) {
+               } else if( 0 < a->tile[idx] && ANIMATE_TYPE_SNOW == a->type ) {
                   graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
 #ifdef DEPTH_VGA
                } else if( 90 < a->tile[idx] ) {

@@ -47,6 +47,7 @@
 #define ANIMATE_FLAG_ACTIVE   1
 /*! \brief ::ANIMATION::flags indicating animation has been initialized. */
 #define ANIMATE_FLAG_INIT     2
+#define ANIMATE_FLAG_CLEANUP  4
 
 #define ANIMATE_TILE_W 16
 #define ANIMATE_TILE_H 16
@@ -99,7 +100,7 @@ typedef void (*ANIMATE_CB)( struct ANIMATION* a );
  * \return Internal index of newly created animation or ::ANIMATE_ERROR.
  */
 int8_t animate_create(
-   uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h );
+   uint8_t type, uint8_t flags, int16_t x, int16_t y, int16_t w, int16_t h );
 
 /**
  * \brief Draw the animation tile to the screen, tiled to fill its area.

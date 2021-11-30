@@ -164,12 +164,27 @@ void graphics_draw_line(
    uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t thickness,
    const GRAPHICS_COLOR color
 ) {
-   int i = 0;
+   int16_t i = 0,
+      j = 0;
 
    SDL_SetRenderDrawColor( g_renderer, color->r, color->g, color->b, 255 );
    /* TODO: Handle thickness. */
    for( i = 0 ; thickness > i ; i++ ) {
-      SDL_RenderDrawLine( g_renderer, x1 + i, y1 + i, x2 + i, y2 + i );
+      if( SCREEN_SCALE > 1 ) {
+         for( j = 0 ; SCREEN_SCALE > j ; j++ ) {
+            SDL_RenderDrawLine( g_renderer,
+               ((x1 + i) * SCREEN_SCALE) + j,
+               ((y1 + i) * SCREEN_SCALE) + j,
+               ((x2 + i) * SCREEN_SCALE) + j,
+               ((y2 + i) * SCREEN_SCALE) + j );
+         }
+      } else {
+         SDL_RenderDrawLine( g_renderer,
+            (x1 + i) * SCREEN_SCALE,
+            (y1 + i) * SCREEN_SCALE,
+            (x2 + i) * SCREEN_SCALE,
+            (y2 + i) * SCREEN_SCALE );
+      }
    }
 }
 

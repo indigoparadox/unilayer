@@ -60,7 +60,7 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
 
       a->flags |= ANIMATE_FLAG_INIT;
    }
-   
+
    for( y = 0 ; ANIMATE_TILE_H - 1 > y ; y++ ) {
       /* debug_printf( 3, "%d, %d: %d", 0, y, data[(y * a->w)] ); */
       for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
@@ -78,7 +78,14 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
 
          /* Make sure integers don't rollover. */
          if( ANIMATE_FIRE_COOLING_MAX + 3 >= a->tile[next_idx] ) {
-            a->tile[idx] = 0;
+            if( -1 == a->tile[idx] ) {
+               /* Presume hiding was done. */
+               a->tile[idx] = 0;
+
+            } else if( 0 != a->tile[idx] ) {
+               /* Hide previous pixel. */
+               a->tile[idx] = -1;
+            }
          } else {
             /* Propagate heat. */
             a->tile[idx] = a->tile[next_idx] - graphics_get_random(
@@ -112,9 +119,14 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
    for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
       for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
          idx = (y * ANIMATE_TILE_W) + x;
-         if( a->tile[idx] ) {
-            /* Hide the snowflake's previous position. */
+
+         if( -1 == a->tile[idx] ) {
+            /* Presume hiding was done. */
             a->tile[idx] = 0;
+
+         } else if( a->tile[idx] ) {
+            /* Hide the snowflake's previous position. */
+            a->tile[idx] = -1;
 
             do {
                /* Move the snowflake down and maybe to the right. */
@@ -198,9 +210,14 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
                p_x = a->x + t_x + x;
                p_y = a->y + t_y + y;
 
-               if( a->tile[idx] && ANIMATE_TYPE_SNOW == a->type ) {
+               if( -1 == a->tile[idx] ) {
+#ifdef DEPTH_CGA
+                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_BLACK );
+#endif /* DEPTH_CGA */
+
+               } else if( a->tile[idx] && ANIMATE_TYPE_SNOW == a->type ) {
                   graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
- #ifdef DEPTH_VGA
+#ifdef DEPTH_VGA
                } else if( 90 < a->tile[idx] ) {
                   graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
                } else if( 60 < a->tile[idx] ) {

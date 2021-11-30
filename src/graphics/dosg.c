@@ -293,8 +293,8 @@ void graphics_draw_block(
 #else
 /* #error "not implemented" */
 #endif /* USE_LOOKUPS */
-      _fmemset( (char far *)0xB8000000 + screen_byte_offset, color, 2 );
-      _fmemset( (char far *)0xB8002000 + screen_byte_offset, color, 2 );
+      _fmemset( (char far *)0xB8000000 + screen_byte_offset, color, 16 );
+      _fmemset( (char far *)0xB8002000 + screen_byte_offset, color, 16 );
    }
 #endif /* GRAPHICS_MODE */
 

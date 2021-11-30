@@ -83,7 +83,7 @@ struct ANIMATION {
    /*! \brief Bitfield indicating properties of animation. */
    uint8_t flags;
    /*! \brief Data specific to particular animation playing. */
-   uint8_t tile[ANIMATE_TILE_SZ];
+   int8_t tile[ANIMATE_TILE_SZ];
 };
 
 /*! \brief Callback to call on active animations for every frame. */

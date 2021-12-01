@@ -154,7 +154,7 @@ void animate_draw_FRAMES( struct ANIMATION* a ) {
 }
 
 int8_t animate_create(
-   uint8_t type, uint8_t flags, int16_t x, int16_t y, int16_t w, int16_t h
+   uint8_t type, uint16_t flags, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
    int8_t i = 0,
       idx_out = ANIMATE_ERROR;
@@ -242,13 +242,36 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
 }
 
 void animate_frame() {
-   int i = 0;
+   int8_t i = 0;
 
    for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
-      if( !(g_animations[i].flags & ANIMATE_FLAG_ACTIVE) ) {
+      if(
+         ANIMATE_FLAG_ACTIVE != (g_animations[i].flags & ANIMATE_FLAG_ACTIVE) ||
+         ANIMATE_FLAG_PAUSED == (g_animations[i].flags & ANIMATE_FLAG_PAUSED)
+      ) {
          continue;
       }
       gc_animate_draw[g_animations[i].type]( &(g_animations[i]) );
+   }
+}
+
+void animate_pause( uint16_t flags ) {
+   int8_t i = 0;
+
+   for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
+      if( flags == (g_animations[i].flags & flags) ) {
+         g_animations[i].flags |= ANIMATE_FLAG_PAUSED;
+      }
+   }
+}
+
+void animate_resume( uint16_t flags ) {
+   int8_t i = 0;
+
+   for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
+      if( flags == (g_animations[i].flags & flags) ) {
+         g_animations[i].flags &= ~ANIMATE_FLAG_PAUSED;
+      }
    }
 }
 

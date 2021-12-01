@@ -43,11 +43,33 @@
 /*! \brief Return from animate_create() indicating a problem. */
 #define ANIMATE_ERROR -1
 
-/*! \brief ::ANIMATION::flags indicating animation is active and playing. */
-#define ANIMATE_FLAG_ACTIVE   1
-/*! \brief ::ANIMATION::flags indicating animation has been initialized. */
-#define ANIMATE_FLAG_INIT     2
-#define ANIMATE_FLAG_CLEANUP  4
+/**
+ * \addtogroup unilayer_animate_flags Unilayer Animation Flags
+ * \brief Flags to control ::ANIMATION behavior.
+ *
+ * \{
+ */
+
+/**
+ * \relates ANIMATION
+ * \brief ::ANIMATION::flags indicating animation is active and playing.
+ */
+#define ANIMATE_FLAG_ACTIVE   0x01
+/**
+ * \relates ANIMATION
+ * \brief ::ANIMATION::flags indicating animation has been initialized.
+ */
+#define ANIMATE_FLAG_INIT     0x02
+/**
+ * \relates ANIMATION
+ * \brief ::ANIMATION::flags indicating animation should black out previous
+ *        frame's non-black pixels.
+ */
+#define ANIMATE_FLAG_CLEANUP  0x04
+
+#define ANIMATE_FLAG_PAUSED   0x08
+
+/*! \} */
 
 #define ANIMATE_TILE_W 16
 #define ANIMATE_TILE_H 16
@@ -81,8 +103,13 @@ struct ANIMATION {
    int16_t w;
    /*! \brief Height of animation on screen in pixels. */
    int16_t h;
-   /*! \brief Bitfield indicating properties of animation. */
-   uint8_t flags;
+   /**
+    * \brief Bitfield indicating animation's \ref unilayer_animate_flags.
+    *
+    * Lower 8 bits are Unilayer-specified flags. Upper 8 bits are application-
+    * specific and will be ignored by Unilayer.
+    */
+   uint16_t flags;
    /*! \brief Data specific to particular animation playing. */
    int8_t tile[ANIMATE_TILE_SZ];
 };
@@ -100,7 +127,7 @@ typedef void (*ANIMATE_CB)( struct ANIMATION* a );
  * \return Internal index of newly created animation or ::ANIMATE_ERROR.
  */
 int8_t animate_create(
-   uint8_t type, uint8_t flags, int16_t x, int16_t y, int16_t w, int16_t h );
+   uint8_t type, uint16_t flags, int16_t x, int16_t y, int16_t w, int16_t h );
 
 /**
  * \brief Draw the animation tile to the screen, tiled to fill its area.
@@ -111,6 +138,10 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig );
  * \brief Should be called during every frame to overlay animations on screen.
  */
 void animate_frame();
+
+void animate_pause( uint16_t flags );
+
+void animate_resume( uint16_t flags );
 
 /**
  * \brief Stop the animation with the given internal index.

@@ -14,6 +14,10 @@
  *  \brief Platform-general abstractions for graphics.
  */
 
+/*! \brief Draw string at 1x scale. */
+#define GRAPHICS_STRING_FLAGS_1X 0x01
+#define GRAPHICS_STRING_FLAGS_ALL_CAPS 0x10
+
 #ifndef GRAPHICS_TXP_R
 /*! \brief Red value for transparency color in VGA DEPTH. */
 #define GRAPHICS_TXP_R 0xff
@@ -183,11 +187,11 @@ void graphics_draw_line(
  * \param x_orig X coordinate to draw at, in pixels.
  * \param y_orig Y coordinate to draw at, in pixels.
  * \param color Color in which to draw the character.
- * \param scale Zoom/scale at which to draw the character.
+ * \param flags String options.
  */
 void graphics_char_at(
-   const char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
-   uint8_t scale );
+   char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
+   uint8_t flags );
 
 /**
  * \brief Draw a text string on screen.
@@ -196,21 +200,21 @@ void graphics_char_at(
  * \param x_orig Left origin of the string drawn in pixels.
  * \param y_orig Top origin of the string drawn in pixels.
  * \param color Color in which to draw the string.
- * \param scale Multiplier of the string drawing font to use.
+ * \param flags String options.
  */
 void graphics_string_at(
    const char* str, uint16_t str_sz, uint16_t x_orig, uint16_t y_orig,
-   GRAPHICS_COLOR color, uint8_t scale );
+   GRAPHICS_COLOR color, uint8_t flags );
 
 /**
  * \brief Get width and height of a text string in pixels if drawn on screen.
  * \param str String to get the dimensions for.
  * \param str_sz Maximum length of the string in characters.
- * \param scale Multiplier of the string drawing font to assume.
+ * \param flags String options.
  * \param sz_out ::MEMORY_PTR to the GRAPHICS_RECT to hold the output size.
  */
 void graphics_string_sz(
-   const char* str, uint16_t str_sz, uint8_t scale, struct GRAPHICS_RECT* sz_out
+   const char* str, uint16_t str_sz, uint8_t flags, struct GRAPHICS_RECT* sz_out
 );
 
 /**

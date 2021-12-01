@@ -54,14 +54,21 @@ void graphics_shutdown() {
 #ifdef USE_SOFTWARE_TEXT
 
 void graphics_char_at(
-   const char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
-   uint8_t scale
+   char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
+   uint8_t flags
 ) {
 	int x = 0;
 	int y = 0;
 	int bitmask = 0;
 	GRAPHICS_COLOR pixel = GRAPHICS_COLOR_BLACK;
 
+   if(
+      GRAPHICS_STRING_FLAGS_ALL_CAPS == (GRAPHICS_STRING_FLAGS_ALL_CAPS & flags)
+   ) {
+      c &= ~ 0x20; /* XOR ASCII all-caps trick. */
+   }
+
+   /* Draw the char from our built-in font. */
 	for( y = 0 ; FONT_H > y ; y++ ) {
 		bitmask = gc_font8x8_basic[c][y];
 		for( x = 0 ; FONT_W > x ; x++ ) {
@@ -76,7 +83,7 @@ void graphics_char_at(
 
 void graphics_string_at(
    const char* str, uint16_t str_sz, uint16_t x_orig, uint16_t y_orig,
-   GRAPHICS_COLOR color, uint8_t scale
+   GRAPHICS_COLOR color, uint8_t flags
 ) {
    int16_t i = 0,
       x_o = 0, /* X offset. */
@@ -96,7 +103,7 @@ void graphics_string_at(
          y_o += FONT_H + FONT_SPACE;
 
       } else if( graphics_char_is_printable( str[i] ) ) {
-         graphics_char_at( str[i], x_orig + x_o, y_orig + y_o, color, scale );
+         graphics_char_at( str[i], x_orig + x_o, y_orig + y_o, color, flags );
 
          /* Shift the "cursor" to the right. */
          x_o += FONT_W + FONT_SPACE;
@@ -106,7 +113,7 @@ void graphics_string_at(
 }
 
 void graphics_string_sz(
-   const char* str, uint16_t str_sz, uint8_t scale, struct GRAPHICS_RECT* sz_out
+   const char* str, uint16_t str_sz, uint8_t flags, struct GRAPHICS_RECT* sz_out
 ) {
    int16_t row_x_w = 0,
       i = 0;

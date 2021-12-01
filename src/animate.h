@@ -66,7 +66,11 @@
  *        frame's non-black pixels.
  */
 #define ANIMATE_FLAG_CLEANUP  0x04
-
+/**
+ * \relates ANIMATION
+ * \brief ::ANIMATION::flags indicating animation has been temporarily paused
+ *        and should not update or draw on-screen.
+ */
 #define ANIMATE_FLAG_PAUSED   0x08
 
 /*! \} */
@@ -139,8 +143,17 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig );
  */
 void animate_frame();
 
+/**
+ * \brief Pause all animations with the given flags without deleting them.
+ * \param flags Bitfield indicating which animations to pause.
+ */
 void animate_pause( uint16_t flags );
 
+/**
+ * \brief Resume all animations with the given flags that have been paused with
+ *        animate_pause().
+ * \param flags Bitfield indicating which animations to resume.
+ */
 void animate_resume( uint16_t flags );
 
 /**

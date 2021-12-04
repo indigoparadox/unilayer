@@ -20,7 +20,7 @@ void animate_draw_FRAMES( struct ANIMATION* a ) {
 }
 
 int8_t animate_create(
-   uint8_t type, int16_t x, int16_t y, int16_t w, int16_t h
+   uint8_t type, uint16_t flags, int16_t x, int16_t y, int16_t w, int16_t h
 ) {
    return 0;
 }
@@ -32,6 +32,12 @@ void animate_stop( int8_t idx ) {
 }
 
 void animate_stop_all() {
+}
+
+void animate_pause( uint16_t flags ) {
+}
+
+void animate_resume( uint16_t flags ) {
 }
 
 #else

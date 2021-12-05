@@ -57,15 +57,6 @@ void memory_copy_ptr( MEMORY_PTR, CONST_MEMORY_PTR, uint32_t );
 void memory_zero_ptr( MEMORY_PTR ptr, uint32_t sz );
 
 /**
- * \brief Lock a dynamic memory handle and return a ::MEMORY_PTR that can be
- *        dereferenced safely.
- * \param handle A handle that has been successfully allocated with
- *        memory_alloc().
- * \return A typical C-style pointer that can be dereferenced as normal.
- */
-WARN_UNUSED MEMORY_PTR memory_lock( MEMORY_HANDLE handle );
-
-/**
  * \brief Unlock a dynamic memory handle so the system can relocate it on the
  *        heap to relieve congestion.
  * \param handle A handle that has been previously locked with memory_lock().
@@ -83,6 +74,38 @@ int16_t memory_strncmp_ptr( const char*, const char*, uint16_t );
  *         under l characters, l.
  */
 int16_t memory_strnlen_ptr( const char* s, uint16_t l );
+
+#if !defined( MEMORY_PLATFORM_C ) && defined( MEMORY_DEBUG_LOCKS )
+
+#define stringify_handle( handle ) #handle
+
+#define memory_lock( handle ) memory_lock_wrapper( handle, stringify_handle( handle ), __func__ )
+
+#define memory_unlock( handle ) memory_unlock_wrapper( handle, stringify_handle( handle ), __func__ )
+
+#define memory_free( handle ) memory_free_wrapper( handle, stringify_handle( handle ), __func__ )
+
+MEMORY_PTR memory_lock_wrapper(
+   MEMORY_HANDLE handle, const char* handle_name, const char* caller );
+
+MEMORY_PTR memory_unlock_wrapper(
+   MEMORY_HANDLE handle, const char* handle_name, const char* caller );
+
+void memory_free_wrapper(
+   MEMORY_HANDLE handle, const char* handle_name, const char* caller );
+
+#else
+
+/**
+ * \brief Lock a dynamic memory handle and return a ::MEMORY_PTR that can be
+ *        dereferenced safely.
+ * \param handle A handle that has been successfully allocated with
+ *        memory_alloc().
+ * \return A typical C-style pointer that can be dereferenced as normal.
+ */
+WARN_UNUSED MEMORY_PTR memory_lock( MEMORY_HANDLE handle );
+
+#endif /* !MEMORY_PLATFORM_C && MEMORY_DEBUG_LOCKS */
 
 /*! \} */
 

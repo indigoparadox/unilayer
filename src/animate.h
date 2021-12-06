@@ -38,10 +38,32 @@
  *
  * \}
  */
-#define ANIMATE_CB_TABLE( f ) f( 0, CIRCLE ) f( 1, RECTANGLE ) f( 2, FIRE ) f( 3, SNOW ) f( 4, FRAMES )
+#define ANIMATE_CB_TABLE( f ) f( 0, CIRCLE ) f( 1, RECTANGLE ) f( 2, FIRE ) f( 3, SNOW ) f( 4, STRING ) f( 5, FRAMES )
 
 /*! \brief Return from animate_create() indicating a problem. */
 #define ANIMATE_ERROR -1
+
+#define ANIMATE_COLOR_BLACK      0
+#define ANIMATE_COLOR_CYAN       1
+#define ANIMATE_COLOR_MAGENTA    2
+#define ANIMATE_COLOR_WHITE      3
+
+#ifdef DEPTH_VGA
+
+#define ANIMATE_COLOR_DARKBLUE   4
+#define ANIMATE_COLOR_DARKGREEN  5
+#define ANIMATE_COLOR_TEAL       6
+#define ANIMATE_COLOR_DARKRED    7
+#define ANIMATE_COLOR_VIOLET     8
+#define ANIMATE_COLOR_BROWN      9
+#define ANIMATE_COLOR_GRAY       10
+#define ANIMATE_COLOR_DARKGRAY   11
+#define ANIMATE_COLOR_BLUE       12
+#define ANIMATE_COLOR_GREEN      13
+#define ANIMATE_COLOR_RED        15
+#define ANIMATE_COLOR_YELLOW     16
+
+#endif /* DEPTH_VGA */
 
 /**
  * \addtogroup unilayer_animate_flags Unilayer Animation Flags
@@ -83,6 +105,13 @@
 #define ANIMATE_FIRE_COOLING_MIN 5
 #define ANIMATE_FIRE_WIND 1
 
+#define ANIMATE_TEXT_HEADER_Y_OFFSET   0
+#define ANIMATE_TEXT_HEADER_Y_COUNT    1
+#define ANIMATE_TEXT_HEADER_STR_SZ     2
+#define ANIMATE_TEXT_HEADER_COLOR_IDX  3
+#define ANIMATE_TEXT_HEADER_STR        4
+#define ANIMATE_TEXT_MAX_SZ            (ANIMATE_TILE_SZ - ANIMATE_TEXT_HEADER_STR)
+
 #if 0
 /*! \brief Used with FRAMES ::ANIMATION::type ANIMATION::data to list frames to
  *         play. */
@@ -120,6 +149,12 @@ struct ANIMATION {
 
 /*! \brief Callback to call on active animations for every frame. */
 typedef void (*ANIMATE_CB)( struct ANIMATION* a );
+
+/**
+ * \brief Setup string animation.
+ */
+void animate_set_string(
+   int8_t a_idx, char* str_in, uint8_t str_sz_in, uint8_t color_idx_in );
 
 /**
  * \brief Create a new animation in the global animations list.
@@ -184,6 +219,27 @@ const ANIMATE_CB gc_animate_draw[] = {
 ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_TYPES );
 
 struct ANIMATION g_animations[ANIMATE_ANIMATIONS_MAX];
+
+static const GRAPHICS_COLOR gc_animation_colors[] = {
+   GRAPHICS_COLOR_BLACK,
+   GRAPHICS_COLOR_CYAN,
+   GRAPHICS_COLOR_MAGENTA,
+   GRAPHICS_COLOR_WHITE,
+#ifdef DEPTH_VGA
+   GRAPHICS_COLOR_DARKBLUE,
+   GRAPHICS_COLOR_DARKGREEN,
+   GRAPHICS_COLOR_TEAL,
+   GRAPHICS_COLOR_DARKRED,
+   GRAPHICS_COLOR_VIOLET,
+   GRAPHICS_COLOR_BROWN,
+   GRAPHICS_COLOR_GRAY,
+   GRAPHICS_COLOR_DARKGRAY,
+   GRAPHICS_COLOR_BLUE,
+   GRAPHICS_COLOR_GREEN,
+   GRAPHICS_COLOR_RED,
+   GRAPHICS_COLOR_YELLOW
+#endif /* DEPTH_VGA */
+};
 
 #else
 

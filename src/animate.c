@@ -16,6 +16,9 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
 void animate_draw_SNOW( struct ANIMATION* a ) {
 }
 
+void animate_draw_STRING( struct ANIMATION* a ) {
+}
+
 void animate_draw_FRAMES( struct ANIMATION* a ) {
 }
 
@@ -155,8 +158,62 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
    animate_tesselate( a, 0 );
 }
 
+void animate_draw_STRING( struct ANIMATION* a ) {
+   int8_t* y_offset = (int8_t*)&(a->tile[ANIMATE_TEXT_HEADER_Y_OFFSET]);
+   uint8_t str_sz = (uint8_t)(a->tile[ANIMATE_TEXT_HEADER_STR_SZ]),
+      color_idx = (uint8_t)(a->tile[ANIMATE_TEXT_HEADER_COLOR_IDX]),
+      * y_count = (uint8_t*)&(a->tile[ANIMATE_TEXT_HEADER_Y_COUNT]);
+   char* str = (char*)&(a->tile[ANIMATE_TEXT_HEADER_STR]);
+   GRAPHICS_COLOR color;
+
+#ifdef DEPTH_VGA
+   assert( color_idx <= 16 );
+#else
+   assert( color_idx <= 3 );
+#endif /* DEPTH_VGA */
+
+   /* Select the color and draw the animation text. */
+   color = gc_animation_colors[color_idx];
+   graphics_string_at(
+      str, str_sz, a->x, a->y + a->h - (*y_offset), color, 0 );
+
+   /* Frame advancement delay. */
+   if( *y_count < 2 ) {
+      (*y_count)++;
+      return;
+   } else {
+      *y_count = 0;
+   }
+
+   /* Move the text up half a line until it would leave the animation. */
+   *y_offset += (FONT_H / 2);
+   if( *y_offset > ANIMATE_TILE_H ) {
+      a->flags &= ~ANIMATE_FLAG_ACTIVE;
+   }
+}
+
 void animate_draw_FRAMES( struct ANIMATION* a ) {
    /* TODO */
+}
+
+void animate_set_string(
+   int8_t a_idx, char* str_in, uint8_t str_sz_in, uint8_t color_idx_in
+) {
+   struct ANIMATION* a = &(g_animations[a_idx]);
+   int8_t* y_offset = (int8_t*)&(a->tile[ANIMATE_TEXT_HEADER_Y_OFFSET]);
+   uint8_t* str_sz = (uint8_t*)&(a->tile[ANIMATE_TEXT_HEADER_STR_SZ]),
+      * color_idx = (uint8_t*)&(a->tile[ANIMATE_TEXT_HEADER_COLOR_IDX]);
+   char* str = (char*)&(a->tile[ANIMATE_TEXT_HEADER_STR]);
+
+   assert( 0 <= a_idx );
+   assert( ANIMATE_ANIMATIONS_MAX > a_idx );
+   assert( ANIMATE_TEXT_MAX_SZ > *str_sz );
+   assert( ANIMATE_TYPE_STRING == a->type );
+
+   memory_copy_ptr( str, str_in, str_sz_in );
+   *str_sz = str_sz_in;
+   *color_idx = color_idx_in;
+   *y_offset = FONT_H;
 }
 
 int8_t animate_create(

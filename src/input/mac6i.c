@@ -1,12 +1,12 @@
 
 #include "../unilayer.h"
 
-int input_init() {
+uint8_t input_init() {
    FlushEvents( everyEvent, 0 );
    return 1;
 }
 
-int input_poll() {
+uint8_t input_poll() {
    EventRecord event;
    uint8_t key = 0;
 

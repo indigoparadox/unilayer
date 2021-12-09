@@ -4,11 +4,11 @@
 /* This is set by the window message processor in win16g.c. */
 uint32_t g_last_key = 0;
 
-int input_init() {
+uint8_t input_init() {
    return 1;
 }
 
-int input_poll() {
+uint8_t input_poll() {
    uint32_t last_key = g_last_key;
    g_last_key = 0;
    switch( last_key ) {

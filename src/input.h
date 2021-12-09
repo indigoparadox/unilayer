@@ -2,8 +2,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-int input_init();
-int input_poll();
+uint8_t input_init();
+uint8_t input_poll();
 
 #endif /* INPUT_H */
 

@@ -57,9 +57,9 @@ void graphics_char_at(
    char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
    uint8_t flags
 ) {
-	int x = 0;
-	int y = 0;
-	int bitmask = 0;
+	int16_t x = 0,
+	   y = 0;
+	uint8_t bitmask = 0;
 	GRAPHICS_COLOR pixel = GRAPHICS_COLOR_BLACK;
 
    if(

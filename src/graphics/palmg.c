@@ -68,7 +68,7 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
-   int retval = 1;
+   int16_t retval = 1;
    MEMORY_HANDLE rsrc = NULL;
    BitmapPtr ptr = NULL;
    RectangleType screen_rect;
@@ -111,7 +111,7 @@ cleanup:
 int16_t graphics_platform_load_bitmap(
    RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
-   int retval = 1;
+   int16_t retval = 1;
 
    if( 0 != b->ref_count ) {
       retval = 0;

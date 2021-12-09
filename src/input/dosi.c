@@ -4,12 +4,12 @@
 #include <dos.h>
 #include <conio.h>
 
-int input_init() {
+uint8_t input_init() {
    return 1;
 }
 
-int input_poll() {
-   int ch_out = 0;
+uint8_t input_poll() {
+   uint8_t ch_out = 0;
    if( kbhit() ) {
       ch_out = getch();
       while( kbhit() ) {

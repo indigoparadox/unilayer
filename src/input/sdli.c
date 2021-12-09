@@ -1,14 +1,14 @@
 
 #include "../unilayer.h"
 
-int input_init() {
+uint8_t input_init() {
    return 1;
 }
 
-int input_poll() {
+uint8_t input_poll() {
    SDL_Event event;
-   int eres = 0,
-      sym_out = 0;
+   int8_t eres = 0;
+   uint8_t sym_out = 0;
 
    memory_zero_ptr( &event, sizeof( SDL_Event ) );
 

@@ -5,11 +5,11 @@
 
 static UInt32 g_next_input = 0;
 
-int input_init() {
+uint8_t input_init() {
    return 1;
 }
 
-int input_poll() {
+uint8_t input_poll() {
    EventType event;
    UInt32 key_state;
    UInt16 allow_input = 0;

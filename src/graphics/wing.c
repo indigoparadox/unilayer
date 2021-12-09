@@ -497,7 +497,7 @@ int16_t graphics_platform_load_bitmap(
    HDC hdc_mask;
    BITMAP bm;
 #ifdef RESOURCE_FILE
-   int i, x, y, w, h, bpp, offset;
+   int32_t i, x, y, w, h, bpp, offset;
    char* buf = NULL;
    BITMAPINFO* bmi = NULL;
 #endif /* RESOURCE_FILE */

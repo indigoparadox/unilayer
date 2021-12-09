@@ -191,10 +191,10 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, GRAPHICS_COLOR color ) {
-	int screen_byte_offset = 0,
+	uint16_t screen_byte_offset = 0,
       bit_offset = 0,
-      bit_mask = 0;
-   uint16_t scaled_x = x,
+      bit_mask = 0,
+      scaled_x = x,
       scaled_y = y;
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
@@ -230,8 +230,8 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
-	int y_offset = 0;
-   uint16_t screen_byte_offset = 0;
+   uint16_t screen_byte_offset = 0,
+	   y_offset = 0;
    /* Still not sure why copy seems to start w/2px in? */
    const uint8_t* plane_1 = bmp->plane_1 - bmp->w / 8;
    const uint8_t* plane_2 = bmp->plane_2 - bmp->w / 8;
@@ -280,9 +280,9 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    GRAPHICS_COLOR color
 ) {
-	int x = 0;
-	int y = 0;
-   uint16_t screen_byte_offset = 0;
+   uint16_t screen_byte_offset = 0,
+      x = 0,
+      y = 0;
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
 #error "not implemented"

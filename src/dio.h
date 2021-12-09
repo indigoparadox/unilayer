@@ -113,8 +113,8 @@ uint32_t dio_read_file( const char*, MEMORY_HANDLE* );
 int32_t dio_move_file( const char*, const char* );
 int16_t dio_strnchr( const char*, uint16_t, char );
 int16_t dio_itoa( char*, uint16_t, int16_t, uint8_t );
-int16_t dio_atoi( const char*, int );
-int16_t dio_snprintf( char*, int, const char*, ... );
+int16_t dio_atoi( const char*, uint8_t );
+int16_t dio_snprintf( char*, uint16_t, const char*, ... );
 
 /*! \} */
 

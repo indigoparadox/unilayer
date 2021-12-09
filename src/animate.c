@@ -54,10 +54,11 @@ void animate_draw_CIRCLE( struct ANIMATION* a ) {
 }
 
 void animate_draw_FIRE( struct ANIMATION* a ) {
-   int x = 0,
-      y = 0,
-      idx = 0,
+   int8_t x = 0,
       next_x = 0,
+      y = 0;
+   uint16_t
+      idx = 0,
       next_idx = 0;
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {

@@ -233,7 +233,7 @@ int32_t dio_write_stream(
 }
 
 uint32_t dio_reverse_endian_32( uint32_t int_in ) {
-   int i = 0;
+   int8_t i = 0;
    uint32_t int_out = 0;
 
    for( i = 3 ; 0 <= i ; i-- ) {
@@ -495,7 +495,7 @@ int16_t dio_itoa(
    return idx;
 }
 
-int16_t dio_atoi( const char* a, int base ) {
+int16_t dio_atoi( const char* a, uint8_t base ) {
    uint16_t idx = 0;
    int16_t out = 0;
 
@@ -510,15 +510,15 @@ int16_t dio_atoi( const char* a, int base ) {
 }
 
 int16_t dio_snprintf(
-   char* buffer, int buffer_len, const char* fmt, ...
+   char* buffer, uint16_t buffer_len, const char* fmt, ...
 ) {
    va_list args;
    unsigned char c = '\0',
       last = '\0';
-   int16_t d = 0,
-      idx_in = 0,
+   uint16_t idx_in = 0,
       idx_out = 0,
       idx_spec = 0;
+   int d = 0;
    char* s = NULL;
 
    /* Quick and dirty debug string formatting function. */

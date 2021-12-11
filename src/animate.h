@@ -204,7 +204,7 @@ void animate_stop_all();
 
 #define ANIMATE_CB_TABLE_DRAW_PROTOTYPES( idx, name ) void animate_draw_ ## name( struct ANIMATION* );
 
-ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_DRAW_PROTOTYPES );
+ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_DRAW_PROTOTYPES )
 
 #ifdef ANIMATE_C
 
@@ -250,7 +250,7 @@ extern struct ANIMATION g_animations[ANIMATE_ANIMATIONS_MAX];
 
 #define ANIMATE_CB_TABLE_TYPES( idx, name ) extern const uint8_t ANIMATE_TYPE_ ## name;
 
-ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_TYPES );
+ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_TYPES )
 
 #endif /* ANIMATE_C */
 

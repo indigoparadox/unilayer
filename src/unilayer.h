@@ -26,12 +26,9 @@
 
 #define stringize( inp ) stringize_internal( inp )
 
+#ifndef PLATFORM_GB
 #include <stddef.h>
-
-#if !defined( offsetof )
-#warn "offsetof not defined in stddef.h; using internal version..."
-#define offsetof( obj, field ) ((int)(&(((obj*)(0))->field)))
-#endif /* !offsetof */
+#endif /* !PLATFORM_GB */
 
 #ifdef ANCIENT_C
 /* For Microsoft C 5 and company. */

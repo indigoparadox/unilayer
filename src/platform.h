@@ -153,6 +153,21 @@ loop_globals();
 #  include "input/megadi.h"
 #  include "graphics/megadg.h"
 
+#elif defined( PLATFORM_GB )
+
+typedef char int8_t;
+typedef unsigned char uint8_t;
+typedef short int16_t;
+typedef unsigned short uint16_t;
+typedef long int32_t;
+typedef unsigned long uint32_t;
+
+loop_globals()
+#  include "memory/fakem.h"
+#  include "resinc.h"
+#  include "input/gbi.h"
+#  include "graphics/gbg.h"
+
 #else
 
 #  include <stdint.h>

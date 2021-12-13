@@ -15,8 +15,9 @@
  */
 
 /*! \brief Draw string at 1x scale. */
-#define GRAPHICS_STRING_FLAGS_1X 0x01
-#define GRAPHICS_STRING_FLAGS_ALL_CAPS 0x10
+#define GRAPHICS_STRING_FLAG_1X 0x01
+#define GRAPHICS_STRING_FLAG_ALL_CAPS 0x10
+#define GRAPHICS_STRING_FLAG_FONT_SCRIPT  0x20
 
 #ifndef GRAPHICS_TXP_R
 /*! \brief Red value for transparency color in VGA DEPTH. */

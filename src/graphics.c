@@ -62,15 +62,26 @@ void graphics_char_at(
 	uint8_t bitmask = 0;
 	GRAPHICS_COLOR pixel = GRAPHICS_COLOR_BLACK;
 
+   assert( '~' >= c );
+   assert( ' ' <= c );
+
    if(
-      GRAPHICS_STRING_FLAGS_ALL_CAPS == (GRAPHICS_STRING_FLAGS_ALL_CAPS & flags)
+      GRAPHICS_STRING_FLAG_ALL_CAPS == (GRAPHICS_STRING_FLAG_ALL_CAPS & flags)
    ) {
       c &= ~ 0x20; /* XOR ASCII all-caps trick. */
    }
 
    /* Draw the char from our built-in font. */
 	for( y = 0 ; FONT_H > y ; y++ ) {
-		bitmask = gc_font8x8_basic[c][y];
+      if(
+         GRAPHICS_STRING_FLAG_FONT_SCRIPT ==
+         (GRAPHICS_STRING_FLAG_FONT_SCRIPT & flags)
+      ) {
+   		bitmask = gc_font8x8_script[c - ' '][y];
+      } else {
+   		bitmask = gc_font8x8_basic[c - ' '][y];
+      }
+
 		for( x = 0 ; FONT_W > x ; x++ ) {
 			if( bitmask & 0x01 ) {
 				pixel = color;

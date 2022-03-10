@@ -163,7 +163,10 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
 }
 
 void animate_draw_CLOUDS( struct ANIMATION* a ) {
-   int8_t row_start_idx = 0;
+   int8_t row_start_idx = 0,
+      row_start_last = 0,
+      row_end_buffer = 0, /* Last pixel wrapped off row end. */
+      row_offset = 0;
    int16_t
       x = 0,
       y = 0,
@@ -173,7 +176,13 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
       /* Create initial cloud lines along the left side of the tile. */
       for( y = 0 ; ANIMATE_TILE_H > y ; y++ ) {
-         row_start_idx = graphics_get_random( 0, ANIMATE_TILE_W / 4 );
+         
+         /* Get new non-repeating offset for each row. */
+         do {
+            row_start_idx = graphics_get_random( 0, ANIMATE_TILE_W / 4 );
+         } while( row_start_idx == row_start_last );
+
+         /* Draw the row's initial state. */
          for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
             idx = (y * ANIMATE_TILE_W) + x;
             if( x > row_start_idx && x < row_start_idx + 8 ) {
@@ -182,6 +191,9 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
                a->tile[idx] = -1;
             }
          }
+
+         /* Save the row length to compare on next loop. */
+         row_start_last = row_start_idx;
       }
 
       a->flags |= ANIMATE_FLAG_INIT;
@@ -193,21 +205,18 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
 
       /* Iterate each row. */
       row_idx = (y * ANIMATE_TILE_W);
+      row_end_buffer = a->tile[row_idx + (ANIMATE_TILE_W - 1)];
+      row_offset = graphics_get_random( 1, 3 );
       for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
          idx = row_idx + x;
 
-         /* Wrap-around. */
-         /* TODO: Fix "fisheye" effect on tile seam. */
-         if( 0 == x && 0 >= a->tile[row_idx + (ANIMATE_TILE_W - 1)] ) {
-            a->tile[row_idx] = -1;
-         } else if( 0 == x && 0 < a->tile[row_idx + (ANIMATE_TILE_W - 1)] ) {
-            a->tile[row_idx] = 50;
+         if( 0 == x ) {
+            /* Wrap-around. */
+            a->tile[row_idx] = row_end_buffer;
 
-         /* Cloud advance. */
-         } else if( 0 >= a->tile[idx - 1] ) {
-            a->tile[idx] = -1;
-         } else if( 0 < a->tile[idx - 1] ) {
-            a->tile[idx] = 100;
+         } else {
+            /* Cloud advance. */
+            a->tile[idx] = a->tile[idx - 1];
          }
       }
    }

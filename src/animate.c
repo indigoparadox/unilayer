@@ -185,10 +185,12 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
          /* Draw the row's initial state. */
          for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
             idx = (y * ANIMATE_TILE_W) + x;
-            if( x > row_start_idx && x < row_start_idx + 8 ) {
+            if(
+               x > row_start_idx && x < row_start_idx + ANIMATE_CLOUD_WISP_LEN
+            ) {
                a->tile[idx] = 100;
             } else {
-               a->tile[idx] = -1;
+               a->tile[idx] = 33;
             }
          }
 
@@ -203,10 +205,15 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
 
    for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
 
+      /* Do we advance this wisp on this iteration? Not always. */
+      row_offset = graphics_get_random( 0, 30 );
+      if( 5 < row_offset ) {
+         continue;
+      }
+
       /* Iterate each row. */
       row_idx = (y * ANIMATE_TILE_W);
       row_end_buffer = a->tile[row_idx + (ANIMATE_TILE_W - 1)];
-      row_offset = graphics_get_random( 1, 3 );
       for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
          idx = row_idx + x;
 

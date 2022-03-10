@@ -112,6 +112,8 @@
 #define ANIMATE_TEXT_HEADER_STR        4
 #define ANIMATE_TEXT_MAX_SZ            (ANIMATE_TILE_SZ - ANIMATE_TEXT_HEADER_STR)
 
+#define ANIMATE_CLOUD_WISP_LEN 12
+
 #if 0
 /*! \brief Used with FRAMES ::ANIMATION::type ANIMATION::data to list frames to
  *         play. */

@@ -16,6 +16,9 @@ void animate_draw_FIRE( struct ANIMATION* a ) {
 void animate_draw_SNOW( struct ANIMATION* a ) {
 }
 
+void animate_draw_CLOUDS( struct ANIMATION* a ) {
+}
+
 void animate_draw_STRING( struct ANIMATION* a ) {
 }
 
@@ -157,6 +160,9 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
    }
 
    animate_tesselate( a, 0 );
+}
+
+void animate_draw_CLOUDS( struct ANIMATION* a ) {
 }
 
 void animate_draw_STRING( struct ANIMATION* a ) {
@@ -305,13 +311,15 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
    }
 }
 
-void animate_frame() {
+void animate_frame( uint16_t flags ) {
    int8_t i = 0;
 
    for( i = 0 ; ANIMATE_ANIMATIONS_MAX > i ; i++ ) {
       if(
          ANIMATE_FLAG_ACTIVE != (g_animations[i].flags & ANIMATE_FLAG_ACTIVE) ||
-         ANIMATE_FLAG_PAUSED == (g_animations[i].flags & ANIMATE_FLAG_PAUSED)
+         ANIMATE_FLAG_PAUSED == (g_animations[i].flags & ANIMATE_FLAG_PAUSED) ||
+         flags != (flags & g_animations[i].flags)
+         
       ) {
          continue;
       }

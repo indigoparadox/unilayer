@@ -38,7 +38,7 @@
  *
  * \}
  */
-#define ANIMATE_CB_TABLE( f ) f( 0, CIRCLE ) f( 1, RECTANGLE ) f( 2, FIRE ) f( 3, SNOW ) f( 4, STRING ) f( 5, FRAMES )
+#define ANIMATE_CB_TABLE( f ) f( 0, CIRCLE ) f( 1, RECTANGLE ) f( 2, FIRE ) f( 3, SNOW ) f( 4, CLOUDS ) f( 5, STRING ) f( 6, FRAMES )
 
 /*! \brief Return from animate_create() indicating a problem. */
 #define ANIMATE_ERROR -1
@@ -175,8 +175,9 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig );
 
 /**
  * \brief Should be called during every frame to overlay animations on screen.
+ * \param flags Bitfield indicating which animations to animate/draw.
  */
-void animate_frame();
+void animate_frame( uint16_t flags );
 
 /**
  * \brief Pause all animations with the given flags without deleting them.

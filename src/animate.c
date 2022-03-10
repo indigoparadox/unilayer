@@ -163,6 +163,57 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
 }
 
 void animate_draw_CLOUDS( struct ANIMATION* a ) {
+   int8_t row_start_idx = 0;
+   int16_t
+      x = 0,
+      y = 0,
+      idx = 0,
+      row_idx = 0;
+
+   if( !(a->flags & ANIMATE_FLAG_INIT) ) {
+      /* Create initial cloud lines along the left side of the tile. */
+      for( y = 0 ; ANIMATE_TILE_H > y ; y++ ) {
+         row_start_idx = graphics_get_random( 0, ANIMATE_TILE_W / 4 );
+         for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
+            idx = (y * ANIMATE_TILE_W) + x;
+            if( x > row_start_idx && x < row_start_idx + 8 ) {
+               a->tile[idx] = 100;
+            } else {
+               a->tile[idx] = -1;
+            }
+         }
+      }
+
+      a->flags |= ANIMATE_FLAG_INIT;
+   }
+
+   /* TODO: Add a parallax effect, maybe? */
+
+   for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
+
+      /* Iterate each row. */
+      row_idx = (y * ANIMATE_TILE_W);
+      for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
+         idx = row_idx + x;
+
+         /* Wrap-around. */
+         /* TODO: Fix "fisheye" effect on tile seam. */
+         if( 0 == x && 0 >= a->tile[row_idx + (ANIMATE_TILE_W - 1)] ) {
+            a->tile[row_idx] = -1;
+         } else if( 0 == x && 0 < a->tile[row_idx + (ANIMATE_TILE_W - 1)] ) {
+            a->tile[row_idx] = 50;
+
+         /* Cloud advance. */
+         } else if( 0 >= a->tile[idx - 1] ) {
+            a->tile[idx] = -1;
+         } else if( 0 < a->tile[idx - 1] ) {
+            a->tile[idx] = 100;
+         }
+      }
+   }
+
+   animate_tesselate( a, 0 );
+
 }
 
 void animate_draw_STRING( struct ANIMATION* a ) {

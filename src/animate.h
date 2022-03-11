@@ -76,24 +76,26 @@
  * \relates ANIMATION
  * \brief ::ANIMATION::flags indicating animation is active and playing.
  */
-#define ANIMATE_FLAG_ACTIVE   0x01
+#define ANIMATE_FLAG_ACTIVE   0x0001
 /**
  * \relates ANIMATION
  * \brief ::ANIMATION::flags indicating animation has been initialized.
  */
-#define ANIMATE_FLAG_INIT     0x02
+#define ANIMATE_FLAG_INIT     0x0002
 /**
  * \relates ANIMATION
  * \brief ::ANIMATION::flags indicating animation should black out previous
  *        frame's non-black pixels.
  */
-#define ANIMATE_FLAG_CLEANUP  0x04
+#define ANIMATE_FLAG_CLEANUP  0x0004
 /**
  * \relates ANIMATION
  * \brief ::ANIMATION::flags indicating animation has been temporarily paused
  *        and should not update or draw on-screen.
  */
-#define ANIMATE_FLAG_PAUSED   0x08
+#define ANIMATE_FLAG_PAUSED   0x0008
+
+#define ANIMATE_FLAG_CLOUDS_ROTATE 0x0010
 
 /*! \} */
 
@@ -112,7 +114,7 @@
 #define ANIMATE_TEXT_HEADER_STR        4
 #define ANIMATE_TEXT_MAX_SZ            (ANIMATE_TILE_SZ - ANIMATE_TEXT_HEADER_STR)
 
-#define ANIMATE_CLOUD_WISP_LEN 12
+#define ANIMATE_CLOUD_WISP_LEN 8
 
 #if 0
 /*! \brief Used with FRAMES ::ANIMATION::type ANIMATION::data to list frames to

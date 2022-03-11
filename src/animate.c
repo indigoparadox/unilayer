@@ -165,13 +165,14 @@ void animate_draw_SNOW( struct ANIMATION* a ) {
 void animate_draw_CLOUDS( struct ANIMATION* a ) {
    int8_t row_start_idx = 0,
       row_start_last = 0,
-      row_end_buffer = 0, /* Last pixel wrapped off row end. */
-      row_offset = 0;
+      row_col_end_buffer = 0, /* Last pixel wrapped off row end. */
+      row_col_offset = 0,
+      prev_row_col_offset = 0;
    int16_t
       x = 0,
       y = 0,
       idx = 0,
-      row_idx = 0;
+      prev_idx = 0;
 
    if( !(a->flags & ANIMATE_FLAG_INIT) ) {
       /* Create initial cloud lines along the left side of the tile. */
@@ -184,7 +185,14 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
 
          /* Draw the row's initial state. */
          for( x = 0 ; ANIMATE_TILE_W > x ; x++ ) {
-            idx = (y * ANIMATE_TILE_W) + x;
+            if(
+               ANIMATE_FLAG_CLOUDS_ROTATE !=
+               (ANIMATE_FLAG_CLOUDS_ROTATE & a->flags)
+            ) {
+               idx = (y * ANIMATE_TILE_W) + x;
+            } else {
+               idx = (x * ANIMATE_TILE_W) + y;
+            }
             if(
                x > row_start_idx && x < row_start_idx + ANIMATE_CLOUD_WISP_LEN
             ) {
@@ -203,27 +211,114 @@ void animate_draw_CLOUDS( struct ANIMATION* a ) {
 
    /* TODO: Add a parallax effect, maybe? */
 
+#if 0
+   if(
+      ANIMATE_FLAG_CLOUDS_ROTATE ==
+      (ANIMATE_FLAG_CLOUDS_ROTATE & a->flags)
+   ) {
+      for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
+
+         * Do we advance this wisp on this iteration? Not always. */
+         row_col_offset = graphics_get_random( 0, 30 );
+         if( 5 < row_col_offset ) {
+            continue;
+         }
+
+         /* Iterate each row. */
+         row_col_idx = (y * ANIMATE_TILE_W);
+         row_col_end_buffer = a->tile[row_col_idx + (ANIMATE_TILE_W - 1)];
+
+         for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
+            idx = row_col_idx + x;
+
+            if( 0 == x ) {
+               /* Wrap-around. */
+               a->tile[row_col_idx] = row_col_end_buffer;
+
+            } else {
+               /* Cloud advance. */
+               a->tile[idx] = a->tile[idx - 1];
+            }
+         }
+      }
+
+   } else {
+
+      for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
+
+         /* Do we advance this wisp on this iteration? Not always. */
+         row_col_offset = graphics_get_random( 0, 30 );
+         if( 5 < row_col_offset ) {
+            continue;
+         }
+
+         /* Iterate each row. */
+         for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
+            idx = (y * ANIMATE_TILE_W) + x;
+            row_col_end_buffer = a->tile[((ANIMATE_TILE_H - 1) * y) + x];
+            prev_idx = idx - ANIMATE_TILE_W;
+
+            if( 0 == y ) {
+               /* Wrap-around. */
+               a->tile[idx] = row_col_end_buffer;
+
+            } else {
+               /* Cloud advance. */
+               a->tile[idx] = a->tile[prev_idx];
+            }
+         }
+      }
+
+   }
+#endif
+
    for( y = ANIMATE_TILE_H - 1 ; 0 <= y ; y-- ) {
 
-      /* Do we advance this wisp on this iteration? Not always. */
-      row_offset = graphics_get_random( 0, 30 );
-      if( 5 < row_offset ) {
-         continue;
+      /* TODO: Adapt this for rotated orientation... somewhat more complicated.
+       */
+      if(
+         ANIMATE_FLAG_CLOUDS_ROTATE !=
+         (ANIMATE_FLAG_CLOUDS_ROTATE & a->flags)
+      ) {
+         /* Do we advance this wisp on this iteration? Not always. */
+         prev_row_col_offset = row_col_offset;
+         row_col_offset = graphics_get_random( 0, 70 );
+         if( 45 > row_col_offset || 45 > prev_row_col_offset ) {
+            continue;
+         }
       }
 
       /* Iterate each row. */
-      row_idx = (y * ANIMATE_TILE_W);
-      row_end_buffer = a->tile[row_idx + (ANIMATE_TILE_W - 1)];
       for( x = ANIMATE_TILE_W - 1 ; 0 <= x ; x-- ) {
-         idx = row_idx + x;
 
-         if( 0 == x ) {
+         idx = (y * ANIMATE_TILE_W) + x;
+         if(
+            ANIMATE_FLAG_CLOUDS_ROTATE ==
+            (ANIMATE_FLAG_CLOUDS_ROTATE & a->flags)
+         ) {
+            row_col_end_buffer = 
+               /* Grab the pixel in this column off the bottom. */
+               a->tile[((ANIMATE_TILE_H - 1) * ANIMATE_TILE_W) + x];
+            prev_idx = idx - ANIMATE_TILE_W;
+         } else {
+            row_col_end_buffer =
+               /* Grab the pixel in this row off the right. */
+               a->tile[(y * ANIMATE_TILE_W) + (ANIMATE_TILE_W - 1)];
+            prev_idx = idx - 1;
+         }
+
+         if( 
+            (ANIMATE_FLAG_CLOUDS_ROTATE ==
+               (ANIMATE_FLAG_CLOUDS_ROTATE & a->flags) && 0 == y) ||
+            (ANIMATE_FLAG_CLOUDS_ROTATE !=
+               (ANIMATE_FLAG_CLOUDS_ROTATE & a->flags) && 0 == x)
+         ) {
             /* Wrap-around. */
-            a->tile[row_idx] = row_end_buffer;
+            a->tile[idx] = row_col_end_buffer;
 
          } else {
             /* Cloud advance. */
-            a->tile[idx] = a->tile[idx - 1];
+            a->tile[idx] = a->tile[prev_idx];
          }
       }
    }

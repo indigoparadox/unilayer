@@ -352,7 +352,7 @@ cleanup:
    }
 
    if( 0 >= retval && b->plane_2 ) {
-      free( b->plane_1 );
+      free( b->plane_2 );
    }
 
    if( NULL != buffer ) {

@@ -121,7 +121,6 @@ static LRESULT CALLBACK WndProc(
 }
 
 int16_t graphics_platform_init() {
-   MSG msg;
    WNDCLASS wc = { 0 };
 
    memset( &g_screen, '\0', sizeof( struct GRAPHICS_BITMAP ) );
@@ -486,92 +485,18 @@ void graphics_draw_line(
 #endif /* PLATFORM_WINCE */
 }
 
-int16_t graphics_platform_load_bitmap(
-   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
-) {
-   uint8_t* buffer = NULL;
-   int16_t retval = 1;
-   int32_t buffer_sz = 0;
-   uint32_t txp_color = 0;
-   HDC hdc;
-   HDC hdc_mask;
-   BITMAP bm;
-#ifdef RESOURCE_FILE
-   int32_t i, x, y, w, h, bpp, offset;
-   char* buf = NULL;
-   BITMAPINFO* bmi = NULL;
-#endif /* RESOURCE_FILE */
-
-   /* TODO: Fix this if RESOURCE_FILE is used. */
-
-   /* Load resource into bitmap. */
-   if( (RESOURCE_HANDLE)NULL != res_handle ) {
-      /* TODO: Handle non-Windows resources. */
-#ifdef RESOURCE_FILE
-
-#ifdef PLATFORM_WIN16
-      buf = memory_lock( res_handle );
-
-      bmi = (BITMAPINFO*)&(buf[sizeof( BITMAPFILEHEADER )]);
-
-      /*
-      for( i = 0 ; sizeof( BITMAPFILEHEADER ) > i ; i++ ) {
-         printf( "0x%02x ", buf[sizeof( BITMAPFILEHEADER ) + i] );
-      }
-      */
-      bmi = (BITMAPINFO*)&(buf[sizeof( BITMAPFILEHEADER )]);
-
-      bpp = bmp_int( uint16_t, buf, 28 );
-      offset = bmp_int( uint32_t, buf, 10 );
-      /*
-      debug_printf( 2, "bitmap is %d x %d, %d bpp",
-         bmih->biWidth, bmih->biHeight, bpp );
-      */
-
-      assert( 0 < bmi->bmiHeader.biWidth );
-      assert( 0 < bmi->bmiHeader.biHeight );
-      assert( 0 == bmi->bmiHeader.biWidth % 8 );
-      assert( 0 == bmi->bmiHeader.biHeight % 8 );
-
-      /*
-      hdc = CreateCompatibleDC( NULL );
-      */
-      hdc = GetDC( g_window );
-      b->bitmap = CreateCompatibleBitmap( hdc,
-         bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight );
-
-      SetDIBits( hdc, b->bitmap, 0,
-         bmi->bmiHeader.biHeight, &(buf[offset]), bmi,
-         DIB_RGB_COLORS );
-      /*
-      SetBitmapBits( b->bitmap, bmih->biSizeImage, &(buf[offset]) );
-      */
-
-      buf = memory_unlock( res_handle );
-
-      ReleaseDC( g_window, hdc );
-
-      resource_free_handle( res_handle );
-#else
-      b->bitmap = LoadImage( NULL, b->id, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
-#endif /* PLATFORM_WIN16 */
-
-#else
-      b->bitmap = res_handle;
-#endif /* RESOURCE_FILE */
-      /* free( res_handle ); */
-   } else {
-      error_printf( "NULL handle returned" );
-      retval = 0;
-      goto cleanup;
-   }
-   if( !b->bitmap ) {
-      error_printf( "unable to load resource" );
-      retval = 0;
-      goto cleanup;
-   }
-
 #ifdef DEPTH_VGA
+
+static int16_t graphics_platform_load_bitmap_trans(
+   struct GRAPHICS_BITMAP* b
+) {
+   HDC hdc;
+   BITMAP bm;
+   uint32_t txp_color = 0;
+   int16_t retval = 1;
+#ifdef DEPTH_VGA
+   HDC hdc_mask;
+#endif /* DEPTH_VGA */
 
    /* Setup transparency. */
 
@@ -602,6 +527,82 @@ int16_t graphics_platform_load_bitmap(
 
    /* TODO: Restore old HDC contents. */
 
+   return retval;
+}
+
+#endif /* DEPTH_VGA */
+
+int16_t graphics_platform_load_bitmap(
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+) {
+   int16_t retval = 1;
+#ifdef PLATFORM_WIN16
+   HDC hdc;
+#ifdef RESOURCE_FILE
+   int32_t i, x, y, w, h, bpp, offset;
+   char* buf = NULL;
+   BITMAPINFO* bmi = NULL;
+#endif /* RESOURCE_FILE */
+#endif /* PLATFORM_WIN16 */
+
+   /* TODO: Fix this if RESOURCE_FILE is used. */
+
+   /* Load resource into bitmap. */
+   if( (RESOURCE_HANDLE)NULL != res_handle ) {
+      /* TODO: Handle non-Windows resources. */
+#ifdef RESOURCE_FILE
+
+#  ifdef PLATFORM_WIN16
+      buf = memory_lock( res_handle );
+
+      bmi = (BITMAPINFO*)&(buf[sizeof( BITMAPFILEHEADER )]);
+
+      bpp = bmp_int( uint16_t, buf, 28 );
+      offset = bmp_int( uint32_t, buf, 10 );
+      /*
+      debug_printf( 2, "bitmap is %d x %d, %d bpp",
+         bmih->biWidth, bmih->biHeight, bpp );
+      */
+
+      assert( 0 < bmi->bmiHeader.biWidth );
+      assert( 0 < bmi->bmiHeader.biHeight );
+      assert( 0 == bmi->bmiHeader.biWidth % 8 );
+      assert( 0 == bmi->bmiHeader.biHeight % 8 );
+
+      hdc = GetDC( g_window );
+      b->bitmap = CreateCompatibleBitmap( hdc,
+         bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight );
+
+      SetDIBits( hdc, b->bitmap, 0,
+         bmi->bmiHeader.biHeight, &(buf[offset]), bmi,
+         DIB_RGB_COLORS );
+
+      buf = memory_unlock( res_handle );
+
+      ReleaseDC( g_window, hdc );
+
+      resource_free_handle( res_handle );
+#  else
+      b->bitmap = LoadImage( NULL, b->id, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+#  endif /* PLATFORM_WIN16 */
+
+#else
+      b->bitmap = res_handle;
+#endif /* RESOURCE_FILE */
+      /* free( res_handle ); */
+   } else {
+      error_printf( "NULL handle returned" );
+      retval = 0;
+      goto cleanup;
+   }
+   if( !b->bitmap ) {
+      error_printf( "unable to load resource" );
+      retval = 0;
+      goto cleanup;
+   }
+
+#ifdef DEPTH_VGA
+   graphics_platform_load_bitmap_trans( b );
 #endif /* DEPTH_VGA */
 
 cleanup:

@@ -459,7 +459,7 @@ int16_t dio_itoa(
 
    memory_zero_ptr( buffer_tmp, PSITOA_BUF_LEN + 1 );
 
-   if( 0 == d && tmp_idx + 1 ) {
+   if( 0 == d ) {
       buffer[idx++] = '0';
       return idx;
    }

@@ -84,9 +84,9 @@ MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
 #endif
 
       iter->ptr = calloc( 1, new_sz );
-   }
 
-   assert( iter->ptr_sz == sz * count );
+      assert( iter->ptr_sz == sz * count );
+   }
 
    return iter;
 }
@@ -99,7 +99,7 @@ void memory_free( MEMORY_HANDLE handle ) {
       return;
    }
 
-   assert( 0 >= handle->locks );
+   assert( 0 == handle->locks );
 
    /* Find the handle block and remove it from the chain. */
    if( handle == g_block_first ) {
@@ -203,7 +203,7 @@ MEMORY_PTR memory_lock( MEMORY_HANDLE handle ) {
 
 MEMORY_PTR memory_unlock( MEMORY_HANDLE handle ) {
    handle->locks--;
-   assert( 0 <= handle->locks );
+   assert( 0 == handle->locks );
    return NULL;
 }
 

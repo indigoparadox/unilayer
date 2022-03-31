@@ -129,7 +129,7 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
       return 0;
    }
    b->ref_count--;
-   if( 0 >= b->ref_count ) {
+   if( 0 == b->ref_count ) {
       b->initialized = 0;
       b->id = 0;
       return 1;

@@ -253,13 +253,16 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
       return 0;
    }
    b->ref_count--;
-   if( 0 >= b->ref_count ) {
+   if( 0 == b->ref_count ) {
       resource_debug_printf( 2, "unloading texture and surface for %s",
          b->id, "bitmap" );
       SDL_DestroyTexture( b->texture );
       SDL_FreeSurface( b->surface );
       b->initialized = 0;
       return 1;
+   } else {
+      resource_debug_printf( 2, "bitmap ref count greater than zero for %s",
+         b->id, "bitmap" );
    }
    return 0;
 }

@@ -11,7 +11,6 @@ uint8_t input_init() {
 
 uint8_t input_poll() {
    EventType event;
-   UInt32 key_state;
    UInt16 allow_input = 0;
 
    /* Doze until an event arrives. */

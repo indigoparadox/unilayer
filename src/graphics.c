@@ -327,7 +327,7 @@ int16_t graphics_blit_at(
    }
 
    if( NULL == bitmap_blit ) {
-      error_printf( "unable to load bitmap; cache full" );
+      error_printf( "unable to load bitmap; cache full?" );
       goto cleanup;
    }
 

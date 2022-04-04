@@ -9,7 +9,7 @@ RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
 }
 
 MEMORY_PTR resource_lock_handle( RESOURCE_HANDLE handle ) {
-   return handle->ptr;
+   return (MEMORY_PTR)handle->ptr;
 }
 
 MEMORY_PTR resource_unlock_handle( RESOURCE_HANDLE handle ) {

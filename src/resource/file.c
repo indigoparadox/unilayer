@@ -38,7 +38,7 @@ RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
 
    /* Use CGA-converted assets in DOS. */
    debug_printf( 2, "resource extension: %s", &(asset_path[extension_idx]) );
-   if( 0 == strncmp( &(asset_path[extension_idx]), ".bmp", 3 ) ) {
+   if( 0 == memory_strncmp_ptr( &(asset_path[extension_idx]), ".bmp", 4 ) ) {
       asset_path[extension_idx + 1] = 'c';
       asset_path[extension_idx + 2] = 'g';
       asset_path[extension_idx + 3] = 'a';

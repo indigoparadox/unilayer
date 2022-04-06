@@ -2,6 +2,8 @@
 #define RESOURCE_C
 #include "../unilayer.h"
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 
 #ifdef RESOURCE_FILE

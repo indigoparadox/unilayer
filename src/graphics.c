@@ -70,8 +70,12 @@ void graphics_char_at(
 ) {
 	int16_t x = 0,
 	   y = 0;
-	uint8_t bitmask = 0;
-	GRAPHICS_COLOR pixel = GRAPHICS_COLOR_BLACK;
+	uint8_t bitmask = 0,
+      bitmask_prev_y = 0,
+      bitmask_next_y = 0,
+      bitmask_prev_x = 0,
+      bitmask_next_x = 0;
+   const char (*font_glyphs)[FONT_GLYPHS_COUNT][FONT_GLYPH_W_SZ] = NULL;
 
    assert( '~' >= c );
    assert( ' ' <= c );
@@ -82,22 +86,91 @@ void graphics_char_at(
       c &= ~ 0x20; /* XOR ASCII all-caps trick. */
    }
 
+   if(
+      GRAPHICS_STRING_FLAG_FONT_SCRIPT ==
+      (GRAPHICS_STRING_FLAG_FONT_SCRIPT & flags)
+   ) {
+      font_glyphs = &(gc_font8x8[FONT_IDX_SCRIPT]);
+   } else {
+      font_glyphs = &(gc_font8x8[FONT_IDX_BASIC]);
+   }
+
    /* Draw the char from our built-in font. */
 	for( y = 0 ; FONT_H > y ; y++ ) {
+      /* Grab the current Y-line. */
+      bitmask = (*font_glyphs)[c - ' '][y];
+
       if(
-         GRAPHICS_STRING_FLAG_FONT_SCRIPT ==
-         (GRAPHICS_STRING_FLAG_FONT_SCRIPT & flags)
+         GRAPHICS_STRING_FLAG_OUTLINE == (GRAPHICS_STRING_FLAG_OUTLINE & flags)
       ) {
-   		bitmask = gc_font8x8_script[c - ' '][y];
-      } else {
-   		bitmask = gc_font8x8_basic[c - ' '][y];
+         /* Grab the previous Y-line. */
+         if( y > 0 ) {
+            bitmask_prev_y = (*font_glyphs)[c - ' '][y - 1];
+         } else {
+            bitmask_prev_y = 0;
+         }
+
+         /* Grab the next Y-line. */
+         if( FONT_H - 1 > y ) {
+            bitmask_next_y = (*font_glyphs)[c - ' '][y + 1];
+         } else {
+            bitmask_next_y = 0;
+         }
       }
 
 		for( x = 0 ; FONT_W > x ; x++ ) {
-			if( bitmask & 0x01 ) {
-				pixel = color;
-            graphics_draw_px( x_orig + x, y_orig + y, pixel );
+			bitmask_next_x = bitmask >> 1;
+			
+         /* Draw the vertical outline if applicable. */
+         if( 
+            GRAPHICS_STRING_FLAG_OUTLINE ==
+               (GRAPHICS_STRING_FLAG_OUTLINE & flags) &&
+            (
+               ((bitmask_prev_x & 0x01) && !(bitmask & 0x01)) ||
+   			   ((bitmask_next_x & 0x01) && !(bitmask & 0x01))
+            )
+         ) {
+            graphics_draw_px( x_orig + x, y_orig + y, GRAPHICS_COLOR_BLACK );
+
+			} else if( bitmask & 0x01 ) {
+            /* Draw the current X-pixel. */
+            graphics_draw_px( x_orig + x, y_orig + y, color );
+
+            /* Draw the vertical outline if off to the left. */
+            if( 
+               GRAPHICS_STRING_FLAG_OUTLINE ==
+                  (GRAPHICS_STRING_FLAG_OUTLINE & flags) &&
+               0 == x
+            ) {
+               graphics_draw_px( x_orig - 1, y_orig + y, GRAPHICS_COLOR_BLACK );
+            }
+
+            /* Don't bother drawing the outline if off to the right... it
+             * looks fine without it and would be overcrowded with it.
+             */
 			}
+
+         /* Draw horizontal outline if applicable. */
+         if( 
+            GRAPHICS_STRING_FLAG_OUTLINE ==
+               (GRAPHICS_STRING_FLAG_OUTLINE & flags)
+         ) {
+            if( (!(bitmask_prev_y & 0x01) && (bitmask & 0x01)) ) {
+               graphics_draw_px(
+                  x_orig + x, y_orig + y - 1, GRAPHICS_COLOR_BLACK );
+            }
+            if( (!(bitmask_next_y & 0x01) && (bitmask & 0x01)) ) {
+               graphics_draw_px(
+                  x_orig + x, y_orig + y + 1, GRAPHICS_COLOR_BLACK );
+            }
+         
+            /* Advance the bitmasks. */
+            bitmask_prev_x = bitmask;
+            bitmask_prev_y >>= 1;
+            bitmask_next_y >>= 1;
+         }
+
+         /* Advance the bitmasks. */
 			bitmask >>= 1;
 		}
 	}

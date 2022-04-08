@@ -8,7 +8,7 @@
 #define FONT_GLYPHS_COUNT 95
 #define FONT_GLYPH_W_SZ 8
 
-const char gc_font8x8[2][FONT_GLYPHS_COUNT][FONT_GLYPH_W_SZ] = {
+RES_CONST char gc_font8x8[2][FONT_GLYPHS_COUNT][FONT_GLYPH_W_SZ] = {
 
 /** 
  * Credits for gc_font8x8_basic:

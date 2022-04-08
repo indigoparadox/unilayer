@@ -31,7 +31,7 @@ int8_t animate_create(
    return 0;
 }
 
-void animate_frame() {
+void animate_frame( uint16_t flags ) {
 }
 
 void animate_stop( int8_t idx ) {

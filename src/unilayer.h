@@ -51,6 +51,9 @@
 
 #include "memory.h"
 #include "resource.h"
+#ifndef RES_CONST
+#define RES_CONST const
+#endif /* !RES_CONST */
 #include "graphics.h"
 #include "animate.h"
 #include "input.h"

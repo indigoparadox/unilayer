@@ -2,52 +2,6 @@
 #define ANIMATE_C
 #include "unilayer.h"
 
-#if defined( PLATFORM_PALM ) || defined( PLATFORM_MAC6 )
-
-void animate_draw_RECTANGLE( struct ANIMATION* a ) {
-}
-
-void animate_draw_CIRCLE( struct ANIMATION* a ) {
-}
-
-void animate_draw_FIRE( struct ANIMATION* a ) {
-}
-
-void animate_draw_SNOW( struct ANIMATION* a ) {
-}
-
-void animate_draw_CLOUDS( struct ANIMATION* a ) {
-}
-
-void animate_draw_STRING( struct ANIMATION* a ) {
-}
-
-void animate_draw_FRAMES( struct ANIMATION* a ) {
-}
-
-int8_t animate_create(
-   uint8_t type, uint16_t flags, int16_t x, int16_t y, int16_t w, int16_t h
-) {
-   return 0;
-}
-
-void animate_frame( uint16_t flags ) {
-}
-
-void animate_stop( int8_t idx ) {
-}
-
-void animate_stop_all() {
-}
-
-void animate_pause( uint16_t flags ) {
-}
-
-void animate_resume( uint16_t flags ) {
-}
-
-#else
-
 void animate_draw_RECTANGLE( struct ANIMATION* a ) {
    /* TODO */
 }
@@ -520,6 +474,4 @@ void animate_stop_all() {
       animate_stop( i );
    }
 }
-
-#endif /* PLATFORM_PALM */
 

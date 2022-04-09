@@ -126,6 +126,24 @@ struct ANIMATION_FRAME {
 };
 #endif
 
+#ifdef NO_ANIMATE
+
+#define animate_draw_RECTANGLE( a )
+#define animate_draw_CIRCLE( a ) 
+#define animate_draw_FIRE( a )
+#define animate_draw_SNOW( a )
+#define animate_draw_CLOUDS( a ) 
+#define animate_draw_STRING( a ) 
+#define animate_draw_FRAMES( a ) 
+#define animate_create( type, flags, x, y, w,  h )
+#define animate_frame( flags )
+#define animate_stop( idx )
+#define animate_stop_all()
+#define animate_pause( flags )
+#define animate_resume( flags )
+
+#else
+
 /*! \brief Internal representation of an animation. Do not call directly; use
  *         animate_create() instead.
  */
@@ -260,6 +278,8 @@ ANIMATE_CB_TABLE( ANIMATE_CB_TABLE_TYPES )
 #endif /* ANIMATE_C */
 
 /*! \} */
+
+#endif /* NO_ANIMATE */
 
 #endif /* !ANIMATE_H */
 

@@ -168,6 +168,16 @@ loop_globals()
 #  include "input/gbi.h"
 #  include "graphics/gbg.h"
 
+#elif defined( PLATFORM_NES )
+
+#  include <stdint.h>
+loop_globals();
+#  include "memory/fakem.h"
+#  include "resinc.h"
+#  include "input/nesi.h"
+#  include "graphics/nesg.h"
+
+
 #else
 
 #  include <stdint.h>

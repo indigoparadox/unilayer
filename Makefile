@@ -37,3 +37,18 @@ HEADPACK := $(BINDIR)/headpack
 
 CFLAGS_HEADPACK := -g -Iunilayer/src -Iunilayer/tools -DNO_RESEXT -DDEBUG_THRESHOLD=3 -DRESOURCE_FILE -DASSETS_PATH="\"$(ASSETPATH)\"" -DDEBUG_LOG -DDISABLE_WEATHER_EFFECTS
 
+# === Mkresh Utility ===
+
+MKRESH_C_FILES := \
+   unilayer/tools/mkresh.c \
+   unilayer/src/resource/file.c \
+   unilayer/src/memory/fakem.c \
+   unilayer/src/dio.c
+
+MKRESH := $(BINDIR)/mkresh
+
+CFLAGS_MKRESH := -DNO_RESEXT -g -DDEBUG_LOG -DDEBUG_THRESHOLD=0 -DRESOURCE_FILE -Iunilayer/src -DASSETS_PATH="\"$(ASSETPATH)\""
+
+$(MKRESH): $(MKRESH_C_FILES) | $(BINDIR)/$(STAMPFILE)
+	$(HOST_CC) $(CFLAGS_MKRESH) -o $@ $^
+

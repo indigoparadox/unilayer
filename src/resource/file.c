@@ -8,7 +8,7 @@
 
 #ifdef RESOURCE_FILE
 
-RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
+RESOURCE_HANDLE resource_get_handle( const RESOURCE_ID id ) {
    FILE* res_file = NULL;
    uint8_t* buffer = NULL;
 #ifdef PLATFORM_DOS

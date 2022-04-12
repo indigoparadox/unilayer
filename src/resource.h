@@ -41,7 +41,7 @@
  *  \brief Platform-general function prototypes for loading assets.
  */
 
-RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id );
+RESOURCE_HANDLE resource_get_handle( const RESOURCE_ID id );
 
 /**
  * \brief Lock the given handle so that it cannot be relocated in memory by

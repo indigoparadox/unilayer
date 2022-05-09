@@ -146,19 +146,11 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
 }
 
 void memory_copy_ptr( MEMORY_PTR dest, CONST_MEMORY_PTR src, uint32_t sz ) {
-#ifdef PLATFORM_DOS
-   _fmemcpy( dest, src, sz );
-#else
    memcpy( dest, src, sz );
-#endif /* PLATFORM_DOS */
 }
 
 void memory_zero_ptr( MEMORY_PTR ptr, uint32_t sz ) {
-#ifdef PLATFORM_DOS
-   _fmemset( ptr, 0, sz );
-#else
    memset( ptr, 0, sz );
-#endif /* PLATFORM_DOS */
 }
 
 #ifdef MEMORY_DEBUG_LOCKS

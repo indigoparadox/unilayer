@@ -54,6 +54,8 @@
 
 #  define error_printf( ... ) internal_error_printf( __VA_ARGS__ )
 
+#  define size_printf( lvl, name, sz ) internal_debug_printf( lvl, name " size is %lu bytes", (sz) );
+
 /* ! */
 #else /* !DEBUG_LOG, !ANCIENT_C */
 /* ! */

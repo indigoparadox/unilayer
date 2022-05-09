@@ -52,6 +52,9 @@ typedef void (__interrupt __far* INTFUNCPTR)( void );
 INTFUNCPTR g_old_timer_interrupt;
 volatile uint32_t g_ms;
 
+static uint16_t g_gfx_mem_used = 0;
+static uint16_t g_gfx_count = 0;
+
 const uint32_t gc_ms_target = 1000 / FPS;
 static uint32_t g_ms_start = 0; 
 
@@ -233,20 +236,28 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t screen_byte_offset = 0,
 	   y_offset = 0;
    /* Still not sure why copy seems to start w/2px in? */
-   const uint8_t* plane_1 = bmp->plane_1 - bmp->w / 8;
-   const uint8_t* plane_2 = bmp->plane_2 - bmp->w / 8;
+   int16_t retval = 1;
+   uint8_t* plane_1 = NULL;
+   uint8_t* plane_2 = NULL;
+
+   plane_1 = memory_lock( bmp->plane_1 );
+   plane_1 -= bmp->w / 8;
+   plane_2 = memory_lock( bmp->plane_2 );
+   plane_2 -= bmp->w / 8;
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
 #error "not implemented"
 #elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
 
    if( NULL == plane_1 || NULL == plane_2 ) {
-      return 0;
+      retval = 0;
+      goto cleanup;
    }
 
    if( 0 != s_x % 4 ) {
       error_printf( "s_x must be divisible by 4" );
-      return 0;
+      retval = 0;
+      goto cleanup;
    }
 
    /* Set starting X/Y from source planes. */
@@ -273,7 +284,17 @@ int16_t graphics_platform_blit_partial_at(
 	}
 #endif /* GRAPHICS_MODE */
 
-   return 1;
+cleanup:
+
+   if( NULL != plane_1 ) {
+      plane_1 = memory_unlock( bmp->plane_1 );
+   }
+
+   if( NULL != plane_2 ) {
+      plane_2 = memory_unlock( bmp->plane_2 );
+   }
+
+   return retval;
 }
 
 void graphics_draw_block(
@@ -306,7 +327,8 @@ void graphics_draw_block(
 int16_t graphics_platform_load_bitmap(
    RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
-   uint8_t* buffer = NULL;
+   uint8_t* buffer = NULL,
+      * plane_ptr = NULL;
    int32_t buffer_sz = 0;
    uint16_t plane_sz = 0,
       plane_offset = 0;
@@ -326,33 +348,59 @@ int16_t graphics_platform_load_bitmap(
 
    debug_printf( 1, "%u x %x px, %u colors", b->w, b->h, b->palette );
 
+   /* Allocate and load first plane. */
    plane_sz = header->plane1_sz;
    plane_offset = header->plane1_offset;
-   /* TODO: Memory architecture? */
-   b->plane_1 = (uint8_t*)calloc( plane_sz, 1 );
+   b->plane_1 = memory_alloc( plane_sz, 1 );
    if( NULL == b->plane_1 ) {
+      error_printf( "unable to allocate plane 1" );
       retval = 0;
       goto cleanup;
    }
-   memory_copy_ptr( b->plane_1, &(buffer[plane_offset]), plane_sz );
+   plane_ptr = memory_lock( b->plane_1 );
+   if( NULL == plane_ptr ) {
+      error_printf( "unable to lock plane 1" );
+      retval = 0;
+      goto cleanup;
+   }
+   debug_printf( 1, "copying buffer into plane 1" );
+   memory_copy_ptr( plane_ptr, &(buffer[plane_offset]), plane_sz );
+   plane_ptr = memory_unlock( b->plane_1 );
 
+   /* Allocate and load second plane. */
    plane_sz = header->plane2_sz;
    plane_offset = header->plane2_offset;
-   b->plane_2 = (uint8_t*)calloc( plane_sz, 1 );
+   b->plane_2 = memory_alloc( plane_sz, 1 );
    if( NULL == b->plane_2 ) {
+      error_printf( "unable to allocate plane 2" );
       retval = 0;
       goto cleanup;
    }
-   memory_copy_ptr( b->plane_2, &(buffer[plane_offset]), plane_sz );
+   plane_ptr = memory_lock( b->plane_2 );
+   if( NULL == plane_ptr ) {
+      error_printf( "unable to lock plane 2" );
+      retval = 0;
+      goto cleanup;
+   }
+   debug_printf( 1, "copying buffer into plane 2" );
+   memory_copy_ptr( plane_ptr, &(buffer[plane_offset]), plane_sz );
+   plane_ptr = memory_unlock( b->plane_2 );
+
+   /* Update system statistics. */
+   g_gfx_mem_used += memory_sz( b->plane_1 ) + memory_sz( b->plane_2 );
+   g_gfx_count++;
+
+   debug_printf( 1, "graphic successfully loaded (%d bytes in use for %d gfx)",
+      g_gfx_mem_used, g_gfx_count );
 
 cleanup:
 
    if( 0 >= retval && b->plane_1 ) {
-      free( b->plane_1 );
+      memory_free( b->plane_1 );
    }
 
    if( 0 >= retval && b->plane_2 ) {
-      free( b->plane_2 );
+      memory_free( b->plane_2 );
    }
 
    if( NULL != buffer ) {
@@ -373,9 +421,16 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    assert( NULL != b );
    b->ref_count--;
    if( 0 == b->ref_count ) {
-      free( b->plane_1 );
-      free( b->plane_2 );
+      g_gfx_mem_used -= (memory_sz( b->plane_1 ) + memory_sz( b->plane_2 ));
+      g_gfx_count--;
+      memory_free( b->plane_1 );
+      memory_free( b->plane_2 );
       b->initialized = 0;
+
+      debug_printf( 1,
+         "graphic successfully unloaded (%d bytes in use for %d gfx)",
+         g_gfx_mem_used, g_gfx_count );
+
       return 1;
    }
    return 0;

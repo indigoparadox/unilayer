@@ -21,11 +21,11 @@ int16_t graphics_init() {
       GRAPHICS_CACHE_INITIAL_SZ, sizeof( struct GRAPHICS_BITMAP ) );
    gs_graphics_cache_sz = GRAPHICS_CACHE_INITIAL_SZ;
 
-   debug_printf( 3, "bitmap struct is %lu bytes",
+   debug_printf( 3, "bitmap struct is %d bytes",
       sizeof( struct GRAPHICS_BITMAP ) );
 
    if( (MEMORY_HANDLE)NULL != gs_graphics_cache_handle ) {
-      debug_printf( 3, "initial graphics cache is %lu bytes",
+      debug_printf( 3, "initial graphics cache is %d bytes",
          sizeof( struct GRAPHICS_BITMAP ) * GRAPHICS_CACHE_INITIAL_SZ );
    } else {
       error_printf( "unable to initialize graphics cache!" );

@@ -2,6 +2,10 @@
 #ifndef UPRINTF_H
 #define UPRINTF_H
 
+#ifndef NEWLINE_STR
+#define NEWLINE_STR "\n"
+#endif /* !NEWLINE_STR */
+
 #ifndef platform_file
 #define platform_file FILE*
 #endif /* !platform_file */

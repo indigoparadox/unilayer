@@ -4,7 +4,21 @@
 
 #include "../src/uprintf.h"
 
-#define UNIMAKE_ERROR_INVALID_ARG 1
+#define UNIMAKE_ERROR_INVALID_ARG 0x01
+
+#define UNIMAKE_ERROR_BAD_UNIFILE_PATH 0x02
+
+#define UNIMAKE_ERROR_TOO_MANY_CODE_FILES 0x04
+
+#define UNIMAKE_ERROR_TOO_MANY_ASSET_FILES 0x08
+
+#define UNIMAKE_ERROR_PATH_TOO_LONG 0x10
+
+#define UNIFILE_STATE_NONE 0
+
+#define UNIFILE_STATE_PLATFILES 1
+
+#define UNIFILE_LINE_SZ 255
 
 #define UNIMAKE_ASSETS_DIR "assets"
 
@@ -18,6 +32,19 @@
 
 #define UNIMAKE_MISC_MASK 0x00ff0000
 #define UNIMAKE_MISC_TABLE( f ) f( "release", 0x00010000 ) f( "", 0x00000000 )
+
+#define UNIFILE_PATH_DEFAULT "Unifile"
+
+#define UNIFILE_PATHS_MAX 255
+
+#define UNIFILE_PATH_SZ_MAX 255
+
+struct unimake_state {
+   char code_files[UNIFILE_PATHS_MAX][UNIFILE_PATH_SZ_MAX + 1]; /* +1 NULL */
+   int code_files_sz;
+   char gfx_files[UNIFILE_PATHS_MAX][UNIFILE_PATH_SZ_MAX + 1]; /* +1 NULL */
+   int gfx_files_sz;
+};
 
 #ifdef UNIMAKE_C
 

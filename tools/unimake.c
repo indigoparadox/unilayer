@@ -6,9 +6,52 @@
 #define UNIMAKE_C
 #include "unimake.h"
 
+int concat_str(
+   char* str, int* str_sz, int str_sz_max, const char* str_in,
+   const char* substr_replace, const char* substr_replacement
+) {
+   int retval = 0,
+      i = 0,
+      str_in_sz = 0;
+      /*substr_replace_sz = 0;*/
+
+   /* Get string sizes for use later. */
+   str_in_sz = strlen( str_in );
+   /*if( NULL != substr_replace ) {
+      substr_replace_sz = substr_replace;
+   }*/
+
+   /* Bounds checking. */
+   /* TODO: Account for increase due to replacement. */
+   if( *str_sz + str_in_sz + 1 >= str_sz_max ) {
+      error_printf( "defines string (%s) too long to add: %s", str, str_in );
+      retval = UNIMAKE_ERROR_STRING_TOO_LONG;
+      goto cleanup;
+   }
+
+   /* Copy new define(s) into buffer. */
+   if( 0 < *str_sz ) {
+      str[*str_sz] = ' ';
+      (*str_sz)++;
+   }
+   for( i = 0 ; str_in_sz > i ; i++ ) {
+      if( '\r' == str_in[i] || '\n' == str_in[i] ) {
+         /* Don't concat newlines. */
+         continue;
+      }
+      str[*str_sz] = str_in[i];
+      (*str_sz)++;
+   }
+   str[*str_sz] = '\0';
+
+cleanup:
+   return retval;
+}
+
 int parse_test_arr(
    char* argv, unsigned long* options, unsigned long dupe_mask,
-   char* names[], const unsigned long flags[]
+   char* names[], const unsigned long flags[], char* flag_defines[],
+   char* defines, int* defines_sz
 ) {
    int j = 0,
       /* Start out assuming bad arg, check below. */
@@ -23,6 +66,10 @@ int parse_test_arr(
          }
          debug_printf( 3, "enabled option: %s", names[j] );
          *options |= flags[j];
+         retval = concat_str(
+            defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, flag_defines[j],
+            /* TODO: Handle compiler-specific replacements. */
+            NULL, NULL );
          retval = 0; /* Arg was good after all! */
          goto cleanup;
       }
@@ -34,32 +81,38 @@ cleanup:
    return retval;
 }
 
-int parse_args( int argc, char** argv, unsigned long* options ) {
+int parse_args(
+   int argc, char** argv, unsigned long* options, char* defines, int* defines_sz
+) {
    int retval = 0,
       i = 0;
 
    for( i = 1 ; argc > i ; i++ ) {
       retval = parse_test_arr( argv[i], options, UNIMAKE_PLAT_MASK,
-         gc_unimake_plat_names, gc_unimake_plat_flags );
-      if( !retval ) {
+         gc_unimake_plat_names, gc_unimake_plat_flags, gc_unimake_plat_defines,
+         defines, defines_sz );
+      if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was platform. */
          continue;
       }
       retval = parse_test_arr( argv[i], options, UNIMAKE_FMT_MASK,
-         gc_unimake_fmt_names, gc_unimake_fmt_flags );
-      if( !retval ) {
+         gc_unimake_fmt_names, gc_unimake_fmt_flags, gc_unimake_fmt_defines,
+         defines, defines_sz );
+      if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was a format. */
          continue;
       }
       retval = parse_test_arr( argv[i], options, UNIMAKE_GFX_MASK,
-         gc_unimake_gfx_names, gc_unimake_gfx_flags );
-      if( !retval ) {
+         gc_unimake_gfx_names, gc_unimake_gfx_flags, gc_unimake_gfx_defines,
+         defines, defines_sz );
+      if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was gfx. */
          continue;
       }
       retval = parse_test_arr( argv[i], options, 0x0, /* Allow dupes. */
-         gc_unimake_misc_names, gc_unimake_misc_flags );
-      if( !retval ) {
+         gc_unimake_misc_names, gc_unimake_misc_flags, gc_unimake_misc_defines,
+         defines, defines_sz );
+      if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was misc. */
          continue;
       }
@@ -70,8 +123,160 @@ int parse_args( int argc, char** argv, unsigned long* options ) {
    return retval;
 }
 
+FILE* get_unifile( const char* unifile_path ) {
+   FILE* unifile = NULL;
+
+   if( NULL == unifile_path ) {
+      unifile_path = UNIFILE_PATH_DEFAULT;
+   }
+
+   /* Try to open unifile. */
+   unifile = fopen( unifile_path, "r" );
+
+   return unifile;
+}
+
+char* get_unifile_line_start(
+   char* line, int* line_offset, int line_offset_max
+) {
+   char* line_start = line;
+
+   /* Get rid of errant whitespace. */
+   while(
+      ('\t' == line_start[0] || ' ' == line_start[0]) &&
+      *line_offset < line_offset_max
+   ) {
+      line_start++;
+      (*line_offset)++;
+   }
+
+   /* Parse the line. */
+   if(
+      '#' == line_start[0] ||
+      ';' == line_start[0] ||
+      '\n' == line_start[0] ||
+      '\r' == line_start[0]
+   ) {
+      /* Skip comments and empty lines. */
+      line_start = NULL;
+   }
+
+   return line_start;
+}
+
+int test_unifile_line_header(
+   const char* line, int line_sz,
+   const char* header_type, const char* header_plat
+) {
+   int retval = 1,
+      header_type_sz = 0,
+      header_plat_sz = 0;
+
+   /* header_type and header_plat only come from our own code,
+    * so we can strlen() them here. */
+   header_type_sz = strlen( header_type );
+   header_plat_sz = strlen( header_plat );
+
+   if( '[' != line[0] ) {
+      /* Not a header. */
+      retval = 0;
+      goto cleanup;
+   }
+
+   if( 0 != strncmp( header_type, &(line[1]), header_type_sz ) ) {
+      /* Not the header we're looking for. */
+      retval = 0;
+      goto cleanup;
+   }
+
+   if( NULL == header_plat && ']' != line[header_type_sz + 1] ) {
+      /* Looking for no platform but this is a platform. */
+      retval = 0;
+      goto cleanup;
+   }
+
+   if( 
+      NULL != header_plat && (
+         line_sz <= header_plat_sz + header_type_sz + 2 ||
+         0 != strncmp(
+            header_plat, &(line[header_type_sz + 2]), header_plat_sz ))
+   ) {
+      /* Looking for a platform but this isn't it. */
+      retval = 0;
+      goto cleanup;
+   }
+
+cleanup:
+   return retval;
+}
+
+int parse_unifile_compiler_args(
+   const char* unifile_path,
+   char* compiler_args, int* compiler_args_sz, int compiler_args_sz_max,
+   const char* args_type, const char* args_plat
+) {
+   FILE* unifile = NULL;
+   int retval = 0,
+      parse_state = UNIFILE_STATE_NONE,
+      line_offset = 0;
+   char line[UNIFILE_LINE_SZ + 1] = { 0 },
+      * line_start = NULL;
+
+   debug_printf( 1, "parsing unifile compiler args..." );
+
+   unifile = get_unifile( unifile_path );
+   if( NULL == unifile ) {
+      retval = UNIMAKE_ERROR_BAD_UNIFILE_PATH;
+      goto cleanup;
+   }
+
+   while( NULL != fgets( line, UNIFILE_LINE_SZ, unifile ) ) {
+
+      line_start = get_unifile_line_start(
+         line, &line_offset, UNIFILE_LINE_SZ - strlen( args_type ) );
+      
+      if( NULL == line_start ) {
+         /* Invalid line. */
+         continue;
+
+      } else if(
+         test_unifile_line_header(
+            line_start, UNIFILE_LINE_SZ - line_offset, args_type, args_plat )
+      ) {
+         /* Change state to platform code files. */
+         parse_state = UNIFILE_STATE_PARSE;
+         debug_printf( 1, "unifile state: %d", parse_state );
+         
+      } else if( '[' == line_start[0] ) {
+         /* Unknown section found. */
+         parse_state = UNIFILE_STATE_NONE;
+         debug_printf( 1, "unifile state: %d", parse_state );
+      
+      } else if( UNIFILE_STATE_PARSE == parse_state ) {
+         /* Add code file after making sure we can. */
+
+         retval = concat_str(
+            compiler_args, compiler_args_sz, compiler_args_sz_max,
+            line,
+            /* TODO: Handle compiler-specific replacements. */
+            NULL, NULL );
+         if( retval ) {
+            goto cleanup;
+         }
+      }
+   }
+
+cleanup:
+
+   if( NULL != unifile ) {
+      fclose( unifile );
+   }
+
+   return retval;
+}
+
 int parse_unifile_paths(
-   char* unifile_path,
+   const char* unifile_path,
    char files_array[UNIFILE_PATHS_MAX][UNIFILE_PATH_SZ_MAX + 1],
    int* files_array_sz, const char* files_type, const char* files_plat
 ) {
@@ -82,12 +287,9 @@ int parse_unifile_paths(
    char line[UNIFILE_LINE_SZ + 1] = { 0 },
       * line_start = NULL;
 
-   if( NULL == unifile_path ) {
-      unifile_path = UNIFILE_PATH_DEFAULT;
-   }
+   debug_printf( 1, "parsing unifile paths..." );
 
-   /* Try to open unifile. */
-   unifile = fopen( unifile_path, "r" );
+   unifile = get_unifile( unifile_path );
    if( NULL == unifile ) {
       retval = UNIMAKE_ERROR_BAD_UNIFILE_PATH;
       goto cleanup;
@@ -95,25 +297,11 @@ int parse_unifile_paths(
 
    while( NULL != fgets( line, UNIFILE_LINE_SZ, unifile ) ) {
 
-      /* Get rid of errant whitespace. */
-      line_start = line;
-      while(
-         ('\t' == line_start[0] || ' ' == line_start[0]) &&
-         line_offset < UNIFILE_LINE_SZ - strlen( files_type )
-      ) {
-         line_start++;
-         line_offset++;
-      }
-
-      /* Parse the line. */
-      if(
-         '#' == line_start[0] ||
-         ';' == line_start[0] ||
-         '\n' == line_start[0] ||
-         '\r' == line_start[0]
-      ) {
-         /* Skip comments and empty lines. */
-         /* TODO: Handle errant whitespace lines. */
+      line_start = get_unifile_line_start(
+         line, &line_offset, UNIFILE_LINE_SZ - strlen( files_type ) );
+      
+      if( NULL == line_start ) {
+         /* Invalid line. */
          continue;
 
       } else if(
@@ -127,17 +315,15 @@ int parse_unifile_paths(
                0 == strncmp( files_plat, &(line_start[6]), 3 )))
       ) {
          /* Change state to platform code files. */
-         parse_state = UNIFILE_STATE_PLATFILES;
+         parse_state = UNIFILE_STATE_PARSE;
          debug_printf( 1, "unifile state: %d", parse_state );
          
-         /* ADD NEW SECTIONS HERE. */
-
       } else if( '[' == line_start[0] ) {
          /* Unknown section found. */
          parse_state = UNIFILE_STATE_NONE;
          debug_printf( 1, "unifile state: %d", parse_state );
       
-      } else if( UNIFILE_STATE_PLATFILES == parse_state ) {
+      } else if( UNIFILE_STATE_PARSE == parse_state ) {
          /* Add code file after making sure we can. */
 
          if( *files_array_sz + 1 >= UNIFILE_PATHS_MAX ) {
@@ -147,7 +333,7 @@ int parse_unifile_paths(
          
          } else if( strlen( line_start ) > UNIFILE_PATH_SZ_MAX ) {
             error_printf( "code path too long: %s", line_start );
-            retval = UNIMAKE_ERROR_PATH_TOO_LONG;
+            retval = UNIMAKE_ERROR_STRING_TOO_LONG;
             goto cleanup;
          }
 
@@ -190,11 +376,18 @@ int main( int argc, char** argv ) {
 
    memset( &um_state, '\0', sizeof( struct unimake_state ) );
 
-   retval = parse_args( argc, argv, &(um_state.options) );
+   /* Parse CLI args. */
+   retval = parse_args( argc, argv, &(um_state.options), um_state.defines,
+      &(um_state.defines_sz) );
    if( retval ) {
       error_printf( "invalid argument specified!" );
       goto cleanup;
    }
+
+   debug_printf( 1, "args parsed. flags: %08lx, defines: %s",
+      um_state.options, um_state.defines );
+
+   /* Parse Unifile. */
 
    plat_type = get_plat_name( um_state.options );
 
@@ -203,7 +396,14 @@ int main( int argc, char** argv ) {
       um_state.code_files, &(um_state.code_files_sz), "code", NULL );
    retval = parse_unifile_paths( NULL,
       um_state.code_files, &(um_state.code_files_sz), "code", plat_type );
-   
+
+   retval = parse_unifile_compiler_args( NULL,
+      um_state.defines, &(um_state.defines_sz), UNIFILE_DEFINES_SZ_MAX,
+      "defines", plat_type );
+
+   debug_printf( 1, "unifile parsed. flags: %08lx, defines: %s",
+      um_state.options, um_state.defines );
+ 
 cleanup:
 
    return retval;

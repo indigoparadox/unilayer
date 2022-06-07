@@ -9,7 +9,15 @@
 
 #if defined( PLATFORM_WIN16 ) || defined( PLATFORM_WIN32 ) || defined( PLATFORM_WINCE )
 #define PLATFORM_WIN
-#endif
+#endif /* PLATFORM_WIN16 || PLATFORM_WIN32 || PLATFORM_WINCE */
+
+#if defined( DEPTH_VGA )
+#  define DEPTH_SPEC "16x16x16"
+#elif defined( DEPTH_CGA )
+#  define DEPTH_SPEC "16x16x4"
+#elif defined( DEPTH_MONO )
+#  define DEPTH_SPEC "16x16x2"
+#endif /* DEPTH_VGA || DEPTH_CGA || DEPTH_MONO */
 
 struct GRAPHICS_ARGS;
 
@@ -24,6 +32,14 @@ typedef int (*loop_iter)( void* );
 #endif /* MAIN_C */
 
 #ifdef PLATFORM_DOS
+
+#  ifndef SCREEN_W
+#     define SCREEN_W 320
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 200
+#  endif /* !SCREEN_H */
 
 #  define PLATFORM_DIR_SEP '\\'
 #  define LOG_TO_FILE
@@ -63,6 +79,14 @@ loop_globals();
 #  include "graphics/xg.h"
 
 #elif defined( PLATFORM_PALM )
+
+#  ifndef SCREEN_W
+#     define SCREEN_W 160
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 160
+#  endif /* !SCREEN_H */
 
 #  define USE_SOFT_ASSERT
 #  define DISABLE_FILESYSTEM

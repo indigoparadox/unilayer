@@ -12,11 +12,11 @@
 
 #define UNIMAKE_ERROR_TOO_MANY_ASSET_FILES 0x08
 
-#define UNIMAKE_ERROR_PATH_TOO_LONG 0x10
+#define UNIMAKE_ERROR_STRING_TOO_LONG 0x10
 
 #define UNIFILE_STATE_NONE 0
 
-#define UNIFILE_STATE_PLATFILES 1
+#define UNIFILE_STATE_PARSE 1
 
 #define UNIFILE_LINE_SZ 64
 
@@ -28,7 +28,7 @@
 #define UNIMAKE_PLAT_TABLE( f ) f( "sdl", 0x01000000, "-DPLATFORM_SDL", "" ) f( "wsm", 0x02000000, "-DPLATFORM_SDL", "" ) f( "w16", 0x04000000, "-DPLATFORM_WIN16", "" ) f( "w32", 0x08000000, "-DPLATFORM_WIN32", "" ) f( "dos", 0x10000000, "-DPLATFORM_DOS", "" ) f( "", 0x00000000, "", "" )
 
 #define UNIMAKE_GFX_MASK 0x000000ff
-#define UNIMAKE_GFX_TABLE( f ) f( "cga", 0x00000001, "-DDEPTH_CGA -DDEPTH_SPEC=\"16x16x4\"", "" ) f( "mno", 0x00000002, "-DDEPTH_MONO -DDEPTH_SPEC=\"16x16x2\"", "" ) f( "vga", 0x00000004, "-DDEPTH_VGA -DDEPTH_SPEC=\"16x16x16\"", "" ) f( "", 0x00000000, "", "" )
+#define UNIMAKE_GFX_TABLE( f ) f( "cga", 0x00000001, "-DDEPTH_CGA", "" ) f( "mno", 0x00000002, "-DDEPTH_MONO", "" ) f( "vga", 0x00000004, "-DDEPTH_VGA", "" ) f( "", 0x00000000, "", "" )
 
 #define UNIMAKE_FMT_MASK 0x0000ff00
 #define UNIMAKE_FMT_TABLE( f ) f( "hdr", 0x00000100, "", "" ) f( "jsn", 0x00000200, "", "" ) f( "asn", 0x00000400, "", "" ) f( "", 0x00000000, "", "" )
@@ -42,9 +42,9 @@
 
 #define UNIFILE_PATH_SZ_MAX UNIFILE_LINE_SZ
 
-#define UNIFILE_DEFINES_SZ_MAX 128
+#define UNIFILE_DEFINES_SZ_MAX 255
 
-#define UNIFILE_INCLUDES_SZ_MAX 128
+#define UNIFILE_INCLUDES_SZ_MAX 127
 
 struct unimake_state {
    char code_files[UNIFILE_PATHS_MAX][UNIFILE_PATH_SZ_MAX + 1]; /* +1 NULL */
@@ -62,6 +62,7 @@ struct unimake_state {
 
 #  define UNIMAKE_FLAGS( name, bit, defines, includes ) bit,
 #  define UNIMAKE_NAMES( name, bit, defines, includes ) name,
+#  define UNIMAKE_FLAG_DEFINES( name, bit, defines, includes ) defines,
 
 unsigned long gc_unimake_fmt_flags[] = {
    UNIMAKE_FMT_TABLE( UNIMAKE_FLAGS )
@@ -69,6 +70,10 @@ unsigned long gc_unimake_fmt_flags[] = {
 
 char* gc_unimake_fmt_names[] = {
    UNIMAKE_FMT_TABLE( UNIMAKE_NAMES )
+};
+
+char* gc_unimake_fmt_defines[] = {
+   UNIMAKE_FMT_TABLE( UNIMAKE_FLAG_DEFINES )
 };
 
 unsigned long gc_unimake_gfx_flags[] = {
@@ -79,6 +84,10 @@ char* gc_unimake_gfx_names[] = {
    UNIMAKE_GFX_TABLE( UNIMAKE_NAMES )
 };
 
+char* gc_unimake_gfx_defines[] = {
+   UNIMAKE_GFX_TABLE( UNIMAKE_FLAG_DEFINES )
+};
+
 unsigned long gc_unimake_misc_flags[] = {
    UNIMAKE_MISC_TABLE( UNIMAKE_FLAGS )
 };
@@ -87,12 +96,20 @@ char* gc_unimake_misc_names[] = {
    UNIMAKE_MISC_TABLE( UNIMAKE_NAMES )
 };
 
+char* gc_unimake_misc_defines[] = {
+   UNIMAKE_MISC_TABLE( UNIMAKE_FLAG_DEFINES )
+};
+
 char* gc_unimake_plat_names[] = {
    UNIMAKE_PLAT_TABLE( UNIMAKE_NAMES )
 };
 
 unsigned long gc_unimake_plat_flags[] = {
    UNIMAKE_PLAT_TABLE( UNIMAKE_FLAGS )
+};
+
+char* gc_unimake_plat_defines[] = {
+   UNIMAKE_PLAT_TABLE( UNIMAKE_FLAG_DEFINES )
 };
 
 #endif /* UNIMAKE_C */

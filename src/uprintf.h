@@ -38,7 +38,7 @@
 #endif /* LOG_TO_FILE */
 
 /* ! */
-#ifdef ANCIENT_C
+#if defined( ANCIENT_C )
 /* ! */
 
 #  define debug_printf

@@ -26,6 +26,10 @@
 #define platform_fclose fclose
 #endif /* !platform_fclose */
 
+#ifndef DEBUG_THRESHOLD
+#define DEBUG_THRESHOLD 1
+#endif /* !DEBUG_THRESHOLD */
+
 #ifdef LOG_TO_FILE
 #ifndef DEBUG_LOG
 #define DEBUG_LOG
@@ -41,8 +45,27 @@
 #if defined( ANCIENT_C )
 /* ! */
 
-#  define debug_printf
-#  define error_printf
+#include <stdarg.h>
+
+static void debug_printf( int level, const char* fmt, ... ) {
+   va_list argp;
+
+   if( level >= DEBUG_THRESHOLD ) {
+      va_start( argp, fmt );
+      vprintf( fmt, argp );
+      va_end( argp );
+      printf( "\n" );
+   }
+}
+
+static void error_printf( const char* fmt, ... ) {
+   va_list argp;
+
+   va_start( argp, fmt );
+   vprintf( fmt, argp );
+   va_end( argp );
+   printf( "\n" );
+}
 
 /* ! */
 #elif defined( DEBUG_LOG )

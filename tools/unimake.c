@@ -6,28 +6,83 @@
 #define UNIMAKE_C
 #include "unimake.h"
 
-int concat_str(
-   char* str, int* str_sz, int str_sz_max, const char* str_in,
-   const char* substr_replace, const char* substr_replacement
+int str_replace(
+   char* str, int str_sz_max, const char* str_in,
+   const char* substr_target, const char* substr_replacement,
+   int* chars_advanced_tgt, int* chars_advanced_in
 ) {
    int retval = 0,
       i = 0,
-      str_in_sz = 0;
-      /*substr_replace_sz = 0;*/
+      substr_replacement_sz = 0,
+      substr_target_sz = 0;
 
-   /* Get string sizes for use later. */
-   str_in_sz = strlen( str_in );
-   /*if( NULL != substr_replace ) {
-      substr_replace_sz = substr_replace;
-   }*/
+   *chars_advanced_tgt = 0;
+   *chars_advanced_in = 0;
 
-   /* Bounds checking. */
-   /* TODO: Account for increase due to replacement. */
-   if( *str_sz + str_in_sz + 1 >= str_sz_max ) {
-      error_printf( "defines string (%s) too long to add: %s", str, str_in );
+   if( NULL == substr_target || NULL == substr_replacement ) {
+      /* No target/replacement provided! */
+      goto cleanup;
+   }
+
+   substr_replacement_sz = strlen( substr_replacement );
+   substr_target_sz = strlen( substr_target );
+
+   if( 1 >= substr_target_sz || 1 >= substr_replacement_sz ) {
+      /* Not necessarily an error, but the search automatically fails. */
+      goto cleanup;
+   }
+
+   if( substr_target_sz >= str_sz_max ) {
+      /* Not necessarily an error, but the search automatically fails. */
+      goto cleanup;
+   }
+
+   if( 0 != strncmp( str_in, substr_target, substr_target_sz ) ) {
+      /* Replace string not found. */
+      goto cleanup;
+   }
+
+   if( substr_replacement_sz >= str_sz_max ) {
+      error_printf( "replacement token \"%s\" too long for string: %s",
+         substr_replacement, str_in );
       retval = UNIMAKE_ERROR_STRING_TOO_LONG;
       goto cleanup;
    }
+
+   /* Perform the token replacement. */
+   for( i = 0 ; substr_replacement_sz > i ; i++ ) {
+      str[i] = substr_replacement[i];
+   }
+
+   *chars_advanced_tgt = substr_replacement_sz;
+   *chars_advanced_in = substr_target_sz;
+
+cleanup:
+   return retval;
+}
+
+int str_concat(
+   char* str, int* str_sz, int str_sz_max, const char* str_in,
+   const char* substr_target, const char* substr_replacement
+) {
+   int retval = 0,
+      i = 0,
+      str_in_sz = 0,
+      chars_advanced_str = 0,
+      chars_advanced_in = 0;
+
+   /* Get string sizes for use later. */
+   str_in_sz = strlen( str_in );
+
+   /* Bounds checking. */
+   /* TODO: Account for increase due to replacement. */
+   /*
+   if( *str_sz + str_in_sz + 1 >= str_sz_max ) {
+      error_printf( "string (%s) too long to add: %s", str, str_in );
+      retval = UNIMAKE_ERROR_STRING_TOO_LONG;
+      goto cleanup;
+   }
+   */
 
    /* Copy new define(s) into buffer. */
    if( 0 < *str_sz ) {
@@ -39,8 +94,29 @@ int concat_str(
          /* Don't concat newlines. */
          continue;
       }
-      str[*str_sz] = str_in[i];
-      (*str_sz)++;
+
+      /* Attempt token replacement. */
+      retval = str_replace(
+         &(str[*str_sz]), str_sz_max - *str_sz,
+         &(str_in[i]), substr_target, substr_replacement,
+         &chars_advanced_str, &chars_advanced_in );
+      if( 0 > retval ) {
+         /* Error occurred. */
+         goto cleanup;
+
+      } else if( 0 < chars_advanced_in ) {
+         /* Replacement occurred, advance target counter. */
+         debug_printf( 1,
+            "advance str_sz (%d), in (%d) of str (%s) by %d in, %d tgt",
+            *str_sz, i, str, chars_advanced_in, chars_advanced_str );
+         *str_sz += chars_advanced_str;
+         i += chars_advanced_in - 1; /* i++ above. */
+
+      } else {
+         /* No replacement, just do normal copy. */
+         str[*str_sz] = str_in[i];
+         (*str_sz)++;
+      }
    }
    str[*str_sz] = '\0';
 
@@ -49,16 +125,16 @@ cleanup:
 }
 
 int parse_test_arr(
-   char* argv, unsigned long* options, unsigned long dupe_mask,
+   char* argv, unsigned long* options, unsigned long dupe_mask, int* compiler,
    char* names[], const unsigned long flags[], char* flag_defines[],
-   char* defines, int* defines_sz
+   char* flag_libs[],
+   char* defines, int* defines_sz, char* libs, int* libs_sz
 ) {
    int j = 0,
       /* Start out assuming bad arg, check below. */
       retval = UNIMAKE_ERROR_INVALID_ARG;
 
    while( flags[j] != 0 ) {
-      debug_printf( 1, "test option: %s", names[j] );
       if( 0 == strncmp( names[j], argv, 3 ) ) {
          if( 0 != (*options & dupe_mask) ) {
             /* Option from this category already selected! */
@@ -66,10 +142,14 @@ int parse_test_arr(
          }
          debug_printf( 3, "enabled option: %s", names[j] );
          *options |= flags[j];
-         retval = concat_str(
+         str_concat(
             defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, flag_defines[j],
             /* TODO: Handle compiler-specific replacements. */
             NULL, NULL );
+         str_concat(
+            libs, libs_sz, UNIFILE_LIBS_SZ_MAX, flag_libs[j],
+            gc_unimake_compiler_lib_tgt[*compiler],
+            gc_unimake_compiler_lib_rep[*compiler] );
          retval = 0; /* Arg was good after all! */
          goto cleanup;
       }
@@ -82,36 +162,41 @@ cleanup:
 }
 
 int parse_args(
-   int argc, char** argv, unsigned long* options, char* defines, int* defines_sz
+   int argc, char** argv, unsigned long* options, int* compiler,
+   char* defines, int* defines_sz,
+   char* libs, int* libs_sz
 ) {
    int retval = 0,
       i = 0;
 
+   /* TODO: Compiler selection. */
+
    for( i = 1 ; argc > i ; i++ ) {
-      retval = parse_test_arr( argv[i], options, UNIMAKE_PLAT_MASK,
+      retval = parse_test_arr( argv[i], options, UNIMAKE_PLAT_MASK, compiler,
          gc_unimake_plat_names, gc_unimake_plat_flags, gc_unimake_plat_defines,
-         defines, defines_sz );
+         gc_unimake_plat_libs, defines, defines_sz, libs, libs_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was platform. */
          continue;
       }
-      retval = parse_test_arr( argv[i], options, UNIMAKE_FMT_MASK,
+      retval = parse_test_arr( argv[i], options, UNIMAKE_FMT_MASK, compiler,
          gc_unimake_fmt_names, gc_unimake_fmt_flags, gc_unimake_fmt_defines,
-         defines, defines_sz );
+         gc_unimake_fmt_libs, defines, defines_sz, libs, libs_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was a format. */
          continue;
       }
-      retval = parse_test_arr( argv[i], options, UNIMAKE_GFX_MASK,
+      retval = parse_test_arr( argv[i], options, UNIMAKE_GFX_MASK, compiler,
          gc_unimake_gfx_names, gc_unimake_gfx_flags, gc_unimake_gfx_defines,
-         defines, defines_sz );
+         gc_unimake_gfx_libs, defines, defines_sz, libs, libs_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was gfx. */
          continue;
       }
       retval = parse_test_arr( argv[i], options, 0x0, /* Allow dupes. */
+         compiler,
          gc_unimake_misc_names, gc_unimake_misc_flags, gc_unimake_misc_defines,
-         defines, defines_sz );
+         gc_unimake_misc_libs, defines, defines_sz, libs, libs_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was misc. */
          continue;
@@ -255,7 +340,7 @@ int parse_unifile_compiler_args(
       } else if( UNIFILE_STATE_PARSE == parse_state ) {
          /* Add code file after making sure we can. */
 
-         retval = concat_str(
+         retval = str_concat(
             compiler_args, compiler_args_sz, compiler_args_sz_max,
             line,
             /* TODO: Handle compiler-specific replacements. */
@@ -377,8 +462,9 @@ int main( int argc, char** argv ) {
    memset( &um_state, '\0', sizeof( struct unimake_state ) );
 
    /* Parse CLI args. */
-   retval = parse_args( argc, argv, &(um_state.options), um_state.defines,
-      &(um_state.defines_sz) );
+   retval = parse_args( argc, argv, &(um_state.options), &(um_state.compiler),
+      um_state.defines, &(um_state.defines_sz),
+      um_state.libs, &(um_state.libs_sz) );
    if( retval ) {
       error_printf( "invalid argument specified!" );
       goto cleanup;
@@ -394,15 +480,32 @@ int main( int argc, char** argv ) {
    /* TODO: Pass specified path to unifile. */
    retval = parse_unifile_paths( NULL,
       um_state.code_files, &(um_state.code_files_sz), "code", NULL );
+   if( retval ) {
+      goto cleanup;
+   }
+
    retval = parse_unifile_paths( NULL,
       um_state.code_files, &(um_state.code_files_sz), "code", plat_type );
+   if( retval ) {
+      goto cleanup;
+   }
 
    retval = parse_unifile_compiler_args( NULL,
       um_state.defines, &(um_state.defines_sz), UNIFILE_DEFINES_SZ_MAX,
       "defines", plat_type );
+   if( retval ) {
+      goto cleanup;
+   }
 
-   debug_printf( 1, "unifile parsed. flags: %08lx, defines: %s",
-      um_state.options, um_state.defines );
+   retval = parse_unifile_compiler_args( NULL,
+      um_state.libs, &(um_state.libs_sz), UNIFILE_LIBS_SZ_MAX,
+      "libs", plat_type );
+   if( retval ) {
+      goto cleanup;
+   }
+
+   debug_printf( 1, "unifile parsed. flags: %08lx, defines: %s, libs: %s",
+      um_state.options, um_state.defines, um_state.libs );
  
 cleanup:
 

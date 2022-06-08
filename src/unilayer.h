@@ -61,6 +61,10 @@
 #ifdef NETWORK_SOCKET
 #include "network.h"
 #endif /* UNILAYER_NETWORK */
+#ifdef RESOURCE_FILE
+#include "json.h"
+#include "asn.h"
+#endif /* RESOURCE_FILE */
 
 #endif /* UNILAYER_H */
 

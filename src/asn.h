@@ -3,7 +3,7 @@
 #define ASN_H
 
 /**
- * \addtogroup dsekai_asn ASN.1 Format
+ * \addtogroup unilayer_asn ASN.1 Format
  * \brief General binary format for storing and retrieving data.
  *
  * \{
@@ -14,7 +14,7 @@
  */
 
 /**
- * \addtogroup dsekai_asn_types ASN.1 Data Types
+ * \addtogroup unilayer_asn_types ASN.1 Data Types
  *
  * \{
  */

@@ -3,7 +3,7 @@
 #define JSON_H
 
 /**
- * \addtogroup json JSON
+ * \addtogroup unilayer_json JSON
  * \brief Simple lightweight general-purpose JSON parser based on jsmn.
  *
  * \{

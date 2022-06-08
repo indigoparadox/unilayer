@@ -6,6 +6,22 @@
 #define UNIMAKE_C
 #include "unimake.h"
 
+int str_in_array( const char* str, int str_sz, char* array[] ) {
+   int retval = -1,
+      i = 0;
+
+   while( 1 < strlen( array[i] ) ) {
+      if( 0 == strncmp( array[i], str, str_sz ) ) {
+         retval = i;
+         goto cleanup;
+      }
+      i++;
+   }
+
+cleanup:
+   return retval;
+}
+
 int str_replace(
    char* str, int str_sz_max, const char* str_in,
    const char* substr_target, const char* substr_replacement,
@@ -16,8 +32,12 @@ int str_replace(
       substr_replacement_sz = 0,
       substr_target_sz = 0;
 
-   *chars_advanced_tgt = 0;
-   *chars_advanced_in = 0;
+   if( NULL != chars_advanced_tgt ) {
+      *chars_advanced_tgt = 0;
+   }
+   if( NULL != chars_advanced_in ) {
+      *chars_advanced_in = 0;
+   }
 
    if( NULL == substr_target || NULL == substr_replacement ) {
       /* No target/replacement provided! */
@@ -54,8 +74,12 @@ int str_replace(
       str[i] = substr_replacement[i];
    }
 
-   *chars_advanced_tgt = substr_replacement_sz;
-   *chars_advanced_in = substr_target_sz;
+   if( NULL != chars_advanced_tgt ) {
+      *chars_advanced_tgt = substr_replacement_sz;
+   }
+   if( NULL != chars_advanced_in ) {
+      *chars_advanced_in = substr_target_sz;
+   }
 
 cleanup:
    return retval;
@@ -86,8 +110,11 @@ int str_concat(
 
    /* Copy new define(s) into buffer. */
    if( 0 < *str_sz ) {
+      /* Add a space before we start. */
+      /*
       str[*str_sz] = ' ';
       (*str_sz)++;
+      */
    }
    for( i = 0 ; str_in_sz > i ; i++ ) {
       if( '\r' == str_in[i] || '\n' == str_in[i] ) {
@@ -124,37 +151,70 @@ cleanup:
    return retval;
 }
 
+void apply_flag(
+   int flag_idx, int compiler,
+   char* names[], const unsigned long flags[], char* flag_defines[],
+   char* flag_libs[], char* flag_includes[],
+   char* defines, int* defines_sz, char* libs, int* libs_sz,
+   char* cflags, int* cflags_sz, char* includes, int* includes_sz
+) {
+   int dbg_idx = 0;
+
+   str_concat(
+      defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, flag_defines[flag_idx],
+      /* TODO: Handle compiler-specific replacements. */
+      NULL, NULL );
+   str_concat(
+      includes, includes_sz, UNIFILE_INCLUDES_SZ_MAX, flag_includes[flag_idx],
+      gc_unimake_compiler_inc_tgt[compiler],
+      gc_unimake_compiler_inc_rep[compiler] );
+   str_concat(
+      libs, libs_sz, UNIFILE_LIBS_SZ_MAX, flag_libs[flag_idx],
+      gc_unimake_compiler_lib_tgt[compiler],
+      gc_unimake_compiler_lib_rep[compiler] );
+
+   /* Special case: if this is the debug flag. */
+   dbg_idx = str_in_array( "dbg", 3, gc_unimake_misc_names );
+   if(
+      gc_unimake_misc_flags[dbg_idx] == flags[flag_idx] &&
+      1 < strlen( gc_unimake_compiler_dbg_rep[compiler] )
+   ) {
+      str_concat(
+         cflags, cflags_sz, UNIFILE_LIBS_SZ_MAX,
+         gc_unimake_misc_cflags[flag_idx],
+         "$DEBUG$", gc_unimake_compiler_dbg_rep[compiler] );
+   }
+
+}
+
 int parse_test_arr(
    char* argv, unsigned long* options, unsigned long dupe_mask, int* compiler,
    char* names[], const unsigned long flags[], char* flag_defines[],
-   char* flag_libs[],
-   char* defines, int* defines_sz, char* libs, int* libs_sz
+   char* flag_libs[], char* flag_includes[],
+   char* defines, int* defines_sz, char* libs, int* libs_sz,
+   char* cflags, int* cflags_sz, char* includes, int* includes_sz
 ) {
-   int j = 0,
+   int argv_idx = -1,
       /* Start out assuming bad arg, check below. */
       retval = UNIMAKE_ERROR_INVALID_ARG;
 
-   while( flags[j] != 0 ) {
-      if( 0 == strncmp( names[j], argv, 3 ) ) {
-         if( 0 != (*options & dupe_mask) ) {
-            /* Option from this category already selected! */
-            goto cleanup;
-         }
-         debug_printf( 3, "enabled option: %s", names[j] );
-         *options |= flags[j];
-         str_concat(
-            defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, flag_defines[j],
-            /* TODO: Handle compiler-specific replacements. */
-            NULL, NULL );
-         str_concat(
-            libs, libs_sz, UNIFILE_LIBS_SZ_MAX, flag_libs[j],
-            gc_unimake_compiler_lib_tgt[*compiler],
-            gc_unimake_compiler_lib_rep[*compiler] );
-         retval = 0; /* Arg was good after all! */
-         goto cleanup;
-      }
-      j++;
+   argv_idx = str_in_array( argv, 3, names );
+   if( 0 > argv_idx ) {
+      goto cleanup;
    }
+
+   if( 0 != (*options & dupe_mask) ) {
+      /* Option from this category already selected! */
+      goto cleanup;
+   }
+
+   debug_printf( 3, "enabled option: %s", names[argv_idx] );
+   *options |= flags[argv_idx];
+   apply_flag( argv_idx, *compiler,
+      names, flags, flag_defines, flag_libs, flag_includes,
+      defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+      includes, includes_sz );
+   retval = 0; /* Arg was good after all! */
 
 cleanup:
 
@@ -164,31 +224,64 @@ cleanup:
 int parse_args(
    int argc, char** argv, unsigned long* options, int* compiler,
    char* defines, int* defines_sz,
-   char* libs, int* libs_sz
+   char* libs, int* libs_sz, char* cflags, int* cflags_sz,
+   char* includes, int* includes_sz
 ) {
    int retval = 0,
       i = 0;
 
-   /* TODO: Compiler selection. */
+   /* Compiler selection is a special case first-pass, as it affects how the
+    * args below are added/parsed. */
+   for( i = 1 ; *compiler < 0 && argc > i ; i++ ) {
+      if( 0 > *compiler ) {
+         *compiler = str_in_array(
+            argv[i], strlen( argv[i] ), gc_unimake_compiler_cc );
+         if( 0 <= *compiler ) {
+            debug_printf( 3, "selected compiler %d: %s",
+               *compiler, gc_unimake_compiler_cc[*compiler] );
+         }
+      }
+   }
+
+   if( 0 > *compiler ) {
+      *compiler = 0;
+      debug_printf(
+         3, "defaulting to compiler: %s", gc_unimake_compiler_cc[0] );
+   }
 
    for( i = 1 ; argc > i ; i++ ) {
+      /* The compiler arg is fine, too. */
+      retval = str_in_array(
+         argv[i], strlen( argv[i] ), gc_unimake_compiler_cc );
+      if( 0 <= retval ) {
+         retval = 0;
+         continue;
+      }
+
+      /* Parse build options. */
       retval = parse_test_arr( argv[i], options, UNIMAKE_PLAT_MASK, compiler,
          gc_unimake_plat_names, gc_unimake_plat_flags, gc_unimake_plat_defines,
-         gc_unimake_plat_libs, defines, defines_sz, libs, libs_sz );
+         gc_unimake_plat_libs, gc_unimake_plat_includes,
+         defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+         includes, includes_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was platform. */
          continue;
       }
       retval = parse_test_arr( argv[i], options, UNIMAKE_FMT_MASK, compiler,
          gc_unimake_fmt_names, gc_unimake_fmt_flags, gc_unimake_fmt_defines,
-         gc_unimake_fmt_libs, defines, defines_sz, libs, libs_sz );
+         gc_unimake_fmt_libs, gc_unimake_fmt_includes,
+         defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+         includes, includes_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was a format. */
          continue;
       }
       retval = parse_test_arr( argv[i], options, UNIMAKE_GFX_MASK, compiler,
          gc_unimake_gfx_names, gc_unimake_gfx_flags, gc_unimake_gfx_defines,
-         gc_unimake_gfx_libs, defines, defines_sz, libs, libs_sz );
+         gc_unimake_gfx_libs, gc_unimake_gfx_includes,
+         defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+         includes, includes_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was gfx. */
          continue;
@@ -196,15 +289,40 @@ int parse_args(
       retval = parse_test_arr( argv[i], options, 0x0, /* Allow dupes. */
          compiler,
          gc_unimake_misc_names, gc_unimake_misc_flags, gc_unimake_misc_defines,
-         gc_unimake_misc_libs, defines, defines_sz, libs, libs_sz );
+         gc_unimake_misc_libs, gc_unimake_misc_includes,
+         defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+         includes, includes_sz );
       if( UNIMAKE_ERROR_INVALID_ARG != retval ) {
          /* Arg was misc. */
          continue;
       }
 
       /* Bad argument! */
-      break;
+      goto cleanup;
    }
+
+   /* Apply defaults for unspecified categories. */
+   if( 0 == (UNIMAKE_GFX_MASK & *options) ) {
+      debug_printf(
+         3, "applying default graphics: %s", gc_unimake_gfx_names[0] );
+      apply_flag( 0, *compiler,
+         gc_unimake_gfx_names, gc_unimake_gfx_flags,
+         gc_unimake_gfx_defines, gc_unimake_gfx_libs, gc_unimake_gfx_includes,
+         defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+         includes, includes_sz );
+   }
+
+   if( 0 == (UNIMAKE_FMT_MASK & *options) ) {
+      debug_printf(
+         3, "applying default format: %s", gc_unimake_fmt_names[0] );
+      apply_flag( 0, *compiler,
+         gc_unimake_fmt_names, gc_unimake_fmt_flags,
+         gc_unimake_fmt_defines, gc_unimake_fmt_libs, gc_unimake_fmt_includes,
+         defines, defines_sz, libs, libs_sz, cflags, cflags_sz,
+         includes, includes_sz);
+   }
+
+cleanup:
    return retval;
 }
 
@@ -260,7 +378,9 @@ int test_unifile_line_header(
    /* header_type and header_plat only come from our own code,
     * so we can strlen() them here. */
    header_type_sz = strlen( header_type );
-   header_plat_sz = strlen( header_plat );
+   if( NULL != header_plat ) {
+      header_plat_sz = strlen( header_plat );
+   }
 
    if( '[' != line[0] ) {
       /* Not a header. */
@@ -298,7 +418,8 @@ cleanup:
 int parse_unifile_compiler_args(
    const char* unifile_path,
    char* compiler_args, int* compiler_args_sz, int compiler_args_sz_max,
-   const char* args_type, const char* args_plat
+   const char* args_type, const char* args_plat,
+   char* arg_target, char* arg_replace
 ) {
    FILE* unifile = NULL;
    int retval = 0,
@@ -342,9 +463,7 @@ int parse_unifile_compiler_args(
 
          retval = str_concat(
             compiler_args, compiler_args_sz, compiler_args_sz_max,
-            line,
-            /* TODO: Handle compiler-specific replacements. */
-            NULL, NULL );
+            line, arg_target, arg_replace );
          if( retval ) {
             goto cleanup;
          }
@@ -454,17 +573,69 @@ char* get_plat_name( unsigned long options ) {
    return gc_unimake_plat_names[i];
 }
 
+int build_obj( struct unimake_state* um_state, char* src_path ) {
+   char cmd_line[UNIMAKE_CLI_SZ_MAX + 1] = { 0 };
+   char obj_path[UNIFILE_PATH_SZ_MAX + 1] = { 0 };
+   int cmd_line_sz = 0,
+      obj_path_sz = 0;
+   
+   str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      gc_unimake_compiler_cc[um_state->compiler],
+      NULL, NULL );
+
+   str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      um_state->defines,
+      NULL, NULL );
+
+   str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      um_state->includes,
+      NULL, NULL );
+
+   str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      um_state->cflags,
+      NULL, NULL );
+
+   /* Build the object path. */
+   str_concat(
+      obj_path, &obj_path_sz, UNIFILE_PATH_SZ_MAX,
+      UNIMAKE_OBJ_DIR "/", NULL, NULL );
+   str_concat(
+      obj_path, &obj_path_sz, UNIFILE_PATH_SZ_MAX, src_path, ".c", ".o" );
+
+   str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      gc_unimake_compiler_obj_out[um_state->compiler],
+      "$FILE$", obj_path );
+
+   str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      src_path, NULL, NULL );
+
+   debug_printf( 1, "%s", cmd_line );
+   debug_printf( 1, "%s", cmd_line );
+
+   return 0;
+}
+
 int main( int argc, char** argv ) {
-   int retval = 0;
+   int retval = 0,
+      i = 0;
    struct unimake_state um_state;
    char* plat_type = NULL;
 
    memset( &um_state, '\0', sizeof( struct unimake_state ) );
+   um_state.compiler = -1;
 
    /* Parse CLI args. */
    retval = parse_args( argc, argv, &(um_state.options), &(um_state.compiler),
       um_state.defines, &(um_state.defines_sz),
-      um_state.libs, &(um_state.libs_sz) );
+      um_state.libs, &(um_state.libs_sz),
+      um_state.cflags, &(um_state.cflags_sz),
+      um_state.includes, &(um_state.includes_sz) );
    if( retval ) {
       error_printf( "invalid argument specified!" );
       goto cleanup;
@@ -490,22 +661,53 @@ int main( int argc, char** argv ) {
       goto cleanup;
    }
 
+   /* defines */
+
    retval = parse_unifile_compiler_args( NULL,
       um_state.defines, &(um_state.defines_sz), UNIFILE_DEFINES_SZ_MAX,
-      "defines", plat_type );
+      "defines", plat_type,
+      NULL, NULL /* TODO */);
+   if( retval ) {
+      goto cleanup;
+   }
+
+   /* libs */
+
+   retval = parse_unifile_compiler_args( NULL,
+      um_state.libs, &(um_state.libs_sz), UNIFILE_LIBS_SZ_MAX,
+      "libs", plat_type,
+      gc_unimake_compiler_lib_tgt[um_state.compiler],
+      gc_unimake_compiler_lib_rep[um_state.compiler] );
+   if( retval ) {
+      goto cleanup;
+   }
+
+   /* includes */
+
+   retval = parse_unifile_compiler_args( NULL,
+      um_state.includes, &(um_state.includes_sz), UNIFILE_INCLUDES_SZ_MAX,
+      "includes", NULL,
+      gc_unimake_compiler_inc_tgt[um_state.compiler],
+      gc_unimake_compiler_inc_rep[um_state.compiler] );
    if( retval ) {
       goto cleanup;
    }
 
    retval = parse_unifile_compiler_args( NULL,
-      um_state.libs, &(um_state.libs_sz), UNIFILE_LIBS_SZ_MAX,
-      "libs", plat_type );
+      um_state.includes, &(um_state.includes_sz), UNIFILE_INCLUDES_SZ_MAX,
+      "includes", plat_type,
+      gc_unimake_compiler_inc_tgt[um_state.compiler],
+      gc_unimake_compiler_inc_rep[um_state.compiler] );
    if( retval ) {
       goto cleanup;
    }
 
    debug_printf( 1, "unifile parsed. flags: %08lx, defines: %s, libs: %s",
       um_state.options, um_state.defines, um_state.libs );
+
+   for( i = 0 ; um_state.code_files_sz > i ; i++ ) {
+      build_obj( &um_state, um_state.code_files[i] );
+   }
  
 cleanup:
 

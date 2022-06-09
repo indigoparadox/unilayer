@@ -75,7 +75,7 @@
 
 #define UNIFILE_CFLAGS_SZ_MAX 32
 
-#define UNIMAKE_CLI_SZ_MAX 255
+#define UNIMAKE_CLI_SZ_MAX 1024
 
 /*! \} */
 
@@ -85,18 +85,20 @@
  */
 
 #  define COMPILER_CC( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) cc,
+#  define COMPILER_LD( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) ld, 
 #  define COMPILER_REP_LIB( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) rep_lib,
 #  define COMPILER_TGT_LIB( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) tgt_lib,
 #  define COMPILER_REP_DBG( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) rep_dbg,
 #  define COMPILER_TGT_INC( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) tgt_inc,
 #  define COMPILER_REP_INC( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) rep_inc,
 #  define COMPILER_OBJ_OUT( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) obj_out,
+#  define COMPILER_EXE_OUT( cc, ld, rc, tgt_inc, rep_inc, tgt_def, rep_def, tgt_lib, rep_lib, tgt_ldr, rep_ldr, rep_dbg, obj_out, exe_out ) exe_out,
 
 /*     cc,   ld,    rc,    ti, ri, td, rd, */
 #  define UNIMAKE_COMPILER_TABLE( f ) \
-   f( "gcc", "gcc", "", "", "", "", "", "", "", "", "", "-g -pg", "-o $FILE$", "-o " ) \
-   f( "wcc", "wcl", "wrc", "-I", "-i=", "", "", "-l", "-l=", "", "", "", "-fo=$FILE$", "-fe=" ) \
-   f( "m68k-gcc-palmos", "m68k-gcc-palmos", "", "", "", "", "", "", "", "", "", "-g", "-o $FILE$", "-o " ) \
+   f( "gcc", "gcc", "", "", "", "", "", "", "", "", "", "-g -pg", "-o $FILE$", "-o $FILE$" ) \
+   f( "wcc", "wcl", "wrc", "-I", "-i=", "", "", "-l", "-l=", "", "", "", "-fo=$FILE$", "-fe=$FILE$" ) \
+   f( "m68k-gcc-palmos", "m68k-gcc-palmos", "", "", "", "", "", "", "", "", "", "-g", "-o $FILE$", "-o $FILE$" ) \
    f( "", "", "", "", "", "", "", "", "", "", "", "", "", "" )
 
 /*! \} */
@@ -117,7 +119,7 @@
 #define UNIMAKE_PLAT_TABLE( f ) \
    f( "sdl", 0x01000000, "", "-DPLATFORM_SDL", "", "", "-lsdl", "" ) \
    f( "wsm", 0x02000000, "", "-DPLATFORM_SDL", "", "", "", "" ) \
-   f( "w16", 0x04000000, "-bt=windows -bw -zp=1", "-DPLATFORM_WIN16", "-I$INCLUDES/win", "", "-lwindows", "" ) \
+   f( "w16", 0x04000000, "-bt=windows -bw -zp=1", "-DPLATFORM_WIN16", "-I$INCLUDE/win", "", "-lwindows", "" ) \
    f( "w32", 0x08000000, "", "-DPLATFORM_WIN32", "", "", "", "" ) \
    f( "dos", 0x10000000, "", "-DPLATFORM_DOS", "", "", "", "" ) \
    f( "plm", 0x20000000, "", "-DPLATFORM_PALM", "", "", "", "" ) \
@@ -133,8 +135,8 @@
 #define UNIMAKE_FMT_MASK 0x000000f0
 #define UNIMAKE_FMT_TABLE( f ) \
    f( "hdr", 0x00000000, "", "", "", "", "", "" ) \
-   f( "jsn", 0x00000010, "", "", "", "", "", "" ) \
-   f( "asn", 0x00000020, "", "", "", "", "", "" ) \
+   f( "jsn", 0x00000010, "", "-DNO_RESEXT", "", "", "", "" ) \
+   f( "asn", 0x00000020, "", "-DNO_RESEXT", "", "", "", "" ) \
    f( "", 0x00000000, "", "", "", "", "", "" )
 
 #define UNIMAKE_MISC_MASK 0x00ff0000
@@ -177,6 +179,10 @@ char* gc_unimake_compiler_cc[] = {
    UNIMAKE_COMPILER_TABLE( COMPILER_CC )
 };
 
+char* gc_unimake_compiler_ld[] = {
+   UNIMAKE_COMPILER_TABLE( COMPILER_LD )
+};
+
 char* gc_unimake_compiler_lib_tgt[] = {
    UNIMAKE_COMPILER_TABLE( COMPILER_TGT_LIB )
 };
@@ -199,6 +205,10 @@ char* gc_unimake_compiler_dbg_rep[] = {
 
 char* gc_unimake_compiler_obj_out[] = {
    UNIMAKE_COMPILER_TABLE( COMPILER_OBJ_OUT )
+};
+
+char* gc_unimake_compiler_exe_out[] = {
+   UNIMAKE_COMPILER_TABLE( COMPILER_EXE_OUT )
 };
 
 /* Format Flags */
@@ -294,6 +304,17 @@ char* gc_unimake_plat_includes[] = {
 };
 
 #endif /* UNIMAKE_C */
+
+#define str_concat_char( str, str_sz_p, str_max, c, retval ) \
+   if( str_max > *(str_sz_p) + 1 ) { \
+      str[*(str_sz_p)] = c; \
+      (*(str_sz_p))++; \
+      str[*(str_sz_p)] = '\0'; \
+   } else { \
+      error_printf( "line buffer exceeded" ); \
+      retval = UNIMAKE_ERROR_STRING_TOO_LONG; \
+      goto cleanup; \
+   }
 
 /**
  * @return Index of string in given array if it is found, or -1 otherwise.

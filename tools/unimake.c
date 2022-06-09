@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define UNIMAKE_C
 #include "unimake.h"
@@ -20,6 +23,18 @@ int str_in_array( const char* str, int str_sz, char* array[] ) {
 
 cleanup:
    return retval;
+}
+
+int str_find_char_r( const char* str, int str_sz, char c ) {
+   int i = 0;
+
+   for( i = str_sz ; 0 <= i ; i-- ) {
+      if( str[i] == c ) {
+         return i;
+      }
+   }
+
+   return i;
 }
 
 int str_replace(
@@ -98,16 +113,6 @@ int str_concat(
    /* Get string sizes for use later. */
    str_in_sz = strlen( str_in );
 
-   /* Bounds checking. */
-   /* TODO: Account for increase due to replacement. */
-   /*
-   if( *str_sz + str_in_sz + 1 >= str_sz_max ) {
-      error_printf( "string (%s) too long to add: %s", str, str_in );
-      retval = UNIMAKE_ERROR_STRING_TOO_LONG;
-      goto cleanup;
-   }
-   */
-
    /* Copy new define(s) into buffer. */
    if( 0 < *str_sz ) {
       /* Add a space before we start. */
@@ -146,32 +151,57 @@ int str_concat(
       }
    }
    str[*str_sz] = '\0';
+   retval = 0;
 
 cleanup:
    return retval;
 }
 
-void apply_flag(
+int apply_flag(
    int flag_idx, int compiler,
    char* names[], const unsigned long flags[], char* flag_defines[],
    char* flag_libs[], char* flag_includes[],
    char* defines, int* defines_sz, char* libs, int* libs_sz,
    char* cflags, int* cflags_sz, char* includes, int* includes_sz
 ) {
-   int dbg_idx = 0;
+   int dbg_idx = 0,
+      retval = 0;
 
-   str_concat(
-      defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, flag_defines[flag_idx],
-      /* TODO: Handle compiler-specific replacements. */
-      NULL, NULL );
-   str_concat(
-      includes, includes_sz, UNIFILE_INCLUDES_SZ_MAX, flag_includes[flag_idx],
-      gc_unimake_compiler_inc_tgt[compiler],
-      gc_unimake_compiler_inc_rep[compiler] );
-   str_concat(
-      libs, libs_sz, UNIFILE_LIBS_SZ_MAX, flag_libs[flag_idx],
-      gc_unimake_compiler_lib_tgt[compiler],
-      gc_unimake_compiler_lib_rep[compiler] );
+   if( 1 < strlen( flag_defines[flag_idx] ) ) {
+      str_concat_char(
+         defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, ' ', retval );
+      retval = str_concat(
+         defines, defines_sz, UNIFILE_DEFINES_SZ_MAX, flag_defines[flag_idx],
+         /* TODO: Handle compiler-specific replacements. */
+         NULL, NULL );
+      if( 0 > retval ) {
+         goto cleanup;
+      }
+   }
+
+   if( 1 < strlen( flag_includes[flag_idx] ) ) {
+      str_concat_char(
+         includes, includes_sz, UNIFILE_INCLUDES_SZ_MAX, ' ', retval );
+      str_concat(
+         includes, includes_sz, UNIFILE_INCLUDES_SZ_MAX,
+         flag_includes[flag_idx],
+         gc_unimake_compiler_inc_tgt[compiler],
+         gc_unimake_compiler_inc_rep[compiler] );
+      if( 0 > retval ) {
+         goto cleanup;
+      }
+   }
+
+   if( 1 < strlen( flag_libs[flag_idx] ) ) {
+      str_concat_char( libs, libs_sz, UNIFILE_LIBS_SZ_MAX, ' ', retval );
+      str_concat(
+         libs, libs_sz, UNIFILE_LIBS_SZ_MAX, flag_libs[flag_idx],
+         gc_unimake_compiler_lib_tgt[compiler],
+         gc_unimake_compiler_lib_rep[compiler] );
+      if( 0 > retval ) {
+         goto cleanup;
+      }
+   }
 
    /* Special case: if this is the debug flag. */
    dbg_idx = str_in_array( "dbg", 3, gc_unimake_misc_names );
@@ -179,12 +209,18 @@ void apply_flag(
       gc_unimake_misc_flags[dbg_idx] == flags[flag_idx] &&
       1 < strlen( gc_unimake_compiler_dbg_rep[compiler] )
    ) {
-      str_concat(
-         cflags, cflags_sz, UNIFILE_LIBS_SZ_MAX,
+      str_concat_char( cflags, cflags_sz, UNIFILE_CFLAGS_SZ_MAX, ' ', retval );
+      retval = str_concat(
+         cflags, cflags_sz, UNIFILE_CFLAGS_SZ_MAX,
          gc_unimake_misc_cflags[flag_idx],
          "$DEBUG$", gc_unimake_compiler_dbg_rep[compiler] );
+      if( 0 > retval ) {
+         goto cleanup;
+      }
    }
 
+cleanup:
+   return retval;
 }
 
 int parse_test_arr(
@@ -461,6 +497,9 @@ int parse_unifile_compiler_args(
       } else if( UNIFILE_STATE_PARSE == parse_state ) {
          /* Add code file after making sure we can. */
 
+         str_concat_char(
+            compiler_args, compiler_args_sz, compiler_args_sz_max, ' ',
+            retval );
          retval = str_concat(
             compiler_args, compiler_args_sz, compiler_args_sz_max,
             line, arg_target, arg_replace );
@@ -561,64 +600,299 @@ cleanup:
    return retval;
 }
 
-char* get_plat_name( unsigned long options ) {
+char* get_flag_name(
+   unsigned long options, unsigned long flags[], int flag_mask, char* names[]
+) {
    int i = 0;
 
-   while( gc_unimake_plat_flags[i] != (options & UNIMAKE_PLAT_MASK) ) {
+   while( flags[i] != (options & flag_mask) ) {
       i++;
    }
 
    /* TODO: Bounds checking. */
 
-   return gc_unimake_plat_names[i];
+   return names[i];
+}
+
+int build_dir( const char* dir_path, int dir_path_sz ) {
+   char dir_path_tmp[UNIFILE_PATH_SZ_MAX] = { 0 };
+   int recurse_dir_sep_pos = 0,
+      retval = -1;
+   struct stat dir_info;
+
+   /* Copy dir_path to the temp buffer so we can insert a NULL at dir_path_sz.
+    */
+   strncpy( dir_path_tmp, dir_path, dir_path_sz );
+   dir_path_tmp[dir_path_sz + 1] = '\0';
+
+   /* See if we need to recurse to create this directory's parent. */
+   recurse_dir_sep_pos = str_find_char_r( dir_path_tmp, dir_path_sz, '/' );
+   if( 0 <= recurse_dir_sep_pos ) {
+      build_dir( dir_path_tmp, recurse_dir_sep_pos );
+   }
+
+   if( 0 == stat( dir_path_tmp, &dir_info ) ) {
+      debug_printf( 1, "directory %s exists", dir_path_tmp );
+      retval = 0;
+      goto cleanup;
+   }
+
+   /* TODO: Checking for GNU C is probably good enough here, but we're really
+    *       checking to distinguish vs e.g. Turbo C w/ 1-parm mkdir().
+    */
+#ifdef __GNUC__
+   retval = mkdir( dir_path_tmp, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+#endif /* __GNUC__ */
+   
+   debug_printf( 1, "%s", dir_path_tmp );
+
+cleanup:
+   return retval;
+}
+
+#if 0
+#define unimake_concat_path( path, path_sz, path_sz_max, name, flags, mask, options
+   name = get_flag_name(
+      options, flags, mask, names );
+   retval = str_concat(
+      path, &(path_sz), UNIFILE_PATH_SZ_MAX, plat_name, NULL, NULL );
+   str_concat_char(
+      obj_path, &obj_path_sz, UNIFILE_PATH_SZ_MAX, '/', retval );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+#endif
+
+int build_obj_path(
+   char* obj_path, int* obj_path_sz, char* src_path, unsigned long options,
+   const char* root
+) {
+   int retval = 0;
+   char* plat_name = NULL,
+      * gfx_name = NULL,
+      * fmt_name = NULL;
+
+   retval = str_concat(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX, root, NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+   str_concat_char(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX, '/', retval );
+
+   /* Object Path: Platform Name */
+   plat_name = get_flag_name(
+      options, gc_unimake_plat_flags, UNIMAKE_PLAT_MASK,
+      gc_unimake_plat_names );
+   retval = str_concat(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX,
+      plat_name, NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+   str_concat_char(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX, '/', retval );
+
+   /* Object Path: Graphics Name */
+   gfx_name = get_flag_name(
+      options, gc_unimake_gfx_flags, UNIMAKE_GFX_MASK,
+      gc_unimake_gfx_names );
+   retval = str_concat(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX,
+      gfx_name, NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+   str_concat_char(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX, '/', retval );
+
+   /* Object Path: Format Name */
+   fmt_name = get_flag_name(
+      options, gc_unimake_fmt_flags, UNIMAKE_FMT_MASK,
+      gc_unimake_fmt_names );
+   retval = str_concat(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX,
+      fmt_name, NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+   str_concat_char(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX, '/', retval );
+
+   retval = str_concat(
+      obj_path, obj_path_sz, UNIFILE_PATH_SZ_MAX, src_path, ".c", ".o" );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+
+cleanup:
+   return retval;
 }
 
 int build_obj( struct unimake_state* um_state, char* src_path ) {
-   char cmd_line[UNIMAKE_CLI_SZ_MAX + 1] = { 0 };
-   char obj_path[UNIFILE_PATH_SZ_MAX + 1] = { 0 };
+   char cmd_line[UNIMAKE_CLI_SZ_MAX + 1] = { 0 },
+      obj_path[UNIFILE_PATH_SZ_MAX + 1] = { 0 };
    int cmd_line_sz = 0,
-      obj_path_sz = 0;
+      obj_path_sz = 0,
+      retval = 0;
    
-   str_concat(
+   retval = str_concat(
       cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
       gc_unimake_compiler_cc[um_state->compiler],
       NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
-   str_concat(
+   retval = str_concat(
       cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
       um_state->defines,
       NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
-   str_concat(
+   retval = str_concat(
       cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
       um_state->includes,
       NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
-   str_concat(
+   retval = str_concat(
       cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
       um_state->cflags,
       NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
    /* Build the object path. */
-   str_concat(
-      obj_path, &obj_path_sz, UNIFILE_PATH_SZ_MAX,
-      UNIMAKE_OBJ_DIR "/", NULL, NULL );
-   str_concat(
-      obj_path, &obj_path_sz, UNIFILE_PATH_SZ_MAX, src_path, ".c", ".o" );
+   retval = build_obj_path(
+      obj_path, &obj_path_sz, src_path, um_state->options,
+      UNIMAKE_OBJ_DIR );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
-   str_concat(
+   retval = build_dir(
+      obj_path, str_find_char_r( obj_path, obj_path_sz, '/' ) );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+
+   str_concat_char(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX, ' ', retval );
+   retval = str_concat(
       cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
       gc_unimake_compiler_obj_out[um_state->compiler],
       "$FILE$", obj_path );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
-   str_concat(
+   str_concat_char(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX, ' ', retval );
+   retval = str_concat(
       cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
       src_path, NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
 
    debug_printf( 1, "%s", cmd_line );
+
+   retval = system( cmd_line );
+
+cleanup:
+   return retval;
+}
+
+int build_exe( struct unimake_state* um_state ) {
+   char cmd_line[UNIMAKE_CLI_SZ_MAX + 1] = { 0 },
+      exe_path[UNIFILE_PATH_SZ_MAX + 1] = { 0 },
+      obj_path[UNIFILE_PATH_SZ_MAX + 1] = { 0 };
+   int retval = 0,
+      obj_path_sz = 0,
+      exe_path_sz = 0,
+      cmd_line_sz = 0,
+      i = 0;
+
+   retval = str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      gc_unimake_compiler_ld[um_state->compiler],
+      NULL, NULL );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+
+   /* Build the binary path. */
+   retval = build_obj_path(
+      exe_path, &exe_path_sz, "a.exe", um_state->options,
+      UNIMAKE_BIN_DIR );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+
+   str_concat_char(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX, ' ', retval );
+   retval = str_concat(
+      cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX,
+      gc_unimake_compiler_exe_out[um_state->compiler],
+      "$FILE$", exe_path );
+   if( 0 > retval ) {
+      /* Error occurred. */
+      goto cleanup;
+   }
+
+   for( i = 0 ; um_state->code_files_sz > i ; i++ ) {
+      /* Reset path size for each iteration. */
+      obj_path_sz = 0;
+
+      retval = build_obj_path(
+         obj_path, &obj_path_sz, um_state->code_files[i], um_state->options,
+         UNIMAKE_OBJ_DIR );
+      if( 0 > retval ) {
+         /* Error occurred. */
+         goto cleanup;
+      }
+
+      str_concat_char(
+         cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX, ' ', retval );
+      retval = str_concat(
+         cmd_line, &cmd_line_sz, UNIMAKE_CLI_SZ_MAX, obj_path, NULL, NULL );
+      if( 0 > retval ) {
+         /* Error occurred. */
+         goto cleanup;
+      }
+   }
+
+   /* TODO: LDFLAGS */
+
+   retval = system( cmd_line );
+
    debug_printf( 1, "%s", cmd_line );
 
-   return 0;
+cleanup:
+
+   return retval;
 }
 
 int main( int argc, char** argv ) {
@@ -646,7 +920,9 @@ int main( int argc, char** argv ) {
 
    /* Parse Unifile. */
 
-   plat_type = get_plat_name( um_state.options );
+   plat_type = get_flag_name(
+      um_state.options, gc_unimake_plat_flags, UNIMAKE_PLAT_MASK,
+      gc_unimake_plat_names );
 
    /* TODO: Pass specified path to unifile. */
    retval = parse_unifile_paths( NULL,
@@ -702,12 +978,21 @@ int main( int argc, char** argv ) {
       goto cleanup;
    }
 
+   /* Build objects. */
+
    debug_printf( 1, "unifile parsed. flags: %08lx, defines: %s, libs: %s",
       um_state.options, um_state.defines, um_state.libs );
 
    for( i = 0 ; um_state.code_files_sz > i ; i++ ) {
-      build_obj( &um_state, um_state.code_files[i] );
+      retval = build_obj( &um_state, um_state.code_files[i] );
+      if( 0 > retval ) {
+         goto cleanup;
+      }
    }
+
+   /* Link */
+
+   retval = build_exe( &um_state );  
  
 cleanup:
 

@@ -53,6 +53,14 @@ loop_globals();
 
 #elif defined( PLATFORM_SDL )
 
+#  ifndef SCREEN_W
+#     define SCREEN_W 160
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 160
+#  endif /* !SCREEN_H */
+
 #  include <stdint.h>
 loop_globals();
 #  include "memory/fakem.h"
@@ -69,6 +77,14 @@ loop_globals();
 #  endif /* PLATFORM_WASM */
 
 #elif defined( PLATFORM_XLIB )
+
+#  ifndef SCREEN_W
+#     define SCREEN_W 320
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 200
+#  endif /* !SCREEN_H */
 
 #  include <X11/Xlib.h>
 #  include <stdint.h>
@@ -110,6 +126,18 @@ loop_globals();
 #  include "graphics/palmg.h"
 
 #elif defined( PLATFORM_WIN )
+
+#  ifndef SCREEN_W
+#     define SCREEN_W 160
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 160
+#  endif /* !SCREEN_H */
+
+#  ifndef SCREEN_SCALE
+#     define SCREEN_SCALE 2
+#  endif /* !SCREEN_SCALE */
 
 #  define LOG_TO_FILE
 #  ifdef PLATFORM_WIN16

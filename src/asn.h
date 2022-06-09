@@ -40,6 +40,33 @@ int32_t asn_write_seq_start(
    MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark );
 int32_t asn_write_seq_end(
    MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark );
+
+/**
+ * \brief Read short object in asn_buffer.
+ */
+int16_t asn_read_short( const uint8_t* asn_buffer );
+
+/**
+ * \brief Read int object in asn_buffer into buffer.
+ */
+int16_t asn_read_int(
+   uint8_t* buffer, uint8_t buffer_sz, uint8_t sign,
+   const uint8_t* asn_buffer );
+
+/**
+ * \brief Read string object in asn_buffer into str_buffer.
+ */
+int16_t asn_read_string(
+   char* str_buffer, int16_t buffer_sz, const uint8_t* asn_buffer );
+
+/**
+ * \brief Get metadata for the object at idx in buffer.
+ * \param buffer
+ * \param idx
+ * \param type_out
+ * \param sz_out
+ * \return
+ */
 int32_t asn_read_meta_ptr(
    const uint8_t* buffer, int32_t idx, uint8_t* type_out, int32_t* sz_out );
 

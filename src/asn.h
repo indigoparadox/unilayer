@@ -26,9 +26,36 @@
 
 /*! \} */
 
+/**
+ * \addtogroup unilayer_asn_flags ASN.1 Function Flags
+ * \brief These may be passed to certain functions to modify their behavior.
+ * \{
+ */
+
+/*! \brief Tread parsed integers as signed. */
+#define ASN_FLAG_SIGNED 0x01
+
+/*! \} */
+
+/**
+ * \addtogroup unilayer_asn_errors ASN.1 Error Codes
+ * \brief These error codes may be returned by ASN.1-related functions.
+ * \{
+ */
+
+/*! \brief Value/buffer size mismatch or overflow occurred. */
 #define ASN_ERROR_INVALID_VALUE_SZ -1
 #define ASN_ERROR_UNABLE_TO_ALLOCATE -2
 #define ASN_ERROR_UNABLE_TO_LOCK -3
+/*! \brief Invalid \ref unilayer_asn_types encountered. */
+#define ASN_ERROR_INVALID_TYPE -4
+
+/*! \} */
+
+/**
+ * \addtogroup unilayer_asn_write Writing ASN.1 Data
+ * \{
+ */
 
 int32_t asn_write_int( MEMORY_HANDLE* h_buffer, int32_t idx, int32_t value );
 int32_t asn_write_string(
@@ -41,23 +68,46 @@ int32_t asn_write_seq_start(
 int32_t asn_write_seq_end(
    MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark );
 
+/*! \} */
+
+/**
+ * \addtogroup unilayer_asn_read Reading ASN.1 Data
+ * \{
+ */
+
 /**
  * \brief Read short object in asn_buffer.
+ * \param int_buffer Buffer in which to place parsed integer.
+ * \param asn_buffer Buffer containing ASN data to parse.
+ * \param idx Index of integer object (starting at type byte) in asn_buffer.
+ * \return Count of bytes parsed in asn_buffer or \ref unilayer_asn_errors.
+ * \deprecated Should be worked into asn_read_int using flags at some point.
  */
 int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx );
 
 /**
  * \brief Read int object in asn_buffer into buffer.
+ * \param int_buffer Buffer in which to place parsed integer.
+ * \param buffer_sz Size of output integer buffer in bytes.
+ * \param flags \ref unilayer_asn_flags to alter function behavior.
+ * \param asn_buffer Buffer containing ASN data to parse.
+ * \param idx Index of integer object (starting at type byte) in asn_buffer.
+ * \return Count of bytes parsed in asn_buffer or \ref unilayer_asn_errors.
  */
 int16_t asn_read_int(
-   uint8_t* buffer, uint8_t buffer_sz, uint8_t sign,
+   uint8_t* int_buffer, uint8_t buffer_sz, uint8_t flags,
    const uint8_t* asn_buffer, int32_t idx );
 
 /**
  * \brief Read string object in asn_buffer into str_buffer.
+ * \param str_buffer Buffer in which to place parsed string.
+ * \param str_buffer_sz Size of output string buffer in bytes.
+ * \param asn_buffer Buffer containing ASN data to parse.
+ * \param idx Index of string object (starting at type byte) in asn_buffer.
+ * \return Count of bytes parsed in asn_buffer or \ref unilayer_asn_errors.
  */
 int16_t asn_read_string(
-   char* str_buffer, int16_t buffer_sz,
+   char* str_buffer, int16_t str_buffer_sz,
    const uint8_t* asn_buffer, int32_t idx );
 
 /**
@@ -70,6 +120,8 @@ int16_t asn_read_string(
  */
 int32_t asn_read_meta_ptr(
    const uint8_t* buffer, int32_t idx, uint8_t* type_out, int32_t* sz_out );
+
+/*! \} */
 
 /*! \} */
 

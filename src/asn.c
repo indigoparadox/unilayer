@@ -369,33 +369,35 @@ int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx ) {
 }
 
 int16_t asn_read_int(
-   uint8_t* buffer, uint8_t buffer_sz, uint8_t sign,
+   uint8_t* int_buffer, uint8_t int_buffer_sz, uint8_t flags,
    const uint8_t* asn_buffer, int32_t idx
 ) {
    int16_t field_sz = 0;
-   int16_t* int16_buffer = (int16_t*)buffer;
-   uint16_t* uint16_buffer = (uint16_t*)buffer;
-   int8_t* int8_buffer = (int8_t*)buffer;
+   int16_t* int16_buffer = (int16_t*)int_buffer;
+   uint16_t* uint16_buffer = (uint16_t*)int_buffer;
+   int8_t* int8_buffer = (int8_t*)int_buffer; /* For signed int. */
 
    if( 0x02 != asn_buffer[idx] ) {
       error_printf( "invalid integer type byte: 0x%02x", asn_buffer[idx] );
+      field_sz = ASN_ERROR_INVALID_TYPE;
       goto cleanup;
    }
 
-   if( 2 < buffer_sz ) {
+   if( 2 < int_buffer_sz ) {
       error_printf( "integer buffer too large" );
+      field_sz = ASN_ERROR_INVALID_VALUE_SZ;
       goto cleanup;
    }
 
    if( asn_buffer[idx + 1] == 1 ) {
-      if( sign ) {
+      if( ASN_FLAG_SIGNED == (flags & ASN_FLAG_SIGNED) ) {
          *int8_buffer = asn_buffer[idx + 2];
       } else {
-         *buffer = asn_buffer[idx + 2];
+         *int_buffer = asn_buffer[idx + 2];
       }
       field_sz += 1;
    } else if( asn_buffer[idx + 1] == 2 ) {
-      if( sign ) {
+      if( ASN_FLAG_SIGNED == (flags & ASN_FLAG_SIGNED) ) {
          *int16_buffer = asn_read_short( asn_buffer, idx + 2 );
       } else {
          *uint16_buffer = asn_read_short( asn_buffer, idx + 2 );
@@ -416,19 +418,22 @@ cleanup:
 }
 
 int16_t asn_read_string(
-   char* str_buffer, int16_t buffer_sz, const uint8_t* asn_buffer, int32_t idx
+   char* str_buffer, int16_t str_buffer_sz,
+   const uint8_t* asn_buffer, int32_t idx
 ) {
    int16_t field_sz = 0;
 
    if( 0x16 != asn_buffer[idx] ) {
       error_printf( "invalid string type byte: 0x%02x", asn_buffer[idx] );
+      field_sz = ASN_ERROR_INVALID_TYPE;
       goto cleanup;
    }
    
    /* TODO: Variable-length field size? */
    field_sz = asn_buffer[idx + 1];
-   if( buffer_sz <= field_sz ) {
+   if( str_buffer_sz <= field_sz ) {
       error_printf( "string too long to fit in buffer: %d", field_sz );
+      field_sz = ASN_ERROR_INVALID_VALUE_SZ;
       goto cleanup;
    }
 
@@ -450,6 +455,8 @@ int32_t asn_read_meta_ptr(
    uint8_t sz_of_sz = 0;
 
    *type_out = buffer[idx++];
+
+   /* TODO: Handle invalid data. */
 
    if( 0x80 == (0x80 & buffer[idx]) ) {
       /* Strip high bit. */

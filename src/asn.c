@@ -361,23 +361,24 @@ cleanup:
    return idx;
 }
 
-int16_t asn_read_short( const uint8_t* asn_buffer ) {
+int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx ) {
    int16_t n_out = 0;
-   n_out |= (asn_buffer[0] << 8);
-   n_out |= asn_buffer[1];
+   n_out |= (asn_buffer[idx++] << 8);
+   n_out |= asn_buffer[idx++];
    return n_out;
 }
 
 int16_t asn_read_int(
-   uint8_t* buffer, uint8_t buffer_sz, uint8_t sign, const uint8_t* asn_buffer
+   uint8_t* buffer, uint8_t buffer_sz, uint8_t sign,
+   const uint8_t* asn_buffer, int32_t idx
 ) {
    int16_t field_sz = 0;
    int16_t* int16_buffer = (int16_t*)buffer;
    uint16_t* uint16_buffer = (uint16_t*)buffer;
    int8_t* int8_buffer = (int8_t*)buffer;
 
-   if( 0x02 != asn_buffer[0] ) {
-      error_printf( "invalid integer type byte: 0x%02x", asn_buffer[0] );
+   if( 0x02 != asn_buffer[idx] ) {
+      error_printf( "invalid integer type byte: 0x%02x", asn_buffer[idx] );
       goto cleanup;
    }
 
@@ -386,23 +387,24 @@ int16_t asn_read_int(
       goto cleanup;
    }
 
-   if( asn_buffer[1] == 1 ) {
+   if( asn_buffer[idx + 1] == 1 ) {
       if( sign ) {
-         *int8_buffer = asn_buffer[2];
+         *int8_buffer = asn_buffer[idx + 2];
       } else {
-         *buffer = asn_buffer[2];
+         *buffer = asn_buffer[idx + 2];
       }
       field_sz += 1;
-   } else if( asn_buffer[1] == 2 ) {
+   } else if( asn_buffer[idx + 1] == 2 ) {
       if( sign ) {
-         *int16_buffer = asn_read_short( &(asn_buffer[2]) );
+         *int16_buffer = asn_read_short( asn_buffer, idx + 2 );
       } else {
-         *uint16_buffer = asn_read_short( &(asn_buffer[2]) );
+         *uint16_buffer = asn_read_short( asn_buffer, idx + 2 );
       }
       field_sz += 2;
    } else {
+      /* TODO: Handle larger integers. */
       error_printf( "unable to process integer: size 0x%02x",
-         asn_buffer[1] );
+         asn_buffer[idx + 1] );
       goto cleanup;
    }
 
@@ -414,23 +416,24 @@ cleanup:
 }
 
 int16_t asn_read_string(
-   char* str_buffer, int16_t buffer_sz, const uint8_t* asn_buffer
+   char* str_buffer, int16_t buffer_sz, const uint8_t* asn_buffer, int32_t idx
 ) {
    int16_t field_sz = 0;
 
-   if( 0x16 != asn_buffer[0] ) {
-      error_printf( "invalid string type byte: 0x%02x", asn_buffer[0] );
+   if( 0x16 != asn_buffer[idx] ) {
+      error_printf( "invalid string type byte: 0x%02x", asn_buffer[idx] );
       goto cleanup;
    }
    
-   field_sz = asn_buffer[1];
+   /* TODO: Variable-length field size? */
+   field_sz = asn_buffer[idx + 1];
    if( buffer_sz <= field_sz ) {
       error_printf( "string too long to fit in buffer: %d", field_sz );
       goto cleanup;
    }
 
-   memory_copy_ptr( (MEMORY_PTR)str_buffer, (const MEMORY_PTR)&(asn_buffer[2]),
-      field_sz );
+   memory_copy_ptr( (MEMORY_PTR)str_buffer,
+      (const MEMORY_PTR)&(asn_buffer[idx + 2]), field_sz );
    debug_printf( 1, "parsed string: %s (%d)", str_buffer, field_sz );
 
    field_sz += 2; /* type and length bytes */

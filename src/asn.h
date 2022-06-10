@@ -44,20 +44,21 @@ int32_t asn_write_seq_end(
 /**
  * \brief Read short object in asn_buffer.
  */
-int16_t asn_read_short( const uint8_t* asn_buffer );
+int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx );
 
 /**
  * \brief Read int object in asn_buffer into buffer.
  */
 int16_t asn_read_int(
    uint8_t* buffer, uint8_t buffer_sz, uint8_t sign,
-   const uint8_t* asn_buffer );
+   const uint8_t* asn_buffer, int32_t idx );
 
 /**
  * \brief Read string object in asn_buffer into str_buffer.
  */
 int16_t asn_read_string(
-   char* str_buffer, int16_t buffer_sz, const uint8_t* asn_buffer );
+   char* str_buffer, int16_t buffer_sz,
+   const uint8_t* asn_buffer, int32_t idx );
 
 /**
  * \brief Get metadata for the object at idx in buffer.

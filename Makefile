@@ -3,6 +3,8 @@ ifeq ($(STAMPFILE),)
 STAMPFILE := .stamp
 endif
 
+MD := mkdir -v -p
+
 # === Convert Utility ===
 
 CONVERT_C_FILES := \
@@ -51,4 +53,22 @@ CFLAGS_MKRESH := -DNO_RESEXT -g -DDEBUG_LOG -DDEBUG_THRESHOLD=0 -DRESOURCE_FILE 
 
 $(MKRESH): $(MKRESH_C_FILES) | $(BINDIR)/$(STAMPFILE)
 	$(HOST_CC) $(CFLAGS_MKRESH) -o $@ $^
+
+# === Tests ===
+
+TESTS_C_FILES := \
+   unilayer/src/asn.c \
+   unilayer/src/memory/fakem.c \
+   unilayer/tests/check.c \
+   unilayer/tests/chkasn.c
+
+CFLAGS_TESTS := -DNO_RESEXT -DDEBUG_LOG -DDEBUG_THRESHOLD=3
+
+test_unilayer: $(addprefix obj/tests/,$(subst .c,.o,$(TESTS_C_FILES)))
+	$(MD) $(dir $@)
+	$(CC) -o $@ $^ $(shell pkg-config --libs check)
+
+obj/tests/%.o: %.c
+	$(MD) $(dir $@)
+	$(CC) -c -o $@ $(CFLAGS_TESTS) $<
 

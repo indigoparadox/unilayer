@@ -1,0 +1,3 @@
+[submodule "lib/maug"]
+	path = lib/maug
+	url = https://github.com/indigoparadox/maug

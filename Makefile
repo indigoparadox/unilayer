@@ -5,6 +5,10 @@ endif
 
 MD := mkdir -v -p
 
+INCLUDES_UNILAYER := \
+   -I unilayer/src \
+   -I unilayer/lib/maug/src
+
 # === Convert Utility ===
 
 CONVERT_C_FILES := \

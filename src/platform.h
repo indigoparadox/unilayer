@@ -44,7 +44,7 @@ typedef int (*loop_iter)( void* );
 #  define PLATFORM_DIR_SEP '\\'
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logdos.txt"
-#  include "types/x86.h"
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"
@@ -61,7 +61,7 @@ loop_globals();
 #     define SCREEN_H 160
 #  endif /* !SCREEN_H */
 
-#  include <stdint.h>
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"
@@ -87,7 +87,7 @@ loop_globals();
 #  endif /* !SCREEN_H */
 
 #  include <X11/Xlib.h>
-#  include <stdint.h>
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"
@@ -118,7 +118,7 @@ loop_globals();
 #  define unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags )
 #  define platform_init( icon ) if( cmd == sysAppLaunchCmdNormalLaunch ) {
 #  define platform_shutdown() }
-#  include "types/palmt.h"
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/palmm.h"
 #  include "resinc.h"
@@ -154,7 +154,7 @@ loop_globals();
 #  define unilayer_loop_iter() win_process_messages()
 #  define platform_init( icon ) g_instance = hInstance; g_graphics_args.cmd_show = nCmdShow; g_graphics_args.icon_res = icon; if( hPrevInstance ) { error_printf( "previous instance detected" ); return 1; }
 #  include <windows.h>
-#  include "types/x86.h"
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/winm.h"
 #  include "resinc.h"
@@ -174,7 +174,7 @@ HWND g_window = (HWND)NULL;
 #  define LOG_FILE_NAME "logmac.txt"
 #  include <Multiverse.h>
 #  include <Quickdraw.h>
-#  include <stdint.h>
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/mac6m.h"
 #  include "resinc.h"
@@ -186,7 +186,7 @@ loop_globals();
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "lognds.txt"
 #  include <nds.h>
-#  include <stdint.h>
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"
@@ -197,7 +197,7 @@ loop_globals();
 
 #define DISABLE_FILESYSTEM
 
-#  include <stdint.h>
+#  include <mtypes.h>
 #  include <types.h>
 loop_globals();
 #  include "memory/fakem.h"
@@ -222,7 +222,7 @@ loop_globals()
 
 #elif defined( PLATFORM_NES )
 
-#  include <stdint.h>
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"
@@ -232,7 +232,7 @@ loop_globals();
 
 #else
 
-#  include <stdint.h>
+#  include <mtypes.h>
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"

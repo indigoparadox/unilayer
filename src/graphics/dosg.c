@@ -236,7 +236,8 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t screen_byte_offset = 0,
 	   y_offset = 0;
    /* Still not sure why copy seems to start w/2px in? */
-   int16_t retval = 1;
+   int16_t retval = 1,
+      bmp_line_step = 0; /* Advance this many bytes between source lines. */
    uint8_t* plane_1 = NULL;
    uint8_t* plane_2 = NULL;
 
@@ -260,6 +261,14 @@ int16_t graphics_platform_blit_partial_at(
       goto cleanup;
    }
 
+   /* d_y must be even because of dual-plane setup but we can fudge this. */
+   if( 0 != d_y % 2 ) {
+      d_y++;
+   }
+
+   /* 8 bytes per line blit (for 16px-wide source). */
+   bmp_line_step = bmp->w / 8;
+
    /* Set starting X/Y from source planes. */
    /* s_y / 2 because each plane is 1/2 height. */
    plane_1 += (((s_y / 2) * bmp->w) / 4) + (s_x / 4);
@@ -279,8 +288,8 @@ int16_t graphics_platform_blit_partial_at(
       _fmemcpy( &(g_buffer[0x2000 + screen_byte_offset]), plane_2, 4 );
 
       /* Advance source address by bytes per copy. */
-      plane_1 += bmp->w / 8;
-      plane_2 += bmp->w / 8;
+      plane_1 += bmp_line_step;
+      plane_2 += bmp_line_step;
 	}
 #endif /* GRAPHICS_MODE */
 

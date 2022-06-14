@@ -65,6 +65,20 @@
 
 #endif /* DEPTH_VGA */
 
+#ifdef DEPTH_VGA
+
+#define ANIMATE_TEMP_LOW()    GRAPHICS_COLOR_RED
+#define ANIMATE_TEMP_MED()    GRAPHICS_COLOR_YELLOW
+#define ANIMATE_TEMP_HIGH()   GRAPHICS_COLOR_WHITE
+
+#else
+
+#define ANIMATE_TEMP_LOW()    GRAPHICS_COLOR_MAGENTA
+#define ANIMATE_TEMP_MED()    GRAPHICS_COLOR_CYAN
+#define ANIMATE_TEMP_HIGH()   GRAPHICS_COLOR_WHITE
+
+#endif /* DEPTH_VGA */
+
 /**
  * \addtogroup unilayer_animate_flags Unilayer Animation Flags
  * \brief Flags to control ::ANIMATION behavior.

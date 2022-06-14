@@ -404,23 +404,20 @@ void animate_tesselate( struct ANIMATION* a, int16_t y_orig ) {
 
                } else if( 0 < a->tile[idx] && ANIMATE_TYPE_SNOW == a->type ) {
                   graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
-#ifdef DEPTH_VGA
+#ifndef NO_SNOW_OUTLINE
+                  graphics_draw_px( p_x - 1, p_y, GRAPHICS_COLOR_BLACK );
+                  graphics_draw_px( p_x + 1, p_y, GRAPHICS_COLOR_BLACK );
+                  graphics_draw_px( p_x, p_y - 1, GRAPHICS_COLOR_BLACK );
+                  graphics_draw_px( p_x, p_y + 1, GRAPHICS_COLOR_BLACK );
+#endif /* !NO_SNOW_OUTLINE */
+
                } else if( 90 < a->tile[idx] ) {
-                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
+                  graphics_draw_px( p_x, p_y, ANIMATE_TEMP_HIGH() );
                } else if( 60 < a->tile[idx] ) {
-                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_YELLOW );
+                  graphics_draw_px( p_x, p_y, ANIMATE_TEMP_MED() );
                } else if( 30 < a->tile[idx] ) {
-                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_RED );
+                  graphics_draw_px( p_x, p_y, ANIMATE_TEMP_LOW() );
                }
-#else
-               } else if( 90 < a->tile[idx] ) {
-                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_WHITE );
-               } else if( 60 < a->tile[idx] ) {
-                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_CYAN );
-               } else if( 30 < a->tile[idx] ) {
-                  graphics_draw_px( p_x, p_y, GRAPHICS_COLOR_MAGENTA );
-               }
-#endif /* DEPTH_VGA */
             }
          }
       }

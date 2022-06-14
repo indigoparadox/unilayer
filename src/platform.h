@@ -168,6 +168,14 @@ HWND g_window = (HWND)NULL;
 
 #elif defined( PLATFORM_MAC6 )
 
+#  ifndef SCREEN_W
+#     define SCREEN_W 160
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 160
+#  endif /* !SCREEN_H */
+
 #  define DISABLE_MAIN_PARMS
 #  define NEWLINE_STR "\r"
 #  define LOG_TO_FILE

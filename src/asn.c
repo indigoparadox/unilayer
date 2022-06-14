@@ -218,7 +218,8 @@ int32_t asn_write_string(
       buffer[i] = 0;
    }
    if( 0 < source_len ) {
-      memory_copy_ptr( &(buffer[idx]), source, source_len );
+      memory_copy_ptr(
+         (MEMORY_PTR)&(buffer[idx]), (CONST_MEMORY_PTR)source, source_len );
       idx += source_len;
    }
 

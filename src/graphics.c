@@ -337,7 +337,7 @@ static
 int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
    RESOURCE_HANDLE bitmap_handle = (RESOURCE_HANDLE)NULL;
-   
+
    /* Load resource into buffer. */
    bitmap_handle = resource_get_handle( id );
    if( (RESOURCE_HANDLE)NULL == bitmap_handle ) {

@@ -42,7 +42,6 @@ typedef int (*loop_iter)( void* );
 #  endif /* !SCREEN_H */
 
 #  define PLATFORM_DIR_SEP '\\'
-#  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logdos.txt"
 #  include <mtypes.h>
 loop_globals();
@@ -106,7 +105,6 @@ loop_globals();
 
 #  define USE_SOFT_ASSERT
 #  define DISABLE_FILESYSTEM
-#  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logpalm.txt"
 #  define CODE_SECTION( name ) __attribute__( (section( name )) )
 #  include <PalmOS.h>
@@ -139,7 +137,6 @@ loop_globals();
 #     define SCREEN_SCALE 2
 #  endif /* !SCREEN_SCALE */
 
-#  define LOG_TO_FILE
 #  ifdef PLATFORM_WIN16
 #     define LOG_FILE_NAME "logwin16.txt"
 #     define PLATFORM_API PASCAL
@@ -178,7 +175,6 @@ HWND g_window = (HWND)NULL;
 
 #  define DISABLE_MAIN_PARMS
 #  define NEWLINE_STR "\r"
-#  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logmac.txt"
 #  include <Multiverse.h>
 #  include <Quickdraw.h>

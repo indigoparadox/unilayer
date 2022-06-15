@@ -379,7 +379,8 @@ int16_t asn_read_int(
    int8_t* int8_buffer = (int8_t*)int_buffer; /* For signed int. */
 
    if( 0x02 != asn_buffer[idx] ) {
-      error_printf( "invalid integer type byte: 0x%02x", asn_buffer[idx] );
+      error_printf( "invalid integer type byte: 0x%02x (%d)",
+         asn_buffer[idx], idx );
       field_sz = ASN_ERROR_INVALID_TYPE;
       goto cleanup;
    }
@@ -425,7 +426,8 @@ int16_t asn_read_string(
    int16_t field_sz = 0;
 
    if( 0x16 != asn_buffer[idx] ) {
-      error_printf( "invalid string type byte: 0x%02x", asn_buffer[idx] );
+      error_printf( "invalid string type byte: 0x%02x (%d)",
+         asn_buffer[idx], idx );
       field_sz = ASN_ERROR_INVALID_TYPE;
       goto cleanup;
    }

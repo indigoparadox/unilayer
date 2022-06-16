@@ -57,8 +57,6 @@
 #elif defined( PLATFORM_MAC6 )
 /* ------ */
 
-#define LOG_TO_FILE
-
 /* ------ */
 #elif defined( PLATFORM_NDS )
 /* ------ */

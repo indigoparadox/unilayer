@@ -553,7 +553,7 @@ int16_t graphics_platform_load_bitmap(
 #ifdef RESOURCE_FILE
 
 #  ifdef PLATFORM_WIN16
-      buf = memory_lock( res_handle );
+      buf = resource_lock_handle( res_handle );
 
       bmi = (BITMAPINFO*)&(buf[sizeof( BITMAPFILEHEADER )]);
 
@@ -577,7 +577,7 @@ int16_t graphics_platform_load_bitmap(
          bmi->bmiHeader.biHeight, &(buf[offset]), bmi,
          DIB_RGB_COLORS );
 
-      buf = memory_unlock( res_handle );
+      buf = resource_unlock_handle( res_handle );
 
       ReleaseDC( g_window, hdc );
 

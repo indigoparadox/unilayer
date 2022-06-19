@@ -402,6 +402,7 @@ int16_t asn_read_int(
       if( ASN_FLAG_SIGNED == (flags & ASN_FLAG_SIGNED) ) {
          *int16_buffer = asn_read_short( asn_buffer, idx + 2 );
       } else {
+         /* TODO: This causes store to misaligned address! */
          *uint16_buffer = asn_read_short( asn_buffer, idx + 2 );
       }
       field_sz += 2;

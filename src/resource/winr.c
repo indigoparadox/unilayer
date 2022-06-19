@@ -10,11 +10,11 @@ RESOURCE_HANDLE resource_get_handle( uint32_t id ) {
 }
 
 MEMORY_PTR resource_lock_handle( RESOURCE_HANDLE handle ) {
-   return memory_lock( handle );
+   return LocalLock( handle );
 }
 
 MEMORY_PTR resource_unlock_handle( RESOURCE_HANDLE handle ) {
-   return memory_unlock( handle );
+   return LocalUnlock( handle );
 }
 
 int32_t resource_sz_handle( RESOURCE_HANDLE handle ) {
@@ -23,6 +23,6 @@ int32_t resource_sz_handle( RESOURCE_HANDLE handle ) {
 }
 
 void resource_free_handle( RESOURCE_HANDLE handle ) {
-   memory_free( handle );
+   LocalFree( handle );
 }
 

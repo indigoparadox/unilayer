@@ -198,8 +198,11 @@ struct WINDOW {
 
 /**
  * \brief Global initialization for the window subsystem. Runs at startup.
+ * \param auto_w Limit width of screen area for auto-centering.
+ * \param auto_h Limit height of screen area for auto-centering.
+ * \return 1 if successful, or 0 otherwise.
  */
-void window_init();
+int16_t window_init( uint16_t auto_w, uint16_t auto_h );
 
 /**
  * \brief Global shutdown for the window subsystem. Runs at shutdown.
@@ -258,7 +261,7 @@ typedef uint8_t (*WINDOW_CB_SZ)(
 static MEMORY_HANDLE g_frames_handle = (MEMORY_HANDLE)NULL;
 static MEMORY_HANDLE g_windows_handle = (MEMORY_HANDLE)NULL;
 
-static const int16_t gc_window_screen_coords[4] = {
+static int16_t g_window_screen_coords[4] = {
    0, 0, SCREEN_W, SCREEN_H
 };
 

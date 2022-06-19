@@ -38,12 +38,12 @@ static void window_placement(
    if( NULL == p ) {
       /* Position relative to screen. */
       debug_printf( 0, "window %d rel screen", c->id );
-      p_coords = gc_window_screen_coords;
+      p_coords = g_window_screen_coords;
       p_grid = g_window_screen_grid;
    } else {
       /* Position relative to parent. */
       debug_printf( 0, "window %d rel window %d", c->id, c->parent_id );
-      p_coords = gc_window_screen_coords;
+      p_coords = g_window_screen_coords;
       p_coords = p->coords;
       p_grid = p->data.grid;
    }
@@ -437,8 +437,17 @@ static uint8_t window_sz_SPRITE(
 
 /* === General Functions === */
 
-void window_init() {
+int16_t window_init( uint16_t auto_w, uint16_t auto_h ) {
    struct WINDOW_FRAME* frames = NULL;
+   int16_t retval = 1;
+
+   if( 0 < auto_w ) {
+      g_window_screen_coords[2] = auto_w;
+   }
+
+   if( 0 < auto_w ) {
+      g_window_screen_coords[3] = auto_h;
+   }
 
    debug_printf( 1, "initalizing windowing system..." );
 
@@ -452,6 +461,8 @@ void window_init() {
    /* memory_copy_ptr(
       (MEMORY_PTR)frames, (MEMORY_PTR)&gc_frame_cm_checker,
       sizeof( struct WINDOW_FRAME ) ); */
+
+   /* TODO: Check for frame load success. */
 
 #ifdef RESOURCE_FILE
    resource_assign_id( frames[0].tr, ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp" );
@@ -476,6 +487,8 @@ void window_init() {
 #endif
 
    frames = (struct WINDOW_FRAME*)memory_unlock( g_frames_handle );
+
+   return retval;
 }
 
 void window_shutdown() {

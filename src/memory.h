@@ -22,11 +22,16 @@ struct FAKE_MEMORY_HANDLE {
    uint32_t sz;
    uint32_t offset;
 #endif
+#ifdef MEMORY_HANDLE_SENTINAL
+   uint32_t sentinal;
+#endif /* MEMORY_HANDLE_SENTINAL */
    MEMORY_PTR ptr;
    uint32_t ptr_sz;
    uint32_t locks;
    struct FAKE_MEMORY_HANDLE* next;
 };
+
+int32_t memory_init();
 
 /**
  * \brief Request dynamic memory from operating system while protecting from

@@ -66,6 +66,7 @@
 #include "asn.h"
 #endif /* RESOURCE_FILE */
 #include "save.h"
+#include "window.h"
 
 #endif /* UNILAYER_H */
 

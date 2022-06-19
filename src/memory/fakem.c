@@ -88,6 +88,10 @@ MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
       assert( iter->ptr_sz == sz * count );
    }
 
+#ifdef MEMORY_HANDLE_SENTINAL
+   iter->sentinal = MEMORY_HANDLE_SENTINAL;
+#endif /* MEMORY_HANDLE_SENTINAL */
+
    return iter;
 }
 
@@ -99,7 +103,15 @@ void memory_free( MEMORY_HANDLE handle ) {
       return;
    }
 
+#ifdef MEMORY_HANDLE_SENTINAL
+   assert( MEMORY_HANDLE_SENTINAL == handle->sentinal );
+#endif /* MEMORY_HANDLE_SENTINAL */
+
    assert( 0 == handle->locks );
+
+#ifdef MEMORY_HANDLE_SENTINAL
+   handle->sentinal = 0;
+#endif /* MEMORY_HANDLE_SENTINAL */
 
    /* Find the handle block and remove it from the chain. */
    if( handle == g_block_first ) {

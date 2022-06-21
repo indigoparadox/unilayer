@@ -222,6 +222,12 @@ void graphics_string_sz(
 );
 
 /**
+ * \addtogroup unilayer_graphics_cache Unilayer Graphics Cache
+ * \brief Interface to cache that holds/deduplicates sprites and tiles.
+ * \{
+ */
+
+/**
  * \brief Copy part or all of a ::GRAPHICS_BITMAP image to the screen.
  * \param bitmap_idx Index of the ::GRAPHICS_BITMAP in the graphics cache.
  * \param s_x Horizontal location of upper-left corner of copy source rectangle.
@@ -246,6 +252,10 @@ int16_t graphics_cache_blit_at(
  */
 void graphics_clear_cache();
 
+int16_t graphics_cache_load_bitmap( RESOURCE_ID id );
+
+/*! \} */ /* unilayer_graphics_cache */
+
 /**
  * \brief Get a random integer.
  * \param start Inclusive start of range.
@@ -253,8 +263,6 @@ void graphics_clear_cache();
  * \return Random integer higher than or equal to start and within range.
  */
 int16_t graphics_get_random( int16_t start, int16_t range );
-
-int16_t graphics_cache_load_bitmap( RESOURCE_ID id );
 
 #ifdef GRAPHICS_C
 

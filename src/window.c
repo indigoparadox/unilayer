@@ -354,10 +354,11 @@ static int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 
    /* Set offset_sprite based on dir flags. */
    dir = ((c->flags & WINDOW_FLAG_SPRITE_DIR_MASK) >> 4);
+   debug_printf( 1, "sprite flags 0x%02x dir 0x%02x", c->flags, dir );
    offset_sprite = dir * WINDOW_SPRITE_H;
 
    graphics_blit_sprite_at(
-      c->data.res_id,
+      c->data.scalar,
       0, offset_sprite,
       offset_x + c->coords[GUI_X] + 2,
       offset_y + c->coords[GUI_Y] + 2,
@@ -438,7 +439,6 @@ static uint8_t window_sz_SPRITE(
 /* === General Functions === */
 
 int16_t window_init( uint16_t auto_w, uint16_t auto_h ) {
-   struct WINDOW_FRAME* frames = NULL;
    int16_t retval = 1;
 
    if( 0 < auto_w ) {
@@ -457,33 +457,53 @@ int16_t window_init( uint16_t auto_w, uint16_t auto_h ) {
 
    g_frames_handle = memory_alloc( sizeof( struct WINDOW_FRAME ), 1 );
    assert( (MEMORY_HANDLE)NULL != g_frames_handle );
+
+   window_reload_frames();
+
+   return retval;
+}
+
+int16_t window_reload_frames() {
+   struct WINDOW_FRAME* frames = NULL;
+   int16_t retval = 1;
+
+   if( (MEMORY_HANDLE)NULL == g_frames_handle ) {
+      return 0;
+   }
+
    frames = (struct WINDOW_FRAME*)memory_lock( g_frames_handle );
-   /* memory_copy_ptr(
-      (MEMORY_PTR)frames, (MEMORY_PTR)&gc_frame_cm_checker,
-      sizeof( struct WINDOW_FRAME ) ); */
 
    /* TODO: Check for frame load success. */
 
 #ifdef RESOURCE_FILE
-   resource_assign_id( frames[0].tr, ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp" );
-   resource_assign_id( frames[0].tl, ASSETS_PATH DEPTH_SPEC "/p_chk_tl.bmp" );
-   resource_assign_id( frames[0].br, ASSETS_PATH DEPTH_SPEC "/p_chk_br.bmp" );
-   resource_assign_id( frames[0].bl, ASSETS_PATH DEPTH_SPEC "/p_chk_bl.bmp" );
-   resource_assign_id( frames[0].t , ASSETS_PATH DEPTH_SPEC "/p_chk_t.bmp" );
-   resource_assign_id( frames[0].b , ASSETS_PATH DEPTH_SPEC "/p_chk_b.bmp" );
-   resource_assign_id( frames[0].r , ASSETS_PATH DEPTH_SPEC "/p_chk_r.bmp" );
-   resource_assign_id( frames[0].l , ASSETS_PATH DEPTH_SPEC "/p_chk_l.bmp" );
-   resource_assign_id( frames[0].c , ASSETS_PATH DEPTH_SPEC "/p_chk_c.bmp" );
+   frames[0].tr =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp" );
+   frames[0].tl =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_tl.bmp" );
+   frames[0].br =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_br.bmp" );
+   frames[0].bl =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_bl.bmp" );
+   frames[0].t  =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_t.bmp" );
+   frames[0].b  =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_b.bmp" );
+   frames[0].r  =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_r.bmp" );
+   frames[0].l  =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_l.bmp" );
+   frames[0].c  =
+      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_c.bmp" );
 #else
-   resource_assign_id( frames[0].tr , p_chk_tr );
-   resource_assign_id( frames[0].tl , p_chk_tl );
-   resource_assign_id( frames[0].br , p_chk_br );
-   resource_assign_id( frames[0].bl , p_chk_bl );
-   resource_assign_id( frames[0].t , p_chk_t );
-   resource_assign_id( frames[0].b , p_chk_b );
-   resource_assign_id( frames[0].r , p_chk_r );
-   resource_assign_id( frames[0].l , p_chk_l );
-   resource_assign_id( frames[0].c , p_chk_c );
+   frames[0].tr = graphics_cache_load_bitmap( p_chk_tr );
+   frames[0].tl = graphics_cache_load_bitmap( p_chk_tl );
+   frames[0].br = graphics_cache_load_bitmap( p_chk_br );
+   frames[0].bl = graphics_cache_load_bitmap( p_chk_bl );
+   frames[0].t  = graphics_cache_load_bitmap( p_chk_t );
+   frames[0].b  = graphics_cache_load_bitmap( p_chk_b );
+   frames[0].r  = graphics_cache_load_bitmap( p_chk_r );
+   frames[0].l  = graphics_cache_load_bitmap( p_chk_l );
+   frames[0].c  = graphics_cache_load_bitmap( p_chk_c );
 #endif
 
    frames = (struct WINDOW_FRAME*)memory_unlock( g_frames_handle );
@@ -494,7 +514,9 @@ int16_t window_init( uint16_t auto_w, uint16_t auto_h ) {
 void window_shutdown() {
    /* TODO: Verify all windows have closed/freed their resources. */
    memory_free( g_windows_handle );
+   g_windows_handle = (MEMORY_HANDLE)NULL;
    memory_free( g_frames_handle );
+   g_frames_handle = (MEMORY_HANDLE)NULL;
 }
 
 int16_t window_draw_all() {
@@ -546,7 +568,7 @@ int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
    int16_t x, int16_t y, int16_t w, int16_t h,
    GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
-   int32_t data_scalar, RESOURCE_ID data_res_id, const char* data_string
+   int32_t data_scalar, const char* data_string
 ) {
    int16_t retval = 0,
       string_sz = 0;
@@ -612,11 +634,11 @@ int16_t window_push(
    } else if( 0 != data_scalar ) {
       window_new->data.scalar = data_scalar;
 
-      /* Ensure flag consistency. */
-      flags &= ~WINDOW_FLAG_TEXT_MASK;
-      flags |= WINDOW_FLAG_TEXT_NUM;
-   } else if( !resource_compare_id( 0, data_res_id ) ) {
-      resource_assign_id( window_new->data.res_id, data_res_id );
+      if( WINDOW_TYPE_LABEL == type ) {
+         /* Ensure flag consistency. */
+         flags &= ~WINDOW_FLAG_TEXT_MASK;
+         flags |= WINDOW_FLAG_TEXT_NUM;
+      }
    }
 
    window_new->flags = flags | WINDOW_FLAG_DIRTY | WINDOW_FLAG_ACTIVE;

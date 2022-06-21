@@ -12,8 +12,6 @@
 /*! \brief A piece of data attached to CONTROL::data. */
 union CONTROL_DATA {
    int32_t scalar;
-   /*! \brief Identifier for an asset (e.g. for CONTROL_TYPE_SPRITE). */
-   RESOURCE_ID res_id;
    MEMORY_HANDLE string;
    int16_t grid[4];
 };
@@ -24,23 +22,23 @@ union CONTROL_DATA {
  */
 struct WINDOW_FRAME {
    /*! \brief Top-right corner. */
-   RESOURCE_ID tr;
+   uint16_t tr;
    /*! \brief Top-left corner. */
-   RESOURCE_ID tl;
+   uint16_t tl;
    /*! \brief Bottom-right corner. */
-   RESOURCE_ID br;
+   uint16_t br;
    /*! \brief Bottom-left corner. */
-   RESOURCE_ID bl;
+   uint16_t bl;
    /*! \brief Top edge. */
-   RESOURCE_ID t;
+   uint16_t t;
    /*! \brief Bottom edge. */
-   RESOURCE_ID b;
+   uint16_t b;
    /*! \brief Right edge. */
-   RESOURCE_ID r;
+   uint16_t r;
    /*! \brief Left edge. */
-   RESOURCE_ID l;
+   uint16_t l;
    /*! \brief Center fill. */
-   RESOURCE_ID c;
+   uint16_t c;
 };
 
 /*! \brief Struct representing an on-screen graphical window. */
@@ -204,6 +202,8 @@ struct WINDOW {
  */
 int16_t window_init( uint16_t auto_w, uint16_t auto_h );
 
+int16_t window_reload_frames();
+
 /**
  * \brief Global shutdown for the window subsystem. Runs at shutdown.
  */
@@ -226,7 +226,7 @@ int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
    int16_t x, int16_t y, int16_t w, int16_t h,
    GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
-   int32_t data_scalar, RESOURCE_ID data_res_id, const char* data_string );
+   int32_t data_scalar, const char* data_string );
 
 /**
  * \brief Destroy the top-most onscreen WINDOW with the given WINDOW::id.

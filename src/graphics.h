@@ -14,6 +14,8 @@
  *  \brief Platform-general abstractions for graphics.
  */
 
+#define GRAPHICS_ERROR_NOT_FOUND -1
+
 /*! \brief Draw string at 1x scale. */
 #define GRAPHICS_STRING_FLAG_1X 0x01
 #define GRAPHICS_STRING_FLAG_ALL_CAPS 0x10
@@ -39,14 +41,14 @@
 /**
  * \brief Blit using platform-specific sprite hardware if available.
  */
-#define graphics_blit_sprite_at( res_id, s_x, s_y, d_x, d_y, w, h ) graphics_blit_at( res_id, s_x, s_y, d_x, d_y, w, h )
+#define graphics_blit_sprite_at( cache_id, s_x, s_y, d_x, d_y, w, h ) graphics_cache_blit_at( cache_id, s_x, s_y, d_x, d_y, w, h )
 #endif /* !graphics_blit_sprite_at */
 
 #ifndef graphics_blit_tile_at
 /**
  * \brief Blit using platform-specific tile hardware if available.
  */
-#define graphics_blit_tile_at( res_id, s_x, s_y, d_x, d_y, w, h ) graphics_blit_at( res_id, s_x, s_y, d_x, d_y, w, h )
+#define graphics_blit_tile_at( cache_id, s_x, s_y, d_x, d_y, w, h ) graphics_cache_blit_at( cache_id, s_x, s_y, d_x, d_y, w, h )
 #endif /* !graphics_blit_tile_at */
 
 #define graphics_char_is_printable( c ) (('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || ('0' <= c && '9' >= c) || '.' == c || ',' == c || ':' == c || ';' == c || '!' == c || '/' == c || ' ' == c)
@@ -221,7 +223,7 @@ void graphics_string_sz(
 
 /**
  * \brief Copy part or all of a ::GRAPHICS_BITMAP image to the screen.
- * \param res_id ::RESOURCE_ID of the image to copy.
+ * \param bitmap_idx Index of the ::GRAPHICS_BITMAP in the graphics cache.
  * \param s_x Horizontal location of upper-left corner of copy source rectangle.
  * \param s_y Vertical location of upper-left corner of copy source rectangle.
  * \param d_x Horizontal location of upper-left corner of destination rectangle.
@@ -233,8 +235,8 @@ void graphics_string_sz(
  * This tries to load the bitmap into the internal bitmap cache the first time
  * that bitmap's resource ID is given.
  */
-int16_t graphics_blit_at(
-   RESOURCE_ID res_id,
+int16_t graphics_cache_blit_at(
+   uint16_t bitmap_idx,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h );
 
@@ -251,6 +253,8 @@ void graphics_clear_cache();
  * \return Random integer higher than or equal to start and within range.
  */
 int16_t graphics_get_random( int16_t start, int16_t range );
+
+int16_t graphics_cache_load_bitmap( RESOURCE_ID id );
 
 #ifdef GRAPHICS_C
 
@@ -276,6 +280,11 @@ int16_t graphics_platform_load_bitmap(
  * \return 1 if unload was successful or 0 otherwise.
  */
 int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b );
+
+/**
+ * \brief Load the given ::RESOURCE_ID into the graphics cache and return its
+ *        index or ::GRAPHICS_ERROR_NOT_FOUND if not found.
+ */
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP*,
    uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );

@@ -53,6 +53,10 @@ void graphics_clear_cache() {
    
    debug_printf( 2, "graphics cache cleared (%d of %d items)",
       dropped_count, gs_graphics_cache_sz );
+
+#ifndef NO_GUI
+   window_reload_frames();
+#endif /* !NO_GUI */
 }
 
 void graphics_shutdown() {
@@ -334,7 +338,7 @@ void graphics_draw_line(
 #endif /* !USE_SOFTWARE_LINES */
 
 static
-int16_t graphics_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_load_bitmap_res( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
    RESOURCE_HANDLE bitmap_handle = (RESOURCE_HANDLE)NULL;
 
@@ -368,56 +372,64 @@ cleanup:
    return retval;
 }
 
-int16_t graphics_blit_at(
-   RESOURCE_ID res_id,
-   uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
-   uint16_t w, uint16_t h
-) {
-   int16_t retval = 0,
+int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
+   int16_t idx = GRAPHICS_ERROR_NOT_FOUND,
       i = 0;
-   struct GRAPHICS_BITMAP* bitmaps = NULL,
-      * bitmap_blit = NULL;
+   struct GRAPHICS_BITMAP* bitmaps = NULL;
 
    bitmaps = (struct GRAPHICS_BITMAP*)memory_lock( gs_graphics_cache_handle );
 
    /* Try to find the bitmap already in the cache. */
    for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
       if( resource_compare_id( bitmaps[i].id, res_id ) ) {
-         bitmap_blit = &(bitmaps[i]);
-         break;
+         idx = i;
+         goto cleanup;
       }
    }
 
-   if( NULL == bitmap_blit ) {
-      /* Bitmap not found. */
-      debug_printf( 1, "bitmap not found in cache; loading..." );
-      for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
-         if( 0 == bitmaps[i].initialized ) {
-            if( graphics_load_bitmap( res_id, &(bitmaps[i]) ) ) {
-               bitmap_blit = &(bitmaps[i]);
-            }
-            break;
+   /* Bitmap not found. */
+   debug_printf( 1, "bitmap not found in cache; loading..." );
+   for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
+      if( 0 == bitmaps[i].initialized ) {
+         if( graphics_load_bitmap_res( res_id, &(bitmaps[i]) ) ) {
+            idx = i;
          }
+         goto cleanup;
       }
    }
 
-   if( NULL == bitmap_blit ) {
-      error_printf( "unable to load bitmap; cache full?" );
-      goto cleanup;
+   /* Still not found! */
+   error_printf( "unable to load bitmap; cache full?" );
+
+cleanup:
+
+   if( NULL != bitmaps ) {
+      bitmaps = (struct GRAPHICS_BITMAP*)memory_unlock(
+         gs_graphics_cache_handle );
    }
 
-   /*
-   if( 0 == s_x && 0 == s_y ) {
-      retval = graphics_platform_blit_at( bitmap_blit, d_x, d_y, w, h );
-   } else {
-   */
-      retval = graphics_platform_blit_partial_at(
-         bitmap_blit, s_x, s_y, d_x, d_y, w, h );
-   /* } */
-   if( !retval ) {
-      /* error_printf( "failed to blit bitmap" ); */
+   return idx;
+}
+
+int16_t graphics_cache_blit_at(
+   uint16_t bitmap_idx,
+   uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
+   uint16_t w, uint16_t h
+) {
+   int16_t retval = 1;
+   struct GRAPHICS_BITMAP* bitmaps = NULL,
+      * bitmap_blit = NULL;
+
+   bitmaps = (struct GRAPHICS_BITMAP*)memory_lock( gs_graphics_cache_handle );
+   assert( NULL != bitmaps );
+
+   bitmap_blit = &(bitmaps[bitmap_idx]);
+   if( NULL == bitmap_blit ) {
+      retval = GRAPHICS_ERROR_NOT_FOUND;
       goto cleanup;
    }
+   retval = graphics_platform_blit_partial_at(
+      bitmap_blit, s_x, s_y, d_x, d_y, w, h );
 
 cleanup:
 

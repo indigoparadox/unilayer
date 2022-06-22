@@ -3,6 +3,13 @@
 
 #include <string.h>
 
+int32_t memory_init() {
+   return 1;
+}
+
+void memory_shutdown() {
+}
+
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
    MEMORY_HANDLE handle = NULL;
    int32_t handle_sz = 0,

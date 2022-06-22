@@ -3,6 +3,10 @@
 
 #include <string.h>
 
+void memory_debug_dump() {
+
+}
+
 int32_t memory_init() {
    return 1;
 }

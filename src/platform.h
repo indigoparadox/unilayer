@@ -45,7 +45,7 @@ typedef int (*loop_iter)( void* );
 #  define LOG_FILE_NAME "logdos.txt"
 #  include <mtypes.h>
 loop_globals();
-#  include "memory/fakem.h"
+#  include "memory/dosm.h"
 #  include "resinc.h"
 #  include "input/dosi.h"
 #  include "graphics/dosg.h"

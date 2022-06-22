@@ -37,6 +37,9 @@ extern void memory_set_ds( uint16_t ds );
 
 #endif /* WIN16_FAKE_DS */
 
+void memory_debug_dump() {
+}
+
 int32_t memory_init() {
    
 #ifdef WIN16_FAKE_DS

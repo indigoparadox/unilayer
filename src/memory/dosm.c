@@ -10,7 +10,6 @@
 static struct FAKE_MEMORY_HANDLE* g_block_first = NULL;
 
 void memory_debug_dump() {
-#ifdef PLATFORM_DOS
    struct _heapinfo h_info;
    int heap_status = _HEAPOK;
    size_t heap_total_used = 0,
@@ -38,6 +37,7 @@ void memory_debug_dump() {
    case _HEAPEND:
       debug_printf( 3, "end of heap (%u bytes used, %u bytes free)",
          heap_total_used, heap_total_free );
+      debug_printf( 3, "memory available: %u", _memavl() );
       break;
    case _HEAPEMPTY:
       debug_printf( 3, "heap empty" );
@@ -52,87 +52,43 @@ void memory_debug_dump() {
       error_printf( "bad node in heap" );
       break;
    }
-#endif /* PLATFORM_DOS */
 }
 
-#if 0
-static const uint32_t gc_sentinal = 1212;
-
-#define MEMORY_BLOCK_REAL_SZ( data_sz ) \
-   (sizeof( struct FAKE_MEMORY_HANDLE ) + (data_sz) + sizeof( gc_sentinal ))
-#endif
-
 int32_t memory_init() {
-#if 0
-   g_fake_heap = calloc( MEMORY_FAKE_HEAP_SZ, 1 );
-#endif
+   debug_printf( 3, "memory available before growth: %u", _memavl() );
+   _nheapgrow();
+   debug_printf( 3, "memory available after growth: %u", _memavl() );
    return 1;
 }
 
 void memory_shutdown() {
-#if 0
-   free( g_fake_heap );
-#endif
 }
 
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
    struct FAKE_MEMORY_HANDLE* iter = NULL;
    uint32_t new_sz;
-#if 0
-   uint32_t new_real_sz = 0,
-      new_addr = 0,
-      new_top = 0,
-      new_sz = 0;
-#endif
 
    /* TODO: Detect overflow. */
    assert( sz * count >= sz );
    new_sz = sz * count;
 
    if( NULL == g_block_first ) {
-#if 0
-      g_block_first = (struct FAKE_MEMORY_HANDLE*)g_fake_heap;
-      g_block_first->next = NULL;
-      g_block_first->offset = 0;
-      g_block_first->allocated = 1;
-#endif
-      g_block_first = calloc( 1, sizeof( struct FAKE_MEMORY_HANDLE ) );
+      g_block_first = _ncalloc( 1, sizeof( struct FAKE_MEMORY_HANDLE ) );
       iter = g_block_first;
    } else {
       iter = g_block_first;
       while( NULL != iter->next ) {
          iter = iter->next;
       }
-      iter->next = calloc( 1, sizeof( struct FAKE_MEMORY_HANDLE ) );
+      iter->next = _ncalloc( 1, sizeof( struct FAKE_MEMORY_HANDLE ) );
       iter = iter->next;
-
-#if 0
-      new_addr = iter->offset + MEMORY_BLOCK_REAL_SZ( iter->sz );
-      new_top = new_addr + MEMORY_BLOCK_REAL_SZ( new_sz );
-      if( new_top >= FAKE_HEAP_SIZE ) {
-         /* Not enough memory. */
-         iter = NULL;
-      } else {
-         iter->next = (struct FAKE_MEMORY_HANDLE*)&(g_fake_heap[new_addr]);
-         last_block = iter;
-         iter = iter->next;
-         iter->offset = new_addr;
-
-         /* TODO: Place/check sentinal. */
-      }
-#endif
    }
 
    if( NULL == iter ) {
       error_printf( "unable to allocate handle" );
    } else {
       iter->ptr_sz = new_sz;
-#if 0
-      g_fake_heap_top = iter->offset + MEMORY_BLOCK_REAL_SZ( iter->sz );
-#endif
-
-      iter->ptr = calloc( 1, new_sz );
-
+      iter->ptr = _ncalloc( 1, new_sz );
       assert( iter->ptr_sz == sz * count );
    }
 
@@ -172,17 +128,14 @@ void memory_free( MEMORY_HANDLE handle ) {
       handle_iter->next = handle->next;
    }
 
-   free( handle->ptr );
-   free( handle );
+   _nfree( handle->ptr );
+   _nfree( handle );
 }
 
 uint32_t memory_sz( MEMORY_HANDLE handle ) {
    return handle->ptr_sz;
 }
 
-/**
- * \return New size of handle; either given size or old size if unsuccessful.
- */
 uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    MEMORY_PTR new_ptr = NULL;
 
@@ -193,7 +146,7 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    debug_printf( 1, "reallocating %u-byte block to %u bytes",
       (*handle)->ptr_sz, sz );
 
-   new_ptr = realloc( (*handle)->ptr, sz );
+   new_ptr = _nrealloc( (*handle)->ptr, sz );
    if( NULL == new_ptr ) {
       error_printf( "unable to reallocate handle" );
       return 0;
@@ -268,15 +221,6 @@ int16_t memory_strncmp_ptr( const char* s1, const char* s2, uint16_t sz ) {
 }
 
 int16_t memory_strnlen_ptr( const char* s1, uint16_t sz ) {
-#ifdef __GNUC__
-   /* TODO: None-GNUC alternative. */
-   if( 0 < sz ) {
-      return strnlen( s1, sz );
-   } else {
-#endif /* __GNUC__ */
-      return strlen( s1 );
-#ifdef __GNUC__
-   }
-#endif /* __GNUC__ */
+   return strlen( s1 );
 }
 

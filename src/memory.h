@@ -80,6 +80,8 @@ int16_t memory_strncmp_ptr( const char*, const char*, uint16_t );
  */
 int16_t memory_strnlen_ptr( const char* s, uint16_t l );
 
+void memory_debug_dump();
+
 #if !defined( MEMORY_PLATFORM_C ) && defined( MEMORY_DEBUG_LOCKS )
 
 #define stringify_handle( handle ) #handle

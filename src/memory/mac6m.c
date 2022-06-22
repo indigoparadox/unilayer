@@ -3,6 +3,13 @@
 
 #include <string.h>
 
+void memory_debug_dump() {
+}
+
+int32_t memory_init() {
+   return 1;
+}
+
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
    /* TODO: Detect overflow. */
    return NewHandleClear( (sz * count) );

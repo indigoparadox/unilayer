@@ -12,6 +12,10 @@ void graphics_platform_shutdown() {
 void graphics_flip() {
 }
 
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   return 0;
+}
+
 uint32_t graphics_get_ms() {
 }
 

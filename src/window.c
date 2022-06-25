@@ -37,12 +37,16 @@ static void window_placement(
 
    if( NULL == p ) {
       /* Position relative to screen. */
-      debug_printf( 0, "window %d rel screen", c->id );
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u rel screen", c->id );
+#endif /* WINDOW_TRACE */
       p_coords = g_window_screen_coords;
       p_grid = g_window_screen_grid;
    } else {
       /* Position relative to parent. */
-      debug_printf( 0, "window %d rel window %d", c->id, c->parent_id );
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u rel window %d", c->id, c->parent_id );
+#endif /* WINDOW_TRACE */
       p_coords = g_window_screen_coords;
       p_coords = p->coords;
       p_grid = p->data.grid;
@@ -59,8 +63,10 @@ static void window_placement(
       /* Window width / 2 - Control width / 2 */
       assert( p_coords[x_y + 2] > 0 );
       c->coords[x_y] = (p_coords[x_y + 2] / 2) - (c->coords[x_y + 2] / 2);
-      debug_printf( 0, "window %d center coord %d (%d / 2) - (%d / 2): %d",
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u center coord %d (%d / 2) - (%d / 2): %d",
          c->id, x_y, p_coords[x_y + 2], c->coords[x_y + 2], c->coords[x_y] );
+#endif /* WINDOW_TRACE */
       break;
 
    case WINDOW_PLACEMENT_RIGHT_BOTTOM:
@@ -75,7 +81,10 @@ static void window_placement(
       /* No break. */
 
    case WINDOW_PLACEMENT_GRID:
-      debug_printf( 0, "adding control using grid at: %d", p_grid[x_y + 2] );
+#ifdef WINDOW_TRACE
+      debug_printf( 1, " window %u adding control using grid at: %d",
+         c->id, p_grid[x_y + 2] );
+#endif /* WINDOW_TRACE */
       c->coords[x_y] = p_grid[x_y + 2];
       break;
 
@@ -96,7 +105,9 @@ static int16_t window_sizing(
    assert( 4 > w_h );
    assert( 1 < w_h );
 
-   debug_printf( 0, "sizing window ID: %d", w_id );
+#ifdef WINDOW_TRACE
+   debug_printf( 1, "sizing window ID: %u", w_id );
+#endif /* WINDOW_TRACE */
 
    c = window_get( w_id, windows );
    assert( NULL != c );
@@ -104,16 +115,20 @@ static int16_t window_sizing(
    /* Width and Height */
    if( WINDOW_SIZE_AUTO != dimension && 0 < dimension ) {
       c->coords[w_h] = dimension;
-      debug_printf( 0, "window %d manual size %d: %d",
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u manual size %d: %d",
          c->id, w_h, dimension );
+#endif /* WINDOW_TRACE */
       retval = dimension;
 
    } else if(
       gc_window_sz_callbacks[c->type]( w_id, windows, win_sz )
    ) {
       c->coords[w_h] = win_sz[w_h - 2];
-      debug_printf( 0, "window %d auto-size %d: %d",
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u auto-size %d: %d",
          c->id, w_h, win_sz[w_h - 2] );
+#endif /* WINDOW_TRACE */
       retval = win_sz[w_h - 2];
 
    } else {
@@ -139,9 +154,12 @@ static void window_draw_text(
 
    assert( NULL != c );
 
-   debug_printf( 0, "drawing string at %d, %d: %s",
+#ifdef WINDOW_TRACE
+   debug_printf( 1, "window %u drawing string at %d, %d: %s",
+      c->id,
       offset_x + c->coords[GUI_X],
       offset_y + c->coords[GUI_Y], str );
+#endif /* WINDOW_TRACE */
 
    graphics_string_at( 
       str, str_sz,
@@ -161,23 +179,28 @@ static int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
       blit_retval = 0;
    struct WINDOW* c = NULL;
 
-   debug_printf( 0, "drawing window ID: %d", w_id );
+#ifdef WINDOW_TRACE
+   debug_printf( 1, "window %u drawing...", w_id );
+#endif /* WINDOW_TRACE */
 
    c = window_get( w_id, windows );
    assert( NULL != c );
 
    frames = (struct WINDOW_FRAME*)memory_lock( g_frames_handle );
 
+#ifdef WINDOW_TRACE
    debug_printf(
-      0, "min: %d, %d; max: %d, %d",
-      c->coords[GUI_X], c->coords[GUI_Y],
-      x_max, y_max );
+      1, "window %u min: %d, %d; max: %d, %d",
+      c->id, c->coords[GUI_X], c->coords[GUI_Y], x_max, y_max );
+#endif /* WINDOW_TRACE */
 
    x_max = c->coords[GUI_X] + c->coords[GUI_W];
    y_max = c->coords[GUI_Y] + c->coords[GUI_H];
 
-   debug_printf( 0, "drawing window with frame %d...",
-      c->render_flags );
+#ifdef WINDOW_TRACE
+   debug_printf( 1, "window %u drawing with frame %d...",
+      c->id, c->render_flags );
+#endif /* WINDOW_TRACE */
 
    /* Draw the window background. */
    for( y = c->coords[GUI_Y] ; y < y_max ; y += WINDOW_PATTERN_H ) {
@@ -299,14 +322,20 @@ int16_t window_get_text(
       /* Get the string from a directly passed pointer. */
       str_ptr = (char*)memory_lock( c->data.string );
       sz_out = memory_strnlen_ptr( str_ptr, buffer_sz - 1 );
-      debug_printf( 0, "text str: %s (%d)", str_ptr, sz_out );
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u text str: %s (%d)",
+         c->id, str_ptr, sz_out );
+#endif /* WINDOW_TRACE */
       memory_strncpy_ptr( buffer, str_ptr, sz_out );
       str_ptr = (char*)memory_unlock( c->data.string );
 
    } else if( WINDOW_FLAG_TEXT_NUM == (WINDOW_FLAG_TEXT_NUM & c->flags) ) {
       sz_out = dio_itoa(
          buffer, buffer_sz, c->data.scalar, 10 );
-      debug_printf( 0, "text num: %s (%d)", buffer, sz_out );
+#ifdef WINDOW_TRACE
+      debug_printf( 1, "window %u text num: %s (%d)",
+         c->id, buffer, sz_out );
+#endif /* WINDOW_TRACE */
    
    }
 
@@ -349,12 +378,17 @@ static int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
       offset_y = p->coords[GUI_Y];
    }
 
+#ifdef WINDOW_TRACE
    debug_printf(
-      0, "sprite %u screen offset: %d, %d", w_id, offset_x, offset_y );
+      1, "window %u screen offset: %d, %d", w_id, offset_x, offset_y );
+#endif /* WINDOW_TRACE */
 
    /* Set offset_sprite based on dir flags. */
    dir = ((c->flags & WINDOW_FLAG_SPRITE_DIR_MASK) >> 4);
-   debug_printf( 1, "sprite flags 0x%02x dir 0x%02x", c->flags, dir );
+#ifdef WINDOW_TRACE
+   debug_printf( 1, "window %u sprite flags 0x%02x dir 0x%02x",
+      w_id, c->flags, dir );
+#endif /* WINDOW_TRACE */
    offset_sprite = dir * WINDOW_SPRITE_H;
 
    graphics_blit_sprite_at(
@@ -670,16 +704,20 @@ static void window_pop_internal( uint16_t id, struct WINDOW* windows ) {
    /* Deallocate the window resources. */
    window_out = window_get( id, windows );
    
-   debug_printf( 1, "popping window %d...", id );
+#ifdef WINDOW_TRACE
+   debug_printf( 1, "window %d popping...", id );
+#endif /* WINDOW_TRACE */
 
    if( NULL != window_out ) {
       if(
          WINDOW_TYPE_LABEL == window_out->type &&
          WINDOW_FLAG_TEXT_PTR == (WINDOW_FLAG_TEXT_MASK & window_out->flags)
       ) {
-         debug_printf( 1, "freeing memory for %d flags: %p...",
-            (WINDOW_FLAG_TEXT_MASK & window_out->flags),
+#ifdef WINDOW_TRACE
+         debug_printf( 1, "window %u freeing memory for flags %02x: %p...",
+            id, (WINDOW_FLAG_TEXT_MASK & window_out->flags),
             window_out->data.string );
+#endif /* WINDOW_TRACE */
          memory_free( window_out->data.string );
          window_out->data.string = (MEMORY_HANDLE)NULL;
       }

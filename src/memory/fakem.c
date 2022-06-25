@@ -213,7 +213,7 @@ void memory_zero_ptr( MEMORY_PTR ptr, uint32_t sz ) {
    memset( ptr, 0, sz );
 }
 
-#ifdef MEMORY_DEBUG_LOCKS
+#ifdef MEMORY_FAKE_TRACE_LOCKS
 
 MEMORY_PTR memory_lock_wrapper(
    MEMORY_HANDLE handle, const char* handle_name, const char* caller
@@ -242,7 +242,7 @@ void memory_free_wrapper(
    memory_free( handle );
 }
 
-#endif /* MEMORY_DEBUG_LOCKS */
+#endif /* MEMORY_FAKE_TRACE_LOCKS */
 
 MEMORY_PTR memory_lock( MEMORY_HANDLE handle ) {
    handle->locks++;

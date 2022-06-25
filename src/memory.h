@@ -82,7 +82,7 @@ int16_t memory_strnlen_ptr( const char* s, uint16_t l );
 
 void memory_debug_dump();
 
-#if !defined( MEMORY_PLATFORM_C ) && defined( MEMORY_DEBUG_LOCKS )
+#if !defined( MEMORY_PLATFORM_C ) && defined( MEMORY_FAKE_TRACE_LOCKS )
 
 #define stringify_handle( handle ) #handle
 
@@ -112,7 +112,7 @@ void memory_free_wrapper(
  */
 WARN_UNUSED MEMORY_PTR memory_lock( MEMORY_HANDLE handle );
 
-#endif /* !MEMORY_PLATFORM_C && MEMORY_DEBUG_LOCKS */
+#endif /* !MEMORY_PLATFORM_C && MEMORY_FAKE_TRACE_LOCKS */
 
 /*! \} */
 

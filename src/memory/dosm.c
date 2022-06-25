@@ -166,43 +166,9 @@ void memory_zero_ptr( MEMORY_PTR ptr, uint32_t sz ) {
    memset( ptr, 0, sz );
 }
 
-#ifdef MEMORY_DEBUG_LOCKS
-
-MEMORY_PTR memory_lock_wrapper(
-   MEMORY_HANDLE handle, const char* handle_name, const char* caller
-) {
-   debug_printf( 1, "handle %s (%p) LOCKED by %s (from %d locks)",
-      handle_name, (void*)handle, caller, handle->locks );
-
-   return memory_lock( handle );
-}
-
-MEMORY_PTR memory_unlock_wrapper(
-   MEMORY_HANDLE handle, const char* handle_name, const char* caller
-) {
-   debug_printf( 1, "handle %s (%p) UNLOCKED by %s (from %d locks)",
-      handle_name, (void*)handle, caller, handle->locks );
-
-   return memory_unlock( handle );
-}
-
-void memory_free_wrapper(
-   MEMORY_HANDLE handle, const char* handle_name, const char* caller
-) {
-   debug_printf( 1, "handle %s (%p) FREED by %s",
-      handle_name, (void*)handle, caller );
-
-   memory_free( handle );
-}
-
-#endif /* MEMORY_DEBUG_LOCKS */
-
 MEMORY_PTR memory_lock( MEMORY_HANDLE handle ) {
    handle->locks++;
    assert( 1 == handle->locks );
-#if 0
-   return &(g_fake_heap[handle->offset]);
-#endif
    return handle->ptr;
 }
 

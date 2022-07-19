@@ -21,6 +21,11 @@ void graphics_platform_shutdown() {
 void graphics_flip() {
 }
 
+int16_t graphics_get_random( int16_t start, int16_t range ) {
+   /* TODO: Implement rand(). */
+   return 0;
+}
+
 uint32_t graphics_get_ms() {
    uint32_t ticks_per_ms = 0;
 

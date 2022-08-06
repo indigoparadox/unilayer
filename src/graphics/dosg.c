@@ -310,21 +310,38 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    GRAPHICS_COLOR color
 ) {
-   uint16_t screen_byte_offset = 0,
-      x = 0,
-      y = 0;
+   int16_t screen_byte_offset = 0;
+   uint16_t
+      y = 0,
+      i = 0,
+      w_bytes = w / 4;
+   uint8_t color_packed = 0;
+
+   /* Create a byte with the colors packed into each 2-bit pixel. */
+   if( 0 != color ) {
+      for( i = 0 ; 4 > i ; i++ ) {
+         color_packed <<= 2;
+         color_packed |= (0x03 & color);
+      }
+   }
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
 #error "not implemented"
 #elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
-   for( y = y_orig ; y < y + h ; y++ ) {
+   for( y = y_orig ; y < y_orig + h ; y++ ) {
 #ifdef USE_LOOKUPS
       screen_byte_offset = gc_offsets_cga_bytes_p1[y][x_orig];
 #else
-/* #error "not implemented" */
+      screen_byte_offset = (((y / 2) * SCREEN_W) + x_orig) / 4;
 #endif /* USE_LOOKUPS */
-      _fmemset( (char far *)0xB8000000 + screen_byte_offset, color, 16 );
-      _fmemset( (char far *)0xB8002000 + screen_byte_offset, color, 16 );
+      /* Apply to correct even/odd CGA plane. */
+      if( 0 == y % 2 ) {
+         _fmemset( (char far *)0xB8000000 + screen_byte_offset,
+            color_packed, w_bytes );
+      } else {
+         _fmemset( (char far *)0xB8002000 + screen_byte_offset,
+            color_packed, w_bytes );
+      }
    }
 #endif /* GRAPHICS_MODE */
 

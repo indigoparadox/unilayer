@@ -56,3 +56,7 @@ uint8_t input_poll() {
    return 0;
 }
 
+void input_shutdown() {
+
+}
+

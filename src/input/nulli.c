@@ -7,3 +7,7 @@ int input_poll() {
    return 1;
 }
 
+void input_shutdown() {
+
+}
+

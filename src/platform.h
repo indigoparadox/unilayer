@@ -197,43 +197,6 @@ loop_globals();
 #  include "input/ndsi.h"
 #  include "graphics/ndsg.h"
 
-#elif defined( PLATFORM_MEGADRIVE )
-
-#define DISABLE_FILESYSTEM
-
-#  include <mtypes.h>
-#  include <types.h>
-loop_globals();
-#  include "memory/fakem.h"
-#  include "resinc.h"
-#  include "input/megadi.h"
-#  include "graphics/megadg.h"
-
-#elif defined( PLATFORM_GB )
-
-typedef char int8_t;
-typedef unsigned char uint8_t;
-typedef short int16_t;
-typedef unsigned short uint16_t;
-typedef long int32_t;
-typedef unsigned long uint32_t;
-
-loop_globals()
-#  include "memory/fakem.h"
-#  include "resinc.h"
-#  include "input/gbi.h"
-#  include "graphics/gbg.h"
-
-#elif defined( PLATFORM_NES )
-
-#  include <mtypes.h>
-loop_globals();
-#  include "memory/fakem.h"
-#  include "resinc.h"
-#  include "input/nesi.h"
-#  include "graphics/nesg.h"
-
-
 #else
 
 #  include <mtypes.h>

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int bmp_verify_opts( struct CONVERT_OPTIONS* o ) {
+int32_t bmp_verify_opts( struct CONVERT_OPTIONS* o ) {
    return 1;
 }
 

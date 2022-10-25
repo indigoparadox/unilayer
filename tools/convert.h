@@ -43,11 +43,11 @@ typedef struct CONVERT_GRID* (*FMT_READ)(
 typedef struct CONVERT_GRID* (*FMT_READ_FILE)(
    const char* path, struct CONVERT_OPTIONS* o );
 
-typedef int (*FMT_WRITE)(
+typedef int32_t (*FMT_WRITE)(
    uint8_t* buf_ptr, uint32_t buf_sz,
    const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
 
-typedef int (*FMT_WRITE_FILE)(
+typedef int32_t (*FMT_WRITE_FILE)(
    const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
 );
 
@@ -67,11 +67,11 @@ FORMAT_TABLE( FORMAT_TABLE_READ_CBS_PROTO )
 
 FORMAT_TABLE( FORMAT_TABLE_READ_FILE_CBS_PROTO )
 
-#define FORMAT_TABLE_WRITE_CBS_PROTO( idx, fmt ) int fmt ## _write( uint8_t* buf_ptr, uint32_t buf_sz, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
+#define FORMAT_TABLE_WRITE_CBS_PROTO( idx, fmt ) int32_t fmt ## _write( uint8_t* buf_ptr, uint32_t buf_sz, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
 
 FORMAT_TABLE( FORMAT_TABLE_WRITE_CBS_PROTO )
 
-#define FORMAT_TABLE_WRITE_FILE_CBS_PROTO( idx, fmt ) int fmt ## _write_file( const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
+#define FORMAT_TABLE_WRITE_FILE_CBS_PROTO( idx, fmt ) int32_t fmt ## _write_file( const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o );
 
 FORMAT_TABLE( FORMAT_TABLE_WRITE_FILE_CBS_PROTO )
 

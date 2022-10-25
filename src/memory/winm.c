@@ -65,6 +65,9 @@ void memory_shutdown() {
 
 MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
    MEMORY_HANDLE alloc_out = 0;
+
+   /* TODO: Check sz * count for overflow. */
+
 #ifdef WIN16_FAKE_DS
    uint16_t ds = 0;
 
@@ -75,6 +78,8 @@ MEMORY_HANDLE memory_alloc( uint32_t sz, uint32_t count ) {
    memory_set_ds( g_segment_handle );
    alloc_out = LocalAlloc( WINM_FLAG() | LMEM_ZEROINIT, sz * count );
    memory_set_ds( ds );
+#elif defined WIN32_HEAP
+   alloc_out = HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY, sz * count );
 #else
    alloc_out = GlobalAlloc( WINM_FLAG() | GMEM_ZEROINIT, sz * count );
 #endif /* WIN16_FAKE_DS */
@@ -93,6 +98,8 @@ void memory_free( MEMORY_HANDLE handle ) {
    memory_set_ds( g_segment_handle );
    LocalFree( handle );
    memory_set_ds( ds );
+#elif defined WIN32_HEAP
+   HeapFree( GetProcessHeap(), 0, handle );
 #else
    GlobalFree( handle );
 #endif /* WIN16_FAKE_DS */
@@ -110,6 +117,8 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
    memory_set_ds( g_segment_handle );
    sz_out = LocalSize( handle );
    memory_set_ds( ds );
+#elif defined WIN32_HEAP
+   sz_out = HeapSize( GetProcessHeap(), 0, handle );
 #else
    sz_out = GlobalSize( handle );
 #endif /* WIN16_FAKE_DS */
@@ -122,6 +131,10 @@ uint32_t memory_sz( MEMORY_HANDLE handle ) {
  */
 uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    MEMORY_HANDLE new_handle = (MEMORY_HANDLE)NULL;
+
+   debug_printf( 1, "reallocating %u-byte block to %u bytes",
+      memory_sz( handle ), sz );
+
 #ifdef WIN16_FAKE_DS
    uint16_t ds = 0;
 #endif /* WIN16_FAKE_DS */
@@ -138,6 +151,8 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    memory_set_ds( g_segment_handle );
    new_handle = LocalReAlloc( *handle, sz, WINM_FLAG() );
    memory_set_ds( ds );
+#elif defined WIN32_HEAP
+   new_handle = HeapReAlloc( GetProcessHeap(), 0, *handle, sz );
 #else
    new_handle = GlobalReAlloc( *handle, sz, WINM_FLAG() );
 #endif /* WIN16_FAKE_DS */
@@ -175,6 +190,11 @@ MEMORY_PTR memory_lock( MEMORY_HANDLE handle ) {
    ptr_out = LocalLock( handle );
    memory_set_ds( ds );
 
+#  elif defined WIN32_HEAP
+
+   /* No lock. */
+   ptr_out = (MEMORY_PTR)handle;
+
 #  else
 
    ptr_out = GlobalLock( handle );  
@@ -200,6 +220,10 @@ MEMORY_PTR memory_unlock( MEMORY_HANDLE handle ) {
    memory_set_ds( g_segment_handle );
    LocalUnlock( handle );
    memory_set_ds( ds );
+
+#elif defined WIN32_HEAP
+
+   /* No lock. */
 
 #  else
 

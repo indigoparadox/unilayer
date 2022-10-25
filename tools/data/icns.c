@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int icns_verify_opts( struct CONVERT_OPTIONS* o ) {
+int32_t icns_verify_opts( struct CONVERT_OPTIONS* o ) {
    return 1;
 }
 
@@ -98,13 +98,13 @@ struct CONVERT_GRID* icns_read(
    return grid_out;
 }
 
-int icns_write_file(
+int32_t icns_write_file(
    const char* path, const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
 ) {
    uint32_t icns_buffer_sz = 0;
    uint8_t* icns_buffer = NULL;
    FILE* file_out = NULL;
-   int retval = 0;
+   int32_t retval = 0;
 
    icns_buffer_sz = icns_grid_sz( grid, o );
 
@@ -132,17 +132,17 @@ int icns_write_file(
    return retval;
 }
 
-int icns_write(
+int32_t icns_write(
    uint8_t* buf_ptr, uint32_t buf_sz,
    const struct CONVERT_GRID* grid, struct CONVERT_OPTIONS* o
 ) {
-   int retval = 0;
    int32_t grid_x = 0,
       grid_y = 0,
       file_byte_idx = 0,
       data_byte_idx = 0,
       bit_idx = 0,
-      grid_idx = 0;
+      grid_idx = 0,
+      retval = 0;
    uint8_t byte_buffer = 0;
    struct ICNS_FILE_HEADER* file_header =
       (struct ICNS_FILE_HEADER*)&(buf_ptr[0]);

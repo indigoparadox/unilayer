@@ -17,6 +17,7 @@ int16_t graphics_get_random( int16_t start, int16_t range ) {
 }
 
 uint32_t graphics_get_ms() {
+   return 0;
 }
 
 void graphics_loop_start() {
@@ -50,6 +51,7 @@ int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
+   return 0;
 }
 
 int16_t graphics_platform_blit_partial_at(
@@ -57,6 +59,7 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
+   return 0;
 }
 
 int16_t graphics_platform_load_bitmap(

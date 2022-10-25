@@ -24,9 +24,9 @@ struct ICNS_DATA_HEADER {
    uint32_t data_sz;
 };
 
-int icns_write_file(
+int32_t icns_write_file(
    const char*, const struct CONVERT_GRID*, struct CONVERT_OPTIONS* );
-int icns_write(
+int32_t icns_write(
    uint8_t*, uint32_t, const struct CONVERT_GRID*, struct CONVERT_OPTIONS* );
 struct CONVERT_GRID* icns_read_file(
    const char* path, struct CONVERT_OPTIONS* o );

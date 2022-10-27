@@ -73,6 +73,8 @@ int write_header(
    FILE* header, int paths_in_sz, const char* paths_in[],
    int in_fmt, int out_fmt );
 
+int headpack_main( int argc, char* argv[] );
+
 #ifdef HEADPACK_C
 struct HEADPACK_DEF g_headpack_defs[HEADPACK_DEFS_MAX];
 int g_headpack_defs_sz = 0;

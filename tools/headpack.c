@@ -299,7 +299,7 @@ int headpack_register(
 
 #ifndef HEADPACK_NOMAIN
 
-int main( int argc, char* argv[] ) {
+int headpack_main( int argc, char* argv[] ) {
    int res_id = 0,
       i = 0,
       j = 0,

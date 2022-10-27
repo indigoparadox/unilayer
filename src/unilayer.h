@@ -8,13 +8,13 @@
  */
 
 #ifdef __GNUC__
-#define WARN_UNUSED __attribute__( (warn_unused_result) )
-#ifndef PLATFORM_NDS
-#define PACKED __attribute__( (__packed__) )
-#endif /* !PLATFORM_NDS */
+#  define WARN_UNUSED __attribute__( (warn_unused_result) )
+#  ifndef PLATFORM_NDS
+#     define PACKED __attribute__( (__packed__) )
+#  endif /* !PLATFORM_NDS */
 #else
-#define WARN_UNUSED
-#define PACKED
+#  define WARN_UNUSED
+#  define PACKED
 #endif /* __GNUC__ */
 
 #if defined( __GNUC__ ) && !defined( _POSIX_C_SOURCE )

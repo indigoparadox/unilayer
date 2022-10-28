@@ -202,6 +202,7 @@ static int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
       c->id, c->render_flags );
 #endif /* WINDOW_TRACE */
 
+#ifndef NO_WINDOW_BG
    /* Draw the window background. */
    for( y = c->coords[GUI_Y] ; y < y_max ; y += WINDOW_PATTERN_H ) {
       for( x = c->coords[GUI_X] ; x < x_max ; x += WINDOW_PATTERN_W ) {
@@ -272,6 +273,7 @@ static int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
          }
       }
    }
+#endif /* !NO_WINDOW_BG */
 
    /* Draw the window's children. */
    for( i = 1 ; WINDOWS_MAX > i ; i++ ) {
@@ -778,28 +780,4 @@ void window_refresh( uint16_t w_id ) {
 
    windows = (struct WINDOW*)memory_unlock( g_windows_handle );
 }
-
-#if 0
-int16_t window_modal() {
-   int i = 0;
-   int16_t modal = 0;
-   struct WINDOW* windows = NULL;
-
-   windows = (struct WINDOW*)memory_lock( g_windows_handle );
-   assert( NULL != windows );
-
-   for( i = 1 ; WINDOWS_MAX > i ; i++ ) {
-      if(
-         WINDOW_FLAG_ACTIVE == (WINDOW_FLAG_ACTIVE & windows[i].flags) &&
-         WINDOW_FLAG_MODAL == (WINDOW_FLAG_MODAL & windows[i].flags)
-      ) {
-         modal++;
-      }
-   }
-
-   windows = (struct WINDOW*)memory_unlock( g_windows_handle );
-
-   return modal;
-}
-#endif
 

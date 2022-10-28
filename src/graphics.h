@@ -53,6 +53,8 @@
 
 #define graphics_char_is_printable( c ) (('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || ('0' <= c && '9' >= c) || '.' == c || ',' == c || ':' == c || ';' == c || '!' == c || '/' == c || ' ' == c)
 
+#define graphics_draw_char_outline( x, y, flags ) if( GRAPHICS_STRING_FLAG_OUTLINE == (GRAPHICS_STRING_FLAG_OUTLINE & flags) ) { graphics_draw_px( x, y, GRAPHICS_COLOR_BLACK ); }
+
 /**
  * \brief Struct representing a graphical rectangle.
  */

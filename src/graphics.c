@@ -77,7 +77,8 @@ void graphics_char_at(
       bitmask_prev_y = 0,
       bitmask_next_y = 0,
       bitmask_prev_x = 0,
-      bitmask_next_x = 0;
+      bitmask_next_x = 0,
+      in_char_px = 0;
    const char (*font_glyphs)[FONT_GLYPHS_COUNT][FONT_GLYPH_W_SZ] = NULL;
 
    assert( '~' >= c );
@@ -102,6 +103,7 @@ void graphics_char_at(
 	for( y = 0 ; FONT_H > y ; y++ ) {
       /* Grab the current Y-line. */
       bitmask = (*font_glyphs)[c - ' '][y];
+      in_char_px = 0;
 
       if(
          GRAPHICS_STRING_FLAG_OUTLINE == (GRAPHICS_STRING_FLAG_OUTLINE & flags)
@@ -124,20 +126,20 @@ void graphics_char_at(
 		for( x = 0 ; FONT_W > x ; x++ ) {
 			bitmask_next_x = bitmask >> 1;
 			
-         /* Draw the vertical outline if applicable. */
-         if( 
-            GRAPHICS_STRING_FLAG_OUTLINE ==
-               (GRAPHICS_STRING_FLAG_OUTLINE & flags) &&
-            (
-               ((bitmask_prev_x & 0x01) && !(bitmask & 0x01)) ||
-   			   ((bitmask_next_x & 0x01) && !(bitmask & 0x01))
-            )
-         ) {
-            graphics_draw_px( x_orig + x, y_orig + y, GRAPHICS_COLOR_BLACK );
+         if( (bitmask_prev_x & 0x01) && !(bitmask & 0x01) ) {
+            graphics_draw_char_outline( x_orig + x, y_orig + y, flags );
+
+            /* Draw/reset the run of filled pixels on this line at once. */
+            graphics_draw_block(
+               (x_orig + x) - in_char_px, y_orig + y, in_char_px, 1, color );
+            in_char_px = 0;
+
+   		} else if( (bitmask_next_x & 0x01) && !(bitmask & 0x01) ) {
+            graphics_draw_char_outline( x_orig + x, y_orig + y, flags );
 
 			} else if( bitmask & 0x01 ) {
-            /* Draw the current X-pixel. */
-            graphics_draw_px( x_orig + x, y_orig + y, color );
+            /* Increment the current run of filled pixels. */
+            in_char_px++;
 
             /* Draw the vertical outline if off to the left. */
             if( 
@@ -166,12 +168,12 @@ void graphics_char_at(
                graphics_draw_px(
                   x_orig + x, y_orig + y + 1, GRAPHICS_COLOR_BLACK );
             }
-         
-            /* Advance the bitmasks. */
-            bitmask_prev_x = bitmask;
-            bitmask_prev_y >>= 1;
-            bitmask_next_y >>= 1;
          }
+         
+         /* Advance the bitmasks. */
+         bitmask_prev_x = bitmask;
+         bitmask_prev_y >>= 1;
+         bitmask_next_y >>= 1;
 
          /* Advance the bitmasks. */
 			bitmask >>= 1;

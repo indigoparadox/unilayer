@@ -11,10 +11,18 @@
 #  define WARN_UNUSED __attribute__( (warn_unused_result) )
 #  ifndef PLATFORM_NDS
 #     define PACKED __attribute__( (__packed__) )
+#  else
+#     define PACKED
 #  endif /* !PLATFORM_NDS */
+#  define INLINE inline
+#elif defined( __WATCOMC__ )
+#  define WARN_UNUSED
+#  define PACKED
+#  define INLINE
 #else
 #  define WARN_UNUSED
 #  define PACKED
+#  define INLINE
 #endif /* __GNUC__ */
 
 #if defined( __GNUC__ ) && !defined( _POSIX_C_SOURCE )

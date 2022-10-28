@@ -8,7 +8,8 @@
 #define GRAPHICS_M_320_200_256_V  0x13
 
 #define GRAPHICS_M_320_200_256_VGA_A   0xA0000000L
-#define GRAPHICS_M_320_200_4_CGA_A     0xB8000000L
+#define GRAPHICS_M_320_200_4_CGA_A     (char far*)0xB8000000L
+#define GRAPHICS_M_320_200_4_CGA_A_2   (char far*)0xB8002000L
 
 #ifndef GRAPHICS_MODE
 #define GRAPHICS_MODE      0x05
@@ -27,6 +28,11 @@
 #elif GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
 #define GRAPHICS_ADDR     GRAPHICS_M_320_200_256_VGA_A
 #endif /* GRAPHICS_MODE */
+
+#ifndef DOS_TIMER_DIV
+/* #define DOS_TIMER_DIV 1103 */
+#define DOS_TIMER_DIV 100
+#endif /* !DOS_TIMER_DIV */
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +54,10 @@ static uint8_t huge g_buffer[76800]; /* Sized for 0x13. */
 static uint8_t far* g_buffer = (uint8_t far *)GRAPHICS_ADDR;
 #endif /* USE_DOUBLEBUF */
 
+uint8_t g_cga_color_packed[] = {
+   0x00, 0x55, 0xaa, 0xff
+};
+
 typedef void (__interrupt __far* INTFUNCPTR)( void );
 INTFUNCPTR g_old_timer_interrupt;
 volatile uint32_t g_ms;
@@ -62,7 +72,7 @@ void __interrupt __far graphics_timer_handler() {
    static unsigned long count = 0;
 
    ++g_ms;
-   count += 1103; /* Original DOS timer in parallel. */
+   count += DOS_TIMER_DIV; /* Original DOS timer in parallel. */
    if( 65536 <= count ) {
       /* Call the original handler. */
       count -= 65536;
@@ -96,8 +106,8 @@ static void graphics_install_timer() {
 
    /* Set resolution of timer chip to 1ms. */
    outp( 0x43, 0x36 );
-   outp( 0x40, (uint8_t)(1103 & 0xff) );
-   outp( 0x40, (uint8_t)((1103 >> 8) & 0xff) );
+   outp( 0x40, (uint8_t)(DOS_TIMER_DIV & 0xff) );
+   outp( 0x40, (uint8_t)((DOS_TIMER_DIV >> 8) & 0xff) );
 
    _enable();
 }
@@ -168,7 +178,7 @@ void graphics_flip() {
          g_buffer, SCREEN_W * SCREEN_H );
 #elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
       /* memory_copy_ptr both planes. */
-      _fmemcpy( (char far *)0xB8000000, g_buffer, 16000 );
+      _fmemcpy( GRAPHICS_M_320_200_4_CGA_A, g_buffer, 16000 );
 #endif /* GRAPHICS_MODE */
 #endif /* USE_DOUBLEBUF */
 }
@@ -313,34 +323,34 @@ void graphics_draw_block(
    int16_t screen_byte_offset = 0;
    uint16_t
       y = 0,
-      i = 0,
+      x = 0,
+      x_end = x_orig + w,
       w_bytes = w / 4;
-   uint8_t color_packed = 0;
-
-   /* Create a byte with the colors packed into each 2-bit pixel. */
-   if( 0 != color ) {
-      for( i = 0 ; 4 > i ; i++ ) {
-         color_packed <<= 2;
-         color_packed |= (0x03 & color);
-      }
-   }
 
 #if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
-#error "not implemented"
+#  error "not implemented"
 #elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
    for( y = y_orig ; y < y_orig + h ; y++ ) {
-#ifdef USE_LOOKUPS
-      screen_byte_offset = gc_offsets_cga_bytes_p1[y][x_orig];
-#else
-      screen_byte_offset = (((y / 2) * SCREEN_W) + x_orig) / 4;
-#endif /* USE_LOOKUPS */
-      /* Apply to correct even/odd CGA plane. */
-      if( 0 == y % 2 ) {
-         _fmemset( (char far *)0xB8000000 + screen_byte_offset,
-            color_packed, w_bytes );
+
+      if( 0 == x_orig % 4 && 0 == w % 4 ) {
+#  ifdef USE_LOOKUPS
+         screen_byte_offset = gc_offsets_cga_bytes_p1[y][x_orig];
+#  else
+         screen_byte_offset = (((y / 2) * SCREEN_W) + x_orig) / 4;
+#  endif /* USE_LOOKUPS */
+         /* Apply to correct even/odd CGA plane. */
+         if( 0 == y % 2 ) {
+            _fmemset( GRAPHICS_M_320_200_4_CGA_A + screen_byte_offset,
+               g_cga_color_packed[color], w_bytes );
+         } else {
+            _fmemset( GRAPHICS_M_320_200_4_CGA_A_2 + screen_byte_offset,
+               g_cga_color_packed[color], w_bytes );
+         }
       } else {
-         _fmemset( (char far *)0xB8002000 + screen_byte_offset,
-            color_packed, w_bytes );
+         /* Make up any odd pixels we couldn't draw (not divisible by 4). */
+         for( x = x_orig ; x_end > x ; x++ ) {
+            graphics_draw_px( x, y, color );
+         }
       }
    }
 #endif /* GRAPHICS_MODE */

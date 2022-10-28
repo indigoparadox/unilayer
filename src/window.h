@@ -237,12 +237,16 @@ void window_pop( uint16_t id );
 
 void window_refresh( uint16_t w_id );
 
+#if 0
 /**
  * \brief Determine if there is a WINDOW_FLAG_MODAL WINDOW on-screen.
  * \param windows Locked ::MEMORY_PTR to the global window list.
  * \return 0 if no modal windows showing, 1+ otherwise.
  */
 int16_t window_modal();
+#endif
+
+#define window_modal() (g_window_modals)
 
 #define WINDOW_CB_TABLE( f ) f( 0, LABEL ) f( 1, BUTTON ) f( 2, CHECK ) f( 3, SPRITE ) f( 4, WINDOW )
 
@@ -261,6 +265,8 @@ typedef uint8_t (*WINDOW_CB_SZ)(
 static MEMORY_HANDLE g_frames_handle = (MEMORY_HANDLE)NULL;
 static MEMORY_HANDLE g_windows_handle = (MEMORY_HANDLE)NULL;
 
+uint8_t g_window_modals = 0;
+
 static int16_t g_window_screen_coords[4] = {
    0, 0, SCREEN_W, SCREEN_H
 };
@@ -269,36 +275,38 @@ static int16_t g_window_screen_grid[4] = {
    0, 0, 0, 0
 };
 
-#define WINDOW_CB_DRAW_TABLE_PROTOTYPES( idx, name ) static int16_t window_draw_ ## name( uint16_t w_id, struct WINDOW* windows );
+#  define WINDOW_CB_DRAW_TABLE_PROTOTYPES( idx, name ) static int16_t window_draw_ ## name( uint16_t w_id, struct WINDOW* windows );
 
 WINDOW_CB_TABLE( WINDOW_CB_DRAW_TABLE_PROTOTYPES );
 
-#define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) static uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, int16_t r[2] );
+#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) static uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, int16_t r[2] );
 
 WINDOW_CB_TABLE( WINDOW_CB_SZ_TABLE_PROTOTYPES );
 
-#define WINDOW_CB_DRAW_TABLE_LIST( idx, name ) window_draw_ ## name,
+#  define WINDOW_CB_DRAW_TABLE_LIST( idx, name ) window_draw_ ## name,
 
 static const WINDOW_CB_DRAW gc_window_draw_callbacks[] = {
    WINDOW_CB_TABLE( WINDOW_CB_DRAW_TABLE_LIST )
 };
 
-#define WINDOW_CB_SZ_TABLE_LIST( idx, name ) window_sz_ ## name,
+#  define WINDOW_CB_SZ_TABLE_LIST( idx, name ) window_sz_ ## name,
 
 static const WINDOW_CB_SZ gc_window_sz_callbacks[] = {
    WINDOW_CB_TABLE( WINDOW_CB_SZ_TABLE_LIST )
 };
 
-#define WINDOW_CB_TABLE_CONSTS( idx, name ) RES_CONST uint16_t WINDOW_TYPE_ ## name = idx;
+#  define WINDOW_CB_TABLE_CONSTS( idx, name ) RES_CONST uint16_t WINDOW_TYPE_ ## name = idx;
 
 WINDOW_CB_TABLE( WINDOW_CB_TABLE_CONSTS );
 
 #else
 
+extern uint8_t g_window_modals;
+
 /**
  * \brief Define extern constants that can be used e.g. in spawners.
  */
-#define WINDOW_CB_TABLE_CONSTS( idx, name ) extern RES_CONST uint16_t WINDOW_TYPE_ ## name;
+#  define WINDOW_CB_TABLE_CONSTS( idx, name ) extern RES_CONST uint16_t WINDOW_TYPE_ ## name;
 
 WINDOW_CB_TABLE( WINDOW_CB_TABLE_CONSTS )
 

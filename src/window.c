@@ -563,6 +563,9 @@ int16_t window_draw_all() {
 
    debug_printf( 0, "starting window drawing..." );
 
+   /* TODO: Don't redraw windows each cycle; use a dirty grid to redraw parts.
+    */
+
    for( i = WINDOWS_MAX - 1; 1 /* TODO */ <= i ; i-- ) {
       /* Only draw active windows. Those windows will recurse to draw their
        * children.
@@ -689,6 +692,12 @@ int16_t window_push(
    window_placement( window_new, parent, x, GUI_X );
    window_placement( window_new, parent, y, GUI_Y );
 
+   /* Increment modal counter if MODAL flag specified. */
+   if( WINDOW_FLAG_MODAL == (WINDOW_FLAG_MODAL & window_new->flags) ) {
+      g_window_modals++;
+      debug_printf( 1, "incremented modal counter: %d", g_window_modals );
+   }
+
 cleanup:
 
    windows = (struct WINDOW*)memory_unlock( g_windows_handle );
@@ -721,6 +730,12 @@ static void window_pop_internal( uint16_t id, struct WINDOW* windows ) {
          memory_free( window_out->data.string );
          window_out->data.string = (MEMORY_HANDLE)NULL;
       }
+      
+      if( WINDOW_FLAG_MODAL == (WINDOW_FLAG_MODAL & window_out->flags) ) {
+         g_window_modals--;
+         debug_printf( 1, "decremented modal counter: %d", g_window_modals );
+      }
+
       window_out->flags &= ~WINDOW_FLAG_ACTIVE;
       window_out->id = 0;
    }
@@ -764,6 +779,7 @@ void window_refresh( uint16_t w_id ) {
    windows = (struct WINDOW*)memory_unlock( g_windows_handle );
 }
 
+#if 0
 int16_t window_modal() {
    int i = 0;
    int16_t modal = 0;
@@ -785,4 +801,5 @@ int16_t window_modal() {
 
    return modal;
 }
+#endif
 

@@ -169,7 +169,7 @@ static void window_draw_text(
 
 /* === Drawing Callbacks === */
 
-static int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
+int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
    struct WINDOW_FRAME* frames = NULL;
    int16_t x = 0,
       y = 0,
@@ -304,12 +304,12 @@ cleanup:
    return blit_retval;
 }
 
-static int16_t window_draw_BUTTON( uint16_t w_id, struct WINDOW* windows ) {
+int16_t window_draw_BUTTON( uint16_t w_id, struct WINDOW* windows ) {
    /* TODO */
    return 1;
 }
 
-static int16_t window_draw_CHECK( uint16_t w_id, struct WINDOW* windows ) {
+int16_t window_draw_CHECK( uint16_t w_id, struct WINDOW* windows ) {
    /* TODO */
    return 1;
 }
@@ -344,7 +344,7 @@ int16_t window_get_text(
    return sz_out;
 }
 
-static int16_t window_draw_LABEL( uint16_t w_id, struct WINDOW* windows ) {
+int16_t window_draw_LABEL( uint16_t w_id, struct WINDOW* windows ) {
    int16_t str_sz = 0;
    char str_ptr[WINDOW_STRING_SZ_MAX] = { 0 };
    struct WINDOW* c = NULL,
@@ -363,7 +363,7 @@ static int16_t window_draw_LABEL( uint16_t w_id, struct WINDOW* windows ) {
    return 1;
 }
 
-static int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
+int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
    int16_t offset_sprite = 0,
       offset_x = 0,
       offset_y = 0;
@@ -422,28 +422,28 @@ static int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 
 /* === Sizing Callbacks === */
 
-static uint8_t window_sz_WINDOW(
+uint8_t window_sz_WINDOW(
    uint16_t w_id, struct WINDOW* windows, int16_t r[2]
 ) {
    /* TODO */
    return 0;
 }
 
-static uint8_t window_sz_BUTTON(
+uint8_t window_sz_BUTTON(
    uint16_t w_id, struct WINDOW* windows, int16_t r[2]
 ) {
    /* TODO */
    return 0;
 }
 
-static uint8_t window_sz_CHECK(
+uint8_t window_sz_CHECK(
    uint16_t w_id, struct WINDOW* windows, int16_t r[2]
 ) {
    /* TODO */
    return 0;
 }
 
-static uint8_t window_sz_LABEL(
+uint8_t window_sz_LABEL(
    uint16_t w_id, struct WINDOW* windows, int16_t r[2]
 ) {
    int16_t str_sz = 0;
@@ -463,7 +463,7 @@ static uint8_t window_sz_LABEL(
    return 1;
 }
 
-static uint8_t window_sz_SPRITE(
+uint8_t window_sz_SPRITE(
    uint16_t w_id, struct WINDOW* windows, int16_t r[2]
 ) {
    /* TODO: Verify sprite exists. */

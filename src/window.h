@@ -275,11 +275,11 @@ static int16_t g_window_screen_grid[4] = {
    0, 0, 0, 0
 };
 
-#  define WINDOW_CB_DRAW_TABLE_PROTOTYPES( idx, name ) static int16_t window_draw_ ## name( uint16_t w_id, struct WINDOW* windows );
+#  define WINDOW_CB_DRAW_TABLE_PROTOTYPES( idx, name ) int16_t window_draw_ ## name( uint16_t w_id, struct WINDOW* windows );
 
 WINDOW_CB_TABLE( WINDOW_CB_DRAW_TABLE_PROTOTYPES );
 
-#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) static uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, int16_t r[2] );
+#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, int16_t r[2] );
 
 WINDOW_CB_TABLE( WINDOW_CB_SZ_TABLE_PROTOTYPES );
 

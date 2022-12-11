@@ -8,7 +8,7 @@ uint8_t input_init() {
    return 1;
 }
 
-uint8_t input_poll() {
+uint8_t input_poll( int16_t* x, int16_t* y ) {
    uint32_t last_key = g_last_key;
    g_last_key = 0;
    switch( last_key ) {

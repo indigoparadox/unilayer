@@ -23,7 +23,7 @@ uint8_t input_init() {
    return 1;
 }
 
-uint8_t input_poll() {
+uint8_t input_poll( int16_t* x, int16_t* y ) {
    SDL_Event event;
    int8_t eres = 0;
    uint8_t sym_out = 0;
@@ -39,6 +39,19 @@ uint8_t input_poll() {
       while( (eres = SDL_PollEvent( &event )) );
 
       return sym_out;
+
+   } else if(
+      SDL_MOUSEBUTTONDOWN == event.type &&
+      NULL != x && NULL != y
+   ) {
+      
+      *x = event.button.x;  
+      *y = event.button.y;  
+
+      /* Flush key buffer to improve responsiveness. */
+      while( (eres = SDL_PollEvent( &event )) );
+
+      return INPUT_CLICK;
 
    } else if( SDL_JOYAXISMOTION == event.type ) {
       if( g_joystick_idx != event.jaxis.which ) {

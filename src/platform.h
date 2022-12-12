@@ -93,6 +93,29 @@ loop_globals();
 #  include "input/xi.h"
 #  include "graphics/xg.h"
 
+#elif defined( PLATFORM_CURSES )
+
+#  ifndef SCREEN_W
+#     define SCREEN_W 80
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 25
+#  endif /* !SCREEN_H */
+
+#  define TILE_W 1
+#  define TILE_H 1
+#  define WINDOW_PATTERN_W 1
+#  define WINDOW_PATTERN_H 1
+
+#  include <X11/Xlib.h>
+#  include <mtypes.h>
+loop_globals();
+#  include "memory/fakem.h"
+#  include "resinc.h"
+#  include "input/xi.h"
+#  include "graphics/xg.h"
+
 #elif defined( PLATFORM_PALM )
 
 #  ifndef SCREEN_W

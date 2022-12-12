@@ -6,8 +6,10 @@
 #include "data/font8x8.h"
 #endif /* USE_SOFTWARE_TEXT */
 
+#ifndef NO_GFX_CACHE
 static MEMORY_HANDLE gs_graphics_cache_handle = (MEMORY_HANDLE)NULL;
 static int16_t gs_graphics_cache_sz = 0;
+#endif /* !NO_GFX_CACHE */
 
 int16_t graphics_init() {
    int16_t retval = 1;
@@ -17,6 +19,7 @@ int16_t graphics_init() {
       goto cleanup;
    }
 
+#ifndef NO_GFX_CACHE
    gs_graphics_cache_handle = memory_alloc(
       GRAPHICS_CACHE_INITIAL_SZ, sizeof( struct GRAPHICS_BITMAP ) );
    gs_graphics_cache_sz = GRAPHICS_CACHE_INITIAL_SZ;
@@ -30,12 +33,14 @@ int16_t graphics_init() {
       error_printf( "unable to initialize graphics cache!" );
       retval = 0;
    }
+#endif /* !NO_GFX_CACHE */
 
 cleanup:
    return retval;
 }
 
 void graphics_clear_cache() {
+#ifndef NO_GFX_CACHE
    int16_t i = 0,
       dropped_count = 0;
    struct GRAPHICS_BITMAP* bitmaps = NULL;
@@ -54,14 +59,17 @@ void graphics_clear_cache() {
    debug_printf( 2, "graphics cache cleared (%d of %d items)",
       dropped_count, gs_graphics_cache_sz );
 
-#ifndef NO_GUI
+#  ifndef NO_GUI
    window_reload_frames();
-#endif /* !NO_GUI */
+#  endif /* !NO_GUI */
+#endif /* !NO_GFX_CACHE */
 }
 
 void graphics_shutdown() {
+#ifndef NO_GFX_CACHE
    graphics_clear_cache();
    memory_free( gs_graphics_cache_handle );
+#endif /* !NO_GFX_CACHE */
    graphics_platform_shutdown();
 }
 
@@ -339,6 +347,8 @@ void graphics_draw_line(
 
 #endif /* !USE_SOFTWARE_LINES */
 
+#ifndef NO_GFX_CACHE
+
 static
 int16_t graphics_load_bitmap_res( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
    int16_t retval = 0;
@@ -374,7 +384,10 @@ cleanup:
    return retval;
 }
 
+#endif /* !NO_GFX_CACHE */
+
 int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
+#ifndef NO_GFX_CACHE
    int16_t idx = GRAPHICS_ERROR_NOT_FOUND,
       i = 0;
    struct GRAPHICS_BITMAP* bitmaps = NULL;
@@ -411,6 +424,9 @@ cleanup:
    }
 
    return idx;
+#else
+   return 1;
+#endif /* !NO_GFX_CACHE */
 }
 
 int16_t graphics_cache_blit_at(
@@ -419,6 +435,8 @@ int16_t graphics_cache_blit_at(
    uint16_t w, uint16_t h
 ) {
    int16_t retval = 1;
+
+#ifndef NO_GFX_CACHE
    struct GRAPHICS_BITMAP* bitmaps = NULL,
       * bitmap_blit = NULL;
 
@@ -439,6 +457,7 @@ cleanup:
       bitmaps = (struct GRAPHICS_BITMAP*)memory_unlock(
          gs_graphics_cache_handle );
    }
+#endif /* !NO_GFX_CACHE */
 
    return retval;
 }

@@ -384,10 +384,7 @@ cleanup:
    return retval;
 }
 
-#endif /* !NO_GFX_CACHE */
-
 int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
-#ifndef NO_GFX_CACHE
    int16_t idx = GRAPHICS_ERROR_NOT_FOUND,
       i = 0;
    struct GRAPHICS_BITMAP* bitmaps = NULL;
@@ -424,9 +421,6 @@ cleanup:
    }
 
    return idx;
-#else
-   return 1;
-#endif /* !NO_GFX_CACHE */
 }
 
 int16_t graphics_cache_blit_at(
@@ -435,8 +429,6 @@ int16_t graphics_cache_blit_at(
    uint16_t w, uint16_t h
 ) {
    int16_t retval = 1;
-
-#ifndef NO_GFX_CACHE
    struct GRAPHICS_BITMAP* bitmaps = NULL,
       * bitmap_blit = NULL;
 
@@ -457,8 +449,9 @@ cleanup:
       bitmaps = (struct GRAPHICS_BITMAP*)memory_unlock(
          gs_graphics_cache_handle );
    }
-#endif /* !NO_GFX_CACHE */
 
    return retval;
 }
+
+#endif /* !NO_GFX_CACHE */
 

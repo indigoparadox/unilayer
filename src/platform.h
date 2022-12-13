@@ -103,11 +103,16 @@ loop_globals();
 #     define SCREEN_H 25
 #  endif /* !SCREEN_H */
 
+#  define SCREEN_MAP_W (16)
+#  define SCREEN_MAP_H (14)
 #  define TILE_W 1
 #  define TILE_H 1
 #  define WINDOW_PATTERN_W 1
 #  define WINDOW_PATTERN_H 1
+#  define STATUS_WINDOW_H 2
 
+#  define LOG_TO_FILE
+#  define LOG_FILE_NAME "logcurs.txt"
 #  include <X11/Xlib.h>
 #  include <mtypes.h>
 loop_globals();

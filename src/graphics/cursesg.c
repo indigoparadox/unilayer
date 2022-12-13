@@ -31,6 +31,7 @@ void graphics_platform_shutdown() {
 
 void graphics_flip() {
    refresh();
+   clear();
 }
 
 int16_t graphics_get_random( int16_t start, int16_t range ) {
@@ -96,17 +97,36 @@ void graphics_string_at(
    const char* str, uint16_t str_sz, uint16_t x_orig, uint16_t y_orig,
    GRAPHICS_COLOR color, uint8_t flags
 ) {
-   mvprintw( y_orig, x_orig, "%s", str );
+   int i = 0;
+
+   for( i = 0 ; str_sz > i ; i++ ) {
+      mvaddch( y_orig, x_orig + i, str[i] );
+   }
 }
 
 void graphics_string_sz(
    const char* str, uint16_t str_sz, uint8_t flags, struct GRAPHICS_RECT* sz_out
 ) {
+   sz_out->h = 1;
+   sz_out->w = memory_strnlen_ptr( str, str_sz );
 }
 
 void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    uint16_t thickness, const GRAPHICS_COLOR color
 ) {
+}
+
+int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
+   return 1;
+}
+
+int16_t graphics_cache_blit_at(
+   uint16_t bitmap_idx,
+   uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
+   uint16_t w, uint16_t h
+) {
+   mvaddch( d_y, d_x, '.' );
+   return 1;
 }
 

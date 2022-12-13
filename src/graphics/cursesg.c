@@ -22,6 +22,12 @@ int16_t graphics_platform_init() {
 
    initscr();
 
+   start_color();
+   init_pair( GRAPHICS_COLOR_CYAN, COLOR_CYAN, COLOR_BLACK );
+   init_pair( GRAPHICS_COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLACK );
+   init_pair( GRAPHICS_COLOR_WHITE, COLOR_WHITE, COLOR_BLACK );
+   init_pair( GRAPHICS_COLOR_BLACK, COLOR_BLACK, COLOR_BLACK );
+
    return 1;
 }
 
@@ -31,7 +37,6 @@ void graphics_platform_shutdown() {
 
 void graphics_flip() {
    refresh();
-   clear();
 }
 
 int16_t graphics_get_random( int16_t start, int16_t range ) {
@@ -70,6 +75,16 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    const GRAPHICS_COLOR color
 ) {
+   int16_t x = 0,
+      y = 0;
+
+   attron( COLOR_PAIR( color ) );
+   for( y = y_orig ; y_orig + h > y ; y++ ) {
+      for( x = x_orig ; x_orig + w > x ; x++ ) {
+         mvaddch( y, x, ' ' );
+      }
+   }
+   attroff( COLOR_PAIR( color ) );
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
@@ -99,9 +114,11 @@ void graphics_string_at(
 ) {
    int i = 0;
 
+   attron( COLOR_PAIR( color ) );
    for( i = 0 ; str_sz > i ; i++ ) {
       mvaddch( y_orig, x_orig + i, str[i] );
    }
+   attroff( COLOR_PAIR( color ) );
 }
 
 void graphics_string_sz(
@@ -129,8 +146,9 @@ int16_t graphics_cache_blit_at(
    return 1;
 }
 
-void graphics_curses_char_at( unsigned char c, uint16_t x, uint16_t y ) {
+int16_t graphics_curses_char_at( unsigned char c, uint16_t x, uint16_t y ) {
    debug_printf( 3, "blit %c at %d, %d", c, x, y );
    mvaddch( y, x, c );
+   return 1;
 }
 

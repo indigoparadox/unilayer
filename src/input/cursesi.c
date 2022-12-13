@@ -4,6 +4,7 @@
 #include <ncurses.h>
 
 uint8_t input_init() {
+   nodelay( stdscr, TRUE );
    return 1;
 }
 
@@ -12,13 +13,15 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
 
    in_char = getch();
 
-   debug_printf( 3, "c: %d", in_char );
-
    switch( in_char ) {
    case 'w':
       return INPUT_KEY_UP;
+   case 'a':
+      return INPUT_KEY_LEFT;
    case 's':
       return INPUT_KEY_DOWN;
+   case 'd':
+      return INPUT_KEY_RIGHT;
    case 'z':
       return INPUT_KEY_OK;
    case 'q':

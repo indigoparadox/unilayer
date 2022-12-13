@@ -103,8 +103,8 @@ loop_globals();
 #     define SCREEN_H 25
 #  endif /* !SCREEN_H */
 
-#  define SCREEN_MAP_W (16)
-#  define SCREEN_MAP_H (14)
+#  define SCREEN_MAP_W (10)
+#  define SCREEN_MAP_H (8)
 #  define TILE_W 1
 #  define TILE_H 1
 #  define SPRITE_W 1
@@ -112,6 +112,8 @@ loop_globals();
 #  define WINDOW_PATTERN_W 1
 #  define WINDOW_PATTERN_H 1
 #  define STATUS_WINDOW_H 2
+
+#  define GFX_ASCII
 
 #  define graphics_blit_sprite_at( ascii, s_x, s_y, d_x, d_y, w, h ) graphics_curses_char_at( ascii, d_x, d_y )
 #  define graphics_blit_tile_at( ascii, s_x, s_y, d_x, d_y, w, h ) graphics_curses_char_at( ascii, d_x, d_y )
@@ -123,8 +125,8 @@ loop_globals();
 loop_globals();
 #  include "memory/fakem.h"
 #  include "resinc.h"
-#  include "input/xi.h"
-#  include "graphics/xg.h"
+#  include "input/cursesi.h"
+#  include "graphics/cursesg.h"
 
 #elif defined( PLATFORM_PALM )
 

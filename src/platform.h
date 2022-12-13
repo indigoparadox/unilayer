@@ -107,9 +107,14 @@ loop_globals();
 #  define SCREEN_MAP_H (14)
 #  define TILE_W 1
 #  define TILE_H 1
+#  define SPRITE_W 1
+#  define SPRITE_H 1
 #  define WINDOW_PATTERN_W 1
 #  define WINDOW_PATTERN_H 1
 #  define STATUS_WINDOW_H 2
+
+#  define graphics_blit_sprite_at( ascii, s_x, s_y, d_x, d_y, w, h ) graphics_curses_char_at( ascii, d_x, d_y )
+#  define graphics_blit_tile_at( ascii, s_x, s_y, d_x, d_y, w, h ) graphics_curses_char_at( ascii, d_x, d_y )
 
 #  define LOG_TO_FILE
 #  define LOG_FILE_NAME "logcurs.txt"

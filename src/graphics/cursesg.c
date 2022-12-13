@@ -126,7 +126,11 @@ int16_t graphics_cache_blit_at(
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h
 ) {
-   mvaddch( d_y, d_x, '.' );
    return 1;
+}
+
+void graphics_curses_char_at( unsigned char c, uint16_t x, uint16_t y ) {
+   debug_printf( 3, "blit %c at %d, %d", c, x, y );
+   mvaddch( y, x, c );
 }
 

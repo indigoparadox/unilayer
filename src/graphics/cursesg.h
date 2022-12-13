@@ -26,5 +26,7 @@ struct GRAPHICS_ARGS {
 #define GRAPHICS_COLOR_MAGENTA      2
 #define GRAPHICS_COLOR_WHITE        3
 
+void graphics_curses_char_at( unsigned char c, uint16_t x, uint16_t y );
+
 #endif /* CURSESG_H */
 

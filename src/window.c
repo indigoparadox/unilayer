@@ -28,12 +28,21 @@ static struct WINDOW* window_get( uint16_t id, struct WINDOW* windows ) {
 }
 
 static void window_placement(
-   struct WINDOW* c, struct WINDOW* p, int16_t coord, uint8_t x_y
+   int16_t w_id, int16_t coord, uint8_t x_y, struct WINDOW* windows
 ) {
    int16_t* p_grid = NULL;
    const int16_t* p_coords;
+   struct WINDOW* c = NULL,
+      * p = NULL;
 
    assert( 2 > x_y );
+
+   c = window_get( w_id, windows );
+   assert( NULL != c );
+
+   if( 0 < c->parent_id ) {
+      p = window_get( c->parent_id, windows );
+   }
 
    if( NULL == p ) {
       /* Position relative to screen. */
@@ -60,6 +69,11 @@ static void window_placement(
 
    switch( coord ){
    case WINDOW_PLACEMENT_CENTER:
+      /* Don't auto-place controls that can be parents on first pass. */
+      if( WINDOW_TYPE_WINDOW == c->type ) {
+         return;
+      }
+
       /* Window width / 2 - Control width / 2 */
       assert( p_coords[x_y + 2] > 0 );
       c->coords[x_y] = (p_coords[x_y + 2] / 2) - (c->coords[x_y + 2] / 2);
@@ -105,30 +119,25 @@ static int16_t window_sizing(
    assert( 4 > w_h );
    assert( 1 < w_h );
 
-#ifdef WINDOW_TRACE
    debug_printf( 1, "sizing window ID: %u", w_id );
-#endif /* WINDOW_TRACE */
 
    c = window_get( w_id, windows );
    assert( NULL != c );
 
    /* Width and Height */
-   if( WINDOW_SIZE_AUTO != dimension && 0 < dimension ) {
+   if( WINDOW_FLAG_AUTO_SZ != (WINDOW_FLAG_AUTO_SZ & c->flags) ) {
       c->coords[w_h] = dimension;
-#ifdef WINDOW_TRACE
       debug_printf( 1, "window %u manual size %d: %d",
          c->id, w_h, dimension );
-#endif /* WINDOW_TRACE */
       retval = dimension;
 
    } else if(
       gc_window_sz_callbacks[c->type]( w_id, windows, win_sz )
    ) {
+      /* Window should be sized automatically. */
       c->coords[w_h] = win_sz[w_h - 2];
-#ifdef WINDOW_TRACE
       debug_printf( 1, "window %u auto-size %d: %d",
          c->id, w_h, win_sz[w_h - 2] );
-#endif /* WINDOW_TRACE */
       retval = win_sz[w_h - 2];
 
    } else {
@@ -139,6 +148,52 @@ static int16_t window_sizing(
    /* TODO: Make sure window doesn't exceed parent size. */
 
    return retval;
+}
+
+static void window_parent_sizing(
+   int16_t w_id, int16_t dimension, uint8_t w_h,
+   struct WINDOW* windows
+) {
+   struct WINDOW* c = NULL,
+      * p = NULL;
+   int16_t sz_mod = 0;
+
+   c = window_get( w_id, windows );
+
+   /* TODO: Break this out into a separate function to run after all children are sized and placed! */
+   debug_printf( 1, "windows %u parent is %u", c->id, c->parent_id );
+   if( 0 < c->parent_id ) {
+      p = window_get( c->parent_id, windows );
+   }
+   
+   if( NULL == p ) {
+      /* No valid parent. */
+      return;
+   }
+
+   if( WINDOW_FLAG_AUTO_SZ != (WINDOW_FLAG_AUTO_SZ & p->flags) ) {
+      /* Parent is not auto-sized. */
+      return;
+   }
+
+   if(
+      p->coords[w_h] > /* Parent's e.g. x + w */
+      c->coords[w_h] + c->coords[w_h - 2]   /* Child's e.g. x + w */
+   ) {
+      debug_printf( 1, "parent %u sz(%d) %d larger than %d", 
+         p->id, w_h, p->coords[w_h], c->coords[w_h] + c->coords[w_h - 2] );
+      return;
+   }
+
+   p->coords[w_h] = c->coords[w_h] + c->coords[w_h - 2];
+   /* TODO: Determine whether to use WINDOW_PATTERN_W or _H! */
+   sz_mod = p->coords[w_h] % WINDOW_PATTERN_W;
+   debug_printf( 2,
+      "bumping auto window %d sz(%d) %d up by %d to match pattern",
+      p->id, w_h, p->coords[w_h], (WINDOW_PATTERN_H - sz_mod) );
+   p->coords[w_h] += (WINDOW_PATTERN_H - sz_mod);
+   debug_printf( 2, "auto window %d sz(%d) now %d",
+      p->id, w_h, p->coords[w_h] );
 }
 
 static void window_draw_text(
@@ -178,6 +233,9 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
       y_max = 0,
       blit_retval = 0;
    struct WINDOW* c = NULL;
+#ifndef NO_WINDOW_BG
+   int16_t bg_idx = -1;
+#endif /* NO_WINDOW_BG */
 
 #ifdef WINDOW_TRACE
    debug_printf( 1, "window %u drawing...", w_id );
@@ -206,64 +264,56 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
    /* Draw the window background. */
    for( y = c->coords[GUI_Y] ; y < y_max ; y += WINDOW_PATTERN_H ) {
       for( x = c->coords[GUI_X] ; x < x_max ; x += WINDOW_PATTERN_W ) {
+         
+
          if(
             c->coords[GUI_X] == x &&
             c->coords[GUI_Y] == y
          ) {
             /* Top Left */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].tl, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].tl;
 
          } else if(
             x_max - WINDOW_PATTERN_W == x && c->coords[GUI_Y] == y
          ) {
             /* Top Right */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].tr, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].tr;
 
          } else if(
             c->coords[GUI_X] == x && y_max - WINDOW_PATTERN_H == y
          ) {
             /* Bottom Left */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].bl, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].bl;
          
-         } else if( x_max - WINDOW_PATTERN_W == x && y_max - WINDOW_PATTERN_H == y ) {
+         } else if(
+            x_max - WINDOW_PATTERN_W == x && y_max - WINDOW_PATTERN_H == y
+         ) {
             /* Bottom Right */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].br, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].br;
          
          } else if( x_max - WINDOW_PATTERN_W == x ) {
             /* Right */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].r, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].r;
          
          } else if( c->coords[GUI_X] == x ) {
             /* Left */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].l, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].l;
          
          } else if( c->coords[GUI_Y] == y ) {
             /* Top */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].t, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].t;
          
          } else if( y_max - WINDOW_PATTERN_H == y ) {
             /* Bottom */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].b, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].b;
          
          } else {
+            bg_idx = frames[c->render_flags].c;
+         }
+
+         if( 0 <= bg_idx ) {
             blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].c, 0, 0, x, y,
+               bg_idx, 0, 0, x, y,
                WINDOW_PATTERN_W, WINDOW_PATTERN_H );
          }
 
@@ -425,8 +475,10 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 uint8_t window_sz_WINDOW(
    uint16_t w_id, struct WINDOW* windows, int16_t r[2]
 ) {
-   /* TODO */
-   return 0;
+   /* TODO: This size is updated as the children are sized. */
+   r[0] = 0;
+   r[1] = 0;
+   return 1;
 }
 
 uint8_t window_sz_BUTTON(
@@ -511,7 +563,17 @@ int16_t window_reload_frames() {
 
    /* TODO: Check for frame load success. */
 
-#ifdef RESOURCE_FILE
+#if defined( PLATFORM_CURSES )
+   frames[0].tr = '\\';
+   frames[0].tl = '/';
+   frames[0].br = '/';
+   frames[0].bl = '\\';
+   frames[0].t = '-';
+   frames[0].b = '-';
+   frames[0].r = '|';
+   frames[0].l = '|';
+   frames[0].c = ' ';
+#elif defined( RESOURCE_FILE )
    frames[0].tr =
       graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp" );
    frames[0].tl =
@@ -580,6 +642,8 @@ int16_t window_draw_all() {
          continue;
       }
 
+      debug_printf( 0, "window %d draw sz: %d x %d",
+         windows[i].id, windows[i].coords[GUI_W], windows[i].coords[GUI_H] );
       assert( 0 == windows[i].coords[GUI_W] % WINDOW_PATTERN_W );
       assert( 0 == windows[i].coords[GUI_H] % WINDOW_PATTERN_H );
 
@@ -629,6 +693,8 @@ int16_t window_push(
       retval = 0;
       goto cleanup;
    }
+
+   debug_printf( 1, "creating window %d...", id );
 
    /* Get parent window for placement, etc. */
    if( 0 != parent_id ) {
@@ -691,8 +757,10 @@ int16_t window_push(
    /* X/Y sizing and placement. Sizing comes first, used for centering. */
    window_sizing( id, w, GUI_W, windows );
    window_sizing( id, h, GUI_H, windows );
-   window_placement( window_new, parent, x, GUI_X );
-   window_placement( window_new, parent, y, GUI_Y );
+   window_placement( id, x, GUI_X, windows );
+   window_placement( id, y, GUI_Y, windows );
+   window_parent_sizing( id, w, GUI_W, windows );
+   window_parent_sizing( id, h, GUI_H, windows );
 
    /* Increment modal counter if MODAL flag specified. */
    if( WINDOW_FLAG_MODAL == (WINDOW_FLAG_MODAL & window_new->flags) ) {

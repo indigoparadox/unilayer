@@ -172,11 +172,6 @@ struct WINDOW {
 
 /*! \} */
 
-/*! \brief Internally-used padding in pixels from controls to window border. */
-#define WINDOW_PADDING_OUTSIDE  10
-/*! \brief Internally-used padding in pixels between controls. */
-#define WINDOW_PADDING_INSIDE   2
-
 #define window_screen_reset_grid() memory_zero_ptr( g_window_screen_grid, 4 * sizeof( int16_t ) );
 
 #ifdef DEPTH_VGA

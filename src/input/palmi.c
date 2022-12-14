@@ -47,6 +47,11 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
    case appStopEvent:
       return INPUT_KEY_QUIT;
 
+   case penDownEvent:
+      *x = event.screenX;
+      *y = event.screenY;
+      return INPUT_CLICK;
+
    default:
       /* System gets a chance to handle the event. */
       SysHandleEvent( &event );

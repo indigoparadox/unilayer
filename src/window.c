@@ -39,6 +39,8 @@ static void window_placement(
 
    c = window_get( w_id, windows );
 
+   window_trace_printf( 1, "placing window %u", w_id );
+
    /* This is only called internally so it should NEVER have a null c! */
    assert( NULL != c );
 
@@ -51,9 +53,7 @@ static void window_placement(
 
    if( NULL == p ) {
       /* Position relative to screen. */
-#ifdef WINDOW_TRACE
-      debug_printf( 1, "window %u rel screen", c->id );
-#endif /* WINDOW_TRACE */
+      window_trace_printf( 0, "> window %u rel screen", c->id );
       parent_coords[0] = g_window_screen_coords[0];
       parent_coords[1] = g_window_screen_coords[1];
       parent_coords[2] = g_window_screen_coords[2];
@@ -61,9 +61,7 @@ static void window_placement(
       p_grid = g_window_screen_grid;
    } else {
       /* Position relative to parent. */
-#ifdef WINDOW_TRACE
-      debug_printf( 1, "window %u rel window %d", c->id, c->parent_id );
-#endif /* WINDOW_TRACE */
+      window_trace_printf( 0, "> window %u rel window %d", c->id, c->parent_id );
       parent_coords[0] = window_get_coords( p, 0 );
       parent_coords[1] = window_get_coords( p, 1 );
       parent_coords[2] = window_get_coords( p, 2 );
@@ -80,13 +78,14 @@ static void window_placement(
    switch( (coord & WINDOW_PLACEMENT_AUTO_MASK) ){
    case WINDOW_PLACEMENT_CENTER:
       /* Window width / 2 - Control width / 2 */
-      assert( parent_coords[x_y + 2] > 0 );
+      assert( (parent_coords[x_y + 2] & WINDOW_PLACEMENT_PHYS_MASK) > 0 );
       window_update_coords( c, x_y, 
-         (parent_coords[x_y + 2] / 2) - (window_get_coords( c, x_y + 2 ) / 2) );
-#ifdef WINDOW_TRACE
-      debug_printf( 1, "window %u center coord %d (%d / 2) - (%d / 2): %d",
-         c->id, x_y, parent_coords[x_y + 2], c->coords[x_y + 2], c->coords[x_y] );
-#endif /* WINDOW_TRACE */
+         ((parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK) / 2) -
+            (window_get_coords( c, x_y + 2 ) / 2) );
+      window_trace_printf(
+         1, "> window %u center coord(%d) (%d / 2) - (%d / 2): %d", c->id,
+         x_y, (parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK),
+         window_get_coords( c, x_y + 2 ), window_get_coords( c, x_y ) );
       break;
 
    case WINDOW_PLACEMENT_RIGHT_BOTTOM:
@@ -98,12 +97,11 @@ static void window_placement(
 
    case WINDOW_PLACEMENT_GRID_RIGHT_DOWN:
       p_grid[x_y + 2] = p_grid[x_y];
-      p_grid[x_y] += (c->coords[x_y + 2] & WINDOW_PLACEMENT_PHYS_MASK) +
-         WINDOW_PADDING_INSIDE;
+      p_grid[x_y] += window_get_coords( c, x_y + 2 ) + WINDOW_PADDING_INSIDE;
       /* No break; proceed to place according to modified grid. */
 
    case WINDOW_PLACEMENT_GRID:
-      window_trace_printf( 1, " window %u adding control using grid at: %d",
+      window_trace_printf( 1, "> window %u adding control using grid at: %d",
          c->id, p_grid[x_y + 2] );
       window_update_coords( c, x_y, p_grid[x_y + 2] );
       break;
@@ -114,8 +112,77 @@ static void window_placement(
    }
 }
 
+static int16_t window_parent_placement(
+   int16_t w_id, uint8_t x_y, struct WINDOW* windows
+) {
+   uint16_t parent_coords[4];
+   struct WINDOW* p = NULL,
+      * p_p = NULL,
+      * c = NULL;
+   int16_t retval = 0;
+
+   assert( 2 > x_y );
+
+   c = window_get( w_id, windows );
+
+   window_trace_printf( 1, "placing window %u parent, %u coords(%d)",
+      w_id, c->parent_id, x_y );
+
+   /* This is only called internally so it should NEVER have a null c! */
+   assert( NULL != c );
+
+   /* Get and verify parent to modify. */
+   if( 0 < c->parent_id ) {
+      p = window_get( c->parent_id, windows );
+   }
+   if( NULL == p ) {
+      /* No valid parent. */
+      return retval;
+   }
+
+   if( 0 < p->parent_id ) {
+      p_p = window_get( p->parent_id, windows );
+   }
+
+   if( NULL == p_p ) {
+      /* Position relative to screen. */
+      window_trace_printf( 1, "> window %u rel screen", p->id );
+      parent_coords[0] = g_window_screen_coords[0];
+      parent_coords[1] = g_window_screen_coords[1];
+      parent_coords[2] = g_window_screen_coords[2];
+      parent_coords[3] = g_window_screen_coords[3];
+   } else {
+      /* Position relative to parent. */
+      window_trace_printf(
+         1, "> window %u rel window %d", p->id, p->parent_id );
+      parent_coords[0] = window_get_coords( p_p, 0 );
+      parent_coords[1] = window_get_coords( p_p, 1 );
+      parent_coords[2] = window_get_coords( p_p, 2 );
+      parent_coords[3] = window_get_coords( p_p, 3 );
+   }
+
+   window_trace_printf(
+      1, "> previous coords(%d): %04x", x_y, p->coords[x_y] );
+
+   switch( (p->coords[x_y] & WINDOW_PLACEMENT_AUTO_MASK) ){
+   case WINDOW_PLACEMENT_CENTER:
+      /* Window width / 2 - Control width / 2 */
+      assert( parent_coords[x_y + 2] > 0 );
+      window_update_coords( p, x_y, 
+         ((parent_coords[x_y + 2] / 2) & WINDOW_PLACEMENT_PHYS_MASK) -
+            (window_get_coords( p, x_y + 2 ) / 2) );
+      window_trace_printf(
+         1, "> window %u center coord(%d) (%d / 2) - (%d / 2): %d", c->id,
+         x_y, parent_coords[x_y + 2],
+         window_get_coords( p, x_y + 2 ), window_get_coords( p, x_y ) );
+      break;
+   }
+
+   return retval;
+}
+
 static int16_t window_sizing(
-   int16_t w_id, int16_t dimension, uint8_t w_h,
+   int16_t w_id, uint16_t dimension, uint8_t w_h,
    struct WINDOW* windows
 ) {
    uint16_t win_sz; /* What the callback will write to. */
@@ -125,9 +192,7 @@ static int16_t window_sizing(
    assert( 4 > w_h );
    assert( 1 < w_h );
 
-#ifdef WINDOW_TRACE
-   debug_printf( 1, "sizing window ID: %u", w_id );
-#endif /* WINDOW_TRACE */
+   window_trace_printf( 1, "sizing window ID: %u", w_id );
 
    c = window_get( w_id, windows );
    assert( NULL != c );
@@ -138,12 +203,13 @@ static int16_t window_sizing(
    win_sz = dimension;
 
    /* Width and Height */
-   if( WINDOW_SIZE_AUTO != dimension && 0 < dimension ) {
+   if(
+      WINDOW_SIZE_AUTO != (WINDOW_SIZE_AUTO_MASK & dimension) &&
+      0 < dimension
+   ) {
       c->coords[w_h] = dimension;
-#ifdef WINDOW_TRACE
-      debug_printf( 1, "window %u manual size %d: %d",
+      window_trace_printf( 1, "> window %u manual size %d: %d",
          c->id, w_h, dimension );
-#endif /* WINDOW_TRACE */
       retval = dimension;
 
    } else if(
@@ -151,22 +217,22 @@ static int16_t window_sizing(
    ) {
       /* Set without window_update_coords(), to preserve flags! */
       c->coords[w_h] = win_sz;
-#ifdef WINDOW_TRACE
-      debug_printf( 1, "window %u auto-size %d: %d",
-         c->id, w_h, win_sz[w_h - 2] );
-#endif /* WINDOW_TRACE */
+      window_trace_printf( 1, "> window %u auto-size %d: %d",
+         c->id, w_h, win_sz );
       retval = win_sz;
 
    } else {
-      error_printf( "unable to automatically size window" );
+      error_printf( "unable to automatically size window %u", c->id );
       retval = 0;
    }
-
-   /* TODO: Make sure window doesn't exceed parent size. */
 
    return retval;
 }
 
+/**
+ * \brief Redo parent sizing if parent is dynamically sized to account for new
+ *        children. This should be called whenever a child is added.
+ */
 static void window_parent_sizing(
    int16_t w_id, uint8_t w_h, struct WINDOW* windows
 ) {
@@ -177,24 +243,23 @@ static void window_parent_sizing(
 
    c = window_get( w_id, windows );
 
-   /* TODO: Break this out into a separate function to run after all children a
-e sized and placed! */
-   debug_printf( 1, "windows %u parent is %u", c->id, c->parent_id );
+   /* Get and verify parent to modify. */
    if( 0 < c->parent_id ) {
       p = window_get( c->parent_id, windows );
    }
-
    if( NULL == p ) {
       /* No valid parent. */
       return;
    }
 
+   window_trace_printf( 1, "sizing window %u parent, %u sz(%d)",
+      c->id, c->parent_id, w_h );
+
    if(
       WINDOW_PLACEMENT_CENTER != (p->coords[w_h] & WINDOW_PLACEMENT_AUTO_MASK)
    ) {
       /* Parent is not auto-sized. */
-      debug_printf( 2, "not autosized (%d)!",
-         p->coords[w_h] );
+      window_trace_printf( 1, "> not autosized (%d)!", p->coords[w_h] );
       return;
    }
 
@@ -206,7 +271,7 @@ e sized and placed! */
       /* Child's e.g. x + w */
       c_extreme_x_y
    ) {
-      debug_printf( 1, "parent %u sz(%d) %d larger than %d",
+      window_trace_printf( 1, "> parent %u sz(%d) %d smaller than %d",
          p->id, w_h,
          c_extreme_x_y, window_get_coords( p, w_h ) );
       return;
@@ -215,12 +280,14 @@ e sized and placed! */
    window_update_coords( p, w_h, c_extreme_x_y );
    /* TODO: Determine whether to use WINDOW_PATTERN_W or _H! */
    sz_mod = window_get_coords( p, w_h ) % WINDOW_PATTERN_W;
-   debug_printf( 2,
-      "bumping auto window %d sz(%d) %d up by %d to match pattern",
+   window_trace_printf( 1,
+      "> bumping auto window %d sz(%d) %d up by %d to match pattern",
       p->id, w_h, window_get_coords( p, w_h ), (WINDOW_PATTERN_H - sz_mod) );
+   
    window_update_coords( p, w_h,
       window_get_coords( p, w_h ) + (WINDOW_PATTERN_H - sz_mod) );
-   debug_printf( 2, "auto window %d sz(%d) now %d",
+
+   window_trace_printf( 1, "> auto window %d sz(%d) now %d",
       p->id, w_h, window_get_coords( p, w_h ) );
 }
 
@@ -231,8 +298,8 @@ static void window_draw_text(
       offset_y = 0;
 
    if( NULL != p ) {
-      offset_x = p->coords[GUI_X];
-      offset_y = p->coords[GUI_Y];
+      offset_x = window_get_coords( p, GUI_X );
+      offset_y = window_get_coords( p, GUI_Y );
    }
 
    assert( NULL != c );
@@ -240,14 +307,14 @@ static void window_draw_text(
 #ifdef WINDOW_TRACE
    debug_printf( 1, "window %u drawing string at %d, %d: %s",
       c->id,
-      offset_x + c->coords[GUI_X],
-      offset_y + c->coords[GUI_Y], str );
+      offset_x + window_get_coords( c, GUI_X ),
+      offset_y + window_get_coords( c, GUI_Y ), str );
 #endif /* WINDOW_TRACE */
 
    graphics_string_at( 
       str, str_sz,
-      offset_x + c->coords[GUI_X],
-      offset_y + c->coords[GUI_Y], c->fg, c->render_flags );
+      offset_x + window_get_coords( c, GUI_X ),
+      offset_y + window_get_coords( c, GUI_Y ), c->fg, c->render_flags );
 }
 
 /* === Drawing Callbacks === */
@@ -265,48 +332,48 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
    int16_t bg_idx = -1;
 #endif /* NO_WINDOW_BG */
  
-#ifdef WINDOW_TRACE
-   debug_printf( 1, "window %u drawing...", w_id );
-#endif /* WINDOW_TRACE */
+   window_trace_printf( 1, "window %u drawing...", w_id );
 
    c = window_get( w_id, windows );
    assert( NULL != c );
 
    frames = (struct WINDOW_FRAME*)memory_lock( g_frames_handle );
 
-#ifdef WINDOW_TRACE
-   debug_printf(
-      1, "window %u min: %d, %d; max: %d, %d",
-      c->id, c->coords[GUI_X], c->coords[GUI_Y], x_max, y_max );
-#endif /* WINDOW_TRACE */
+   window_trace_printf(
+      0, "> window %u min: %d, %d; max: %d, %d",
+      c->id,
+      window_get_coords( c, GUI_X ),
+      window_get_coords( c, GUI_Y ), x_max, y_max );
 
-   x_max = c->coords[GUI_X] + c->coords[GUI_W];
-   y_max = c->coords[GUI_Y] + c->coords[GUI_H];
+   x_max = window_get_coords( c, GUI_X ) + window_get_coords( c, GUI_W );
+   y_max = window_get_coords( c, GUI_Y ) + window_get_coords( c, GUI_H );
 
-#ifdef WINDOW_TRACE
-   debug_printf( 1, "window %u drawing with frame %d...",
+   window_trace_printf( 0, "> window %u drawing with frame %d...",
       c->id, c->render_flags );
-#endif /* WINDOW_TRACE */
 
 #ifndef NO_WINDOW_BG
    /* Draw the window background. */
-   for( y = c->coords[GUI_Y] ; y < y_max ; y += WINDOW_PATTERN_H ) {
-      for( x = c->coords[GUI_X] ; x < x_max ; x += WINDOW_PATTERN_W ) {
+   for(
+      y = window_get_coords( c, GUI_Y ) ; y < y_max ; y += WINDOW_PATTERN_H
+   ) {
+      for(
+         x = window_get_coords( c, GUI_X ) ; x < x_max ; x += WINDOW_PATTERN_W
+      ) {
          if(
-            c->coords[GUI_X] == x &&
-            c->coords[GUI_Y] == y
+            window_get_coords( c, GUI_X ) == x &&
+            window_get_coords( c, GUI_Y ) == y
          ) {
             /* Top Left */
             bg_idx = frames[c->render_flags].tl;
 
          } else if(
-            x_max - WINDOW_PATTERN_W == x && c->coords[GUI_Y] == y
+            x_max - WINDOW_PATTERN_W == x && window_get_coords( c, GUI_Y ) == y
          ) {
             /* Top Right */
             bg_idx = frames[c->render_flags].tr;
 
          } else if(
-            c->coords[GUI_X] == x && y_max - WINDOW_PATTERN_H == y
+            window_get_coords( c, GUI_X ) == x && y_max - WINDOW_PATTERN_H == y
          ) {
             /* Bottom Left */
             bg_idx = frames[c->render_flags].bl;
@@ -321,11 +388,11 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
             /* Right */
             bg_idx = frames[c->render_flags].r;
          
-         } else if( c->coords[GUI_X] == x ) {
+         } else if( window_get_coords( c, GUI_X ) == x ) {
             /* Left */
             bg_idx = frames[c->render_flags].l;
          
-         } else if( c->coords[GUI_Y] == y ) {
+         } else if( window_get_coords( c, GUI_Y ) == y ) {
             /* Top */
             bg_idx = frames[c->render_flags].t;
          
@@ -452,8 +519,8 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 
    p = window_get( c->parent_id, windows );
    if( NULL != p ) {
-      offset_x = p->coords[GUI_X];
-      offset_y = p->coords[GUI_Y];
+      offset_x = window_get_coords( p, GUI_X );
+      offset_y = window_get_coords( p, GUI_Y );
    }
 
 #ifdef WINDOW_TRACE
@@ -472,14 +539,15 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
    graphics_blit_sprite_at(
       c->data.scalar,
       0, offset_sprite,
-      offset_x + c->coords[GUI_X] + 2,
-      offset_y + c->coords[GUI_Y] + 2,
+      offset_x + window_get_coords( c, GUI_X ),
+      offset_y + window_get_coords( c, GUI_Y ),
       WINDOW_SPRITE_W, WINDOW_SPRITE_H );
 
    if(
       WINDOW_FLAG_SPRITE_BORDER_SINGLE ==
       (WINDOW_FLAG_SPRITE_BORDER_SINGLE & c->flags)
    ) {
+#if 0
       graphics_draw_rect(
          offset_x + c->coords[GUI_X],
          offset_y + c->coords[GUI_Y],
@@ -491,6 +559,7 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
          offset_y + c->coords[GUI_Y] + 1,
          WINDOW_SPRITE_W + 3, WINDOW_SPRITE_H + 3,
          1, GRAPHICS_COLOR_WHITE );
+#endif
    }
 
    return 1;
@@ -506,7 +575,7 @@ uint8_t window_sz_WINDOW(
    w = window_get( w_id, windows );
    debug_printf( 2, "setting window sz(%d) to %d", w_h, *out );
    w->coords[w_h] = *out;
-   return 0;
+   return 1;
 }
 
 uint8_t window_sz_BUTTON(
@@ -672,8 +741,6 @@ int16_t window_draw_all() {
          continue;
       }
 
-      debug_printf( 3, "win w: %d",
-         windows[i].coords[GUI_W] );
       assert( 0 ==
          window_get_coords( &(windows[i]), GUI_W ) % WINDOW_PATTERN_W );
       assert( 0 == 
@@ -783,6 +850,8 @@ int16_t window_push(
    window_new->fg = fg;
    window_new->bg = bg;
    window_new->parent_id = parent_id;
+   window_new->coords[GUI_X] = x;
+   window_new->coords[GUI_Y] = y;
 
    /* X/Y sizing and placement. Sizing comes first, used for centering. */
    window_sizing( id, w, GUI_W, windows );
@@ -791,6 +860,8 @@ int16_t window_push(
    window_placement( id, y, GUI_Y, windows );
    window_parent_sizing( id, GUI_W, windows );
    window_parent_sizing( id, GUI_H, windows );
+   window_parent_placement( id, GUI_X, windows );
+   window_parent_placement( id, GUI_Y, windows );
 
    /* Increment modal counter if MODAL flag specified. */
    if( WINDOW_FLAG_MODAL == (WINDOW_FLAG_MODAL & window_new->flags) ) {

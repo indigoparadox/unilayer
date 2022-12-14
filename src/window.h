@@ -185,7 +185,7 @@ struct WINDOW {
 
 #define window_screen_reset_grid() memory_zero_ptr( g_window_screen_grid, 4 * sizeof( int16_t ) );
 
-#define window_update_coords( window, x_y_w_h, coord ) (window)->coords[x_y_w_h] = (c->coords[x_y_w_h] & WINDOW_PLACEMENT_AUTO_MASK) | (WINDOW_PLACEMENT_PHYS_MASK & (coord));
+#define window_update_coords( window, x_y_w_h, coord ) (window)->coords[x_y_w_h] = ((window)->coords[x_y_w_h] & WINDOW_PLACEMENT_AUTO_MASK) | (WINDOW_PLACEMENT_PHYS_MASK & (coord));
 
 #define window_get_coords( window, x_y_w_h ) (((window)->coords[x_y_w_h] & WINDOW_PLACEMENT_PHYS_MASK))
 

@@ -58,7 +58,7 @@ struct WINDOW {
     */
    GRAPHICS_COLOR fg;
    GRAPHICS_COLOR bg;
-   int16_t coords[4];
+   uint16_t coords[4];
    union CONTROL_DATA data;
 };
 
@@ -84,11 +84,6 @@ struct WINDOW {
  * \brief Specifies height in WINDOW::coords.
  */
 #define GUI_H 3
-
-/*! \brief WINDOW::x or WINDOW::y value indicating the system should do its
- *         best to center the WINDOW onscreen.
- */
-#define WINDOW_CENTERED -1
 
 /*! \brief Maximum number of windows that can be onscreen at one time. */
 #define WINDOW_COUNT_MAX 10
@@ -152,30 +147,38 @@ struct WINDOW {
  * \{
  */
 
-/*! \brief Place the control in the center of the window. */
-#define WINDOW_PLACEMENT_CENTER       (-1)
+/*! \brief WINDOW::x or WINDOW::y value indicating the system should do its
+ *         best to center the WINDOW onscreen.
+ */
+#define WINDOW_PLACEMENT_CENTER           0x8000
+
 /**
  * \brief Alight the control's right side (if specified as X) or bottom side
  *        (if specified as Y) to the window's respective side. */
-#define WINDOW_PLACEMENT_RIGHT_BOTTOM (-2)
+#define WINDOW_PLACEMENT_RIGHT_BOTTOM     0x2000
+
 /**
  * \brief Place the control at the grid X or Y as relevant, and set the grid
  *        width or height respectively at the control's width or height.
  */
-#define WINDOW_PLACEMENT_GRID_RIGHT_DOWN   (-3)
+#define WINDOW_PLACEMENT_GRID_RIGHT_DOWN  0xc000
+
 /**
  * \brief Place the control at the grid X or Y without modifying the grid.
  */
-#define WINDOW_PLACEMENT_GRID         (-4)
+#define WINDOW_PLACEMENT_GRID             0x4000
 
-#define WINDOW_SIZE_AUTO   (-5)
+#define WINDOW_PLACEMENT_AUTO_MASK        0xe000
+
+#define WINDOW_PLACEMENT_PHYS_MASK        0x1fff
+
+#define WINDOW_SIZE_AUTO                  0x8000
+
+#define WINDOW_SIZE_AUTO_MASK             0xe000
+
+#define WINDOW_SIZE_PHYS_MASK             0x1fff
 
 /*! \} */
-
-/*! \brief Internally-used padding in pixels from controls to window border. */
-#define WINDOW_PADDING_OUTSIDE  10
-/*! \brief Internally-used padding in pixels between controls. */
-#define WINDOW_PADDING_INSIDE   2
 
 #define window_screen_reset_grid() memory_zero_ptr( g_window_screen_grid, 4 * sizeof( int16_t ) );
 
@@ -224,7 +227,7 @@ int16_t window_draw_all();
  */
 int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
-   int16_t x, int16_t y, int16_t w, int16_t h,
+   uint16_t x, uint16_t y, uint16_t w, uint16_t h,
    GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
    int32_t data_scalar, const char* data_string );
 
@@ -267,7 +270,7 @@ static MEMORY_HANDLE g_windows_handle = (MEMORY_HANDLE)NULL;
 
 uint8_t g_window_modals = 0;
 
-static int16_t g_window_screen_coords[4] = {
+static uint16_t g_window_screen_coords[4] = {
    0, 0, SCREEN_W, SCREEN_H
 };
 

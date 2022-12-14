@@ -31,7 +31,7 @@ static void window_placement(
    struct WINDOW* c, struct WINDOW* p, int16_t coord, uint8_t x_y
 ) {
    int16_t* p_grid = NULL;
-   const int16_t* p_coords;
+   const uint16_t* p_coords;
 
    assert( 2 > x_y );
 
@@ -58,7 +58,7 @@ static void window_placement(
       p_grid[x_y + 2] = WINDOW_PADDING_OUTSIDE;
    }
 
-   switch( coord ){
+   switch( (coord & WINDOW_PLACEMENT_AUTO_MASK) ){
    case WINDOW_PLACEMENT_CENTER:
       /* Window width / 2 - Control width / 2 */
       assert( p_coords[x_y + 2] > 0 );
@@ -178,7 +178,10 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
       y_max = 0,
       blit_retval = 0;
    struct WINDOW* c = NULL;
-
+#ifndef NO_WINDOW_BG
+   int16_t bg_idx = -1;
+#endif /* NO_WINDOW_BG */
+ 
 #ifdef WINDOW_TRACE
    debug_printf( 1, "window %u drawing...", w_id );
 #endif /* WINDOW_TRACE */
@@ -211,59 +214,47 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
             c->coords[GUI_Y] == y
          ) {
             /* Top Left */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].tl, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].tl;
 
          } else if(
             x_max - WINDOW_PATTERN_W == x && c->coords[GUI_Y] == y
          ) {
             /* Top Right */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].tr, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].tr;
 
          } else if(
             c->coords[GUI_X] == x && y_max - WINDOW_PATTERN_H == y
          ) {
             /* Bottom Left */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].bl, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].bl;
          
          } else if( x_max - WINDOW_PATTERN_W == x && y_max - WINDOW_PATTERN_H == y ) {
             /* Bottom Right */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].br, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].br;
          
          } else if( x_max - WINDOW_PATTERN_W == x ) {
             /* Right */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].r, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].r;
          
          } else if( c->coords[GUI_X] == x ) {
             /* Left */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].l, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].l;
          
          } else if( c->coords[GUI_Y] == y ) {
             /* Top */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].t, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].t;
          
          } else if( y_max - WINDOW_PATTERN_H == y ) {
             /* Bottom */
-            blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].b, 0, 0, x, y,
-               WINDOW_PATTERN_W, WINDOW_PATTERN_H );
+            bg_idx = frames[c->render_flags].b;
          
          } else {
+            bg_idx = frames[c->render_flags].c;
+         }
+
+         if( 0 <= bg_idx ) {
             blit_retval = graphics_blit_tile_at(
-               frames[c->render_flags].c, 0, 0, x, y,
+               bg_idx, 0, 0, x, y,
                WINDOW_PATTERN_W, WINDOW_PATTERN_H );
          }
 
@@ -511,7 +502,17 @@ int16_t window_reload_frames() {
 
    /* TODO: Check for frame load success. */
 
-#ifdef RESOURCE_FILE
+#if defined( PLATFORM_CURSES )
+   frames[0].tr = '\\';
+   frames[0].tl = '/';
+   frames[0].br = '/';
+   frames[0].bl = '\\';
+   frames[0].t = '-';
+   frames[0].b = '-';
+   frames[0].r = '|';
+   frames[0].l = '|';
+   frames[0].c = ' ';
+#elif defined( RESOURCE_FILE )
    frames[0].tr =
       graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp" );
    frames[0].tl =
@@ -605,7 +606,7 @@ cleanup:
 
 int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
-   int16_t x, int16_t y, int16_t w, int16_t h,
+   uint16_t x, uint16_t y, uint16_t w, uint16_t h,
    GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
    int32_t data_scalar, const char* data_string
 ) {

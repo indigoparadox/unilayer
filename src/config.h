@@ -73,6 +73,16 @@
 #define WINDOWS_MAX 100
 #endif /* !WINDOWS_MAX */
 
+#ifndef WINDOW_PADDING_OUTSIDE
+/*! \brief Internally-used padding in pixels from controls to window border. */
+#define WINDOW_PADDING_OUTSIDE  10
+#endif /* !WINDOW_PADDING_OUTSIDE */
+
+#ifndef WINDOW_PADDING_INSIDE
+/*! \brief Internally-used padding in pixels between controls. */
+#define WINDOW_PADDING_INSIDE   2
+#endif /* !WINDOW_PADDING_INSIDE */
+
 #ifndef WINDOW_SPRITE_W
 #define WINDOW_SPRITE_W 16
 #endif /* !WINDOW_SPRITE_W */

@@ -112,6 +112,8 @@ loop_globals();
 #  define WINDOW_PATTERN_W 1
 #  define WINDOW_PATTERN_H 1
 #  define STATUS_WINDOW_H 2
+#  define WINDOW_PADDING_INSIDE 0
+#  define WINDOW_PADDING_OUTSIDE 1
 
 #  define GFX_ASCII
 

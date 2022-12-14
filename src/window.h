@@ -50,7 +50,9 @@ struct WINDOW {
    uint8_t type;
    /*! \brief Current drawing status of this window. */
    uint8_t flags;
-   /* TODO: Work into flags. */
+   /*! \brief Special flags governing window placement. */
+   uint8_t placement_flags;
+   /*! \brief Special flags governing window rendering. */
    uint8_t render_flags;
    /**
     * \brief Window coordinates and dimensions indexed as ::GUI_X, ::GUI_Y,
@@ -113,7 +115,9 @@ struct WINDOW {
  * \brief WINDOW::flags indicating control is visible and interactive.
  */
 #define WINDOW_FLAG_ACTIVE       0x01
+
 #define WINDOW_FLAG_DIRTY  0x04
+
 /**
  * \brief WINDOW::status indicating window is blocking all input.
  */
@@ -153,22 +157,33 @@ struct WINDOW {
  */
 
 /*! \brief Place the control in the center of the window. */
-#define WINDOW_PLACEMENT_CENTER       (-1)
+#define WINDOW_PLACEMENT_CENTER_X         0x01
+
+#define WINDOW_PLACEMENT_CENTER_Y         0x02
+
 /**
  * \brief Alight the control's right side (if specified as X) or bottom side
  *        (if specified as Y) to the window's respective side. */
-#define WINDOW_PLACEMENT_RIGHT_BOTTOM (-2)
+/* #define WINDOW_PLACEMENT_RIGHT_BOTTOM     */
+
 /**
  * \brief Place the control at the grid X or Y as relevant, and set the grid
  *        width or height respectively at the control's width or height.
  */
-#define WINDOW_PLACEMENT_GRID_RIGHT_DOWN   (-3)
+#define WINDOW_PLACEMENT_GRID_X           0x04
 /**
  * \brief Place the control at the grid X or Y without modifying the grid.
  */
-#define WINDOW_PLACEMENT_GRID         (-4)
 
-#define WINDOW_SIZE_AUTO   (-5)
+#define WINDOW_PLACEMENT_GRID_Y           0x08
+
+#define WINDOW_PLACEMENT_GRID_BRK_X       0x10
+
+#define WINDOW_PLACEMENT_GRID_BRK_Y       0x20
+
+#define WINDOW_SIZE_AUTO_W                0x40
+
+#define WINDOW_SIZE_AUTO_H                0x80
 
 /*! \} */
 
@@ -220,7 +235,8 @@ int16_t window_draw_all();
 int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
    int16_t x, int16_t y, int16_t w, int16_t h,
-   GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
+   GRAPHICS_COLOR fg, GRAPHICS_COLOR bg,
+   uint8_t render_flags, uint8_t placement_flags,
    int32_t data_scalar, const char* data_string );
 
 /**

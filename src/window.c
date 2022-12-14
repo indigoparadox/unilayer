@@ -31,6 +31,7 @@ static void window_placement(
    int16_t w_id, int16_t coord, uint8_t x_y, struct WINDOW* windows
 ) {
    int16_t* p_grid = NULL;
+   uint8_t auto_placed = 0;
    const int16_t* p_coords;
    struct WINDOW* c = NULL,
       * p = NULL;
@@ -67,44 +68,74 @@ static void window_placement(
       p_grid[x_y + 2] = WINDOW_PADDING_OUTSIDE;
    }
 
-   switch( coord ){
-   case WINDOW_PLACEMENT_CENTER:
-      /* Don't auto-place controls that can be parents on first pass. */
-      if( WINDOW_TYPE_WINDOW == c->type ) {
-         return;
-      }
-
+   if(
+      (GUI_X == x_y &&
+         WINDOW_PLACEMENT_CENTER_X ==
+            (WINDOW_PLACEMENT_CENTER_X & c->placement_flags)) ||
+      (GUI_Y == x_y &&
+         WINDOW_PLACEMENT_CENTER_Y ==
+            (WINDOW_PLACEMENT_CENTER_Y & c->placement_flags))
+   ) {
       /* Window width / 2 - Control width / 2 */
       assert( p_coords[x_y + 2] > 0 );
       c->coords[x_y] = (p_coords[x_y + 2] / 2) - (c->coords[x_y + 2] / 2);
-#ifdef WINDOW_TRACE
-      debug_printf( 1, "window %u center coord %d (%d / 2) - (%d / 2): %d",
+      debug_printf( 0, "window %u center coord %d (%d / 2) - (%d / 2): %d",
          c->id, x_y, p_coords[x_y + 2], c->coords[x_y + 2], c->coords[x_y] );
-#endif /* WINDOW_TRACE */
-      break;
+      auto_placed = 1;
+      /* TODO: Make center and grid exclusive! */
+   }
 
+#if 0
    case WINDOW_PLACEMENT_RIGHT_BOTTOM:
       c->coords[x_y] =
          /* Window width - Padding - Control width */
          p_coords[x_y + 2] - WINDOW_PADDING_OUTSIDE - c->coords[x_y + 2];
       break;
+#endif
 
-   case WINDOW_PLACEMENT_GRID_RIGHT_DOWN:
-      p_grid[x_y + 2] = p_grid[x_y];
-      p_grid[x_y] += c->coords[x_y + 2] + WINDOW_PADDING_INSIDE;
-      /* No break. */
+   /* NOT an else-if with GRID_X/Y, since GRID_BRK_X/Y builds on GRID_X/Y. */
+   if(
+      (GUI_X == x_y &&
+         WINDOW_PLACEMENT_GRID_BRK_X ==
+            (WINDOW_PLACEMENT_GRID_BRK_X & c->placement_flags))
+   ) {
+      /* "Break" the grid (i.e. move to the next row/column). */
+      p_grid[GUI_W] = p_grid[GUI_X];
+      p_grid[GUI_H] += c->coords[GUI_H] + WINDOW_PADDING_INSIDE;
+      p_grid[GUI_X] = WINDOW_PADDING_OUTSIDE;
+      auto_placed = 1;
 
-   case WINDOW_PLACEMENT_GRID:
-#ifdef WINDOW_TRACE
-      debug_printf( 1, " window %u adding control using grid at: %d",
+   } else if(
+      (GUI_Y == x_y &&
+         WINDOW_PLACEMENT_GRID_BRK_Y ==
+            (WINDOW_PLACEMENT_GRID_BRK_Y & c->placement_flags))
+   ) {
+      /* "Break" the grid (i.e. move to the next row/column). */
+      p_grid[GUI_H] = p_grid[GUI_Y];
+      p_grid[GUI_W] += c->coords[GUI_W] + WINDOW_PADDING_INSIDE;
+      p_grid[GUI_Y] = WINDOW_PADDING_OUTSIDE;
+      auto_placed = 1;
+      /* As mentioned above, the grid can still be used in the next if: */
+   }
+
+   if(
+      (GUI_X == x_y &&
+         WINDOW_PLACEMENT_GRID_X ==
+            (WINDOW_PLACEMENT_GRID_X & c->placement_flags)) ||
+      (GUI_Y == x_y &&
+         WINDOW_PLACEMENT_GRID_Y ==
+            (WINDOW_PLACEMENT_GRID_Y & c->placement_flags))
+   ) {
+      /* Place in the next row/column according to the grid. */
+      debug_printf( 0, " window %u adding control using grid at: %d",
          c->id, p_grid[x_y + 2] );
-#endif /* WINDOW_TRACE */
       c->coords[x_y] = p_grid[x_y + 2];
-      break;
+      auto_placed = 1;
+   }
 
-   default:
+   if( !auto_placed ) {
+      /* Just manually set the coordinate. */
       c->coords[x_y] = coord;
-      break;
    }
 }
 
@@ -125,7 +156,12 @@ static int16_t window_sizing(
    assert( NULL != c );
 
    /* Width and Height */
-   if( WINDOW_FLAG_AUTO_SZ != (WINDOW_FLAG_AUTO_SZ & c->flags) ) {
+   if(
+      (GUI_W == w_h &&
+         (WINDOW_SIZE_AUTO_W != (WINDOW_SIZE_AUTO_W & c->placement_flags))) ||
+      (GUI_H == w_h &&
+         (WINDOW_SIZE_AUTO_H != (WINDOW_SIZE_AUTO_H & c->placement_flags)))
+   ) {
       c->coords[w_h] = dimension;
       debug_printf( 1, "window %u manual size %d: %d",
          c->id, w_h, dimension );
@@ -171,7 +207,12 @@ static void window_parent_sizing(
       return;
    }
 
-   if( WINDOW_FLAG_AUTO_SZ != (WINDOW_FLAG_AUTO_SZ & p->flags) ) {
+   if(
+      (GUI_W == w_h &&
+         (WINDOW_SIZE_AUTO_W != (WINDOW_SIZE_AUTO_W & p->placement_flags))) ||
+      (GUI_H == w_h &&
+         (WINDOW_SIZE_AUTO_H != (WINDOW_SIZE_AUTO_H & p->placement_flags)))
+   ) {
       /* Parent is not auto-sized. */
       return;
    }
@@ -670,7 +711,8 @@ cleanup:
 int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
    int16_t x, int16_t y, int16_t w, int16_t h,
-   GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
+   GRAPHICS_COLOR fg, GRAPHICS_COLOR bg,
+   uint8_t render_flags, uint8_t placement_flags,
    int32_t data_scalar, const char* data_string
 ) {
    int16_t retval = 0,
@@ -748,6 +790,7 @@ int16_t window_push(
 
    window_new->flags = flags | WINDOW_FLAG_DIRTY | WINDOW_FLAG_ACTIVE;
    window_new->render_flags = render_flags;
+   window_new->placement_flags = placement_flags;
    window_new->type = type;
    window_new->id = id;
    window_new->fg = fg;

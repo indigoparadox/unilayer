@@ -5,11 +5,15 @@
 
 uint8_t input_init() {
    nodelay( stdscr, TRUE );
+   noecho();
+   keypad( stdscr, TRUE );
+   mousemask( BUTTON1_CLICKED, NULL );
    return 1;
 }
 
 uint8_t input_poll( int16_t* x, int16_t* y ) {
    int in_char = 0;
+   MEVENT event;
 
    in_char = getch();
 
@@ -26,6 +30,13 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       return INPUT_KEY_OK;
    case 'q':
       return INPUT_KEY_QUIT;
+   case KEY_MOUSE:
+      if( OK == getmouse( &event ) ) {
+         debug_printf( 3, "click" );
+         *x = event.x;
+         *y = event.y;
+      }
+      return INPUT_CLICK;
    }
 
    return 0;

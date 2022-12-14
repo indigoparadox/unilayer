@@ -147,7 +147,6 @@ int16_t graphics_cache_blit_at(
 }
 
 int16_t graphics_curses_char_at( unsigned char c, uint16_t x, uint16_t y ) {
-   debug_printf( 3, "blit %c at %d, %d", c, x, y );
    mvaddch( y, x, c );
    return 1;
 }

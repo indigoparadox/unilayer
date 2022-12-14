@@ -16,11 +16,29 @@
 
 #define GRAPHICS_ERROR_NOT_FOUND -1
 
+/**
+ * \addtogroup unilayer_graphics_string_flags Unilayer Graphics String Flags
+ * \brief Flags for modifying string display options.
+ *
+ * These flags may be passed to graphics_string_at() or graphics_char_at() to
+ * modify how the string or characters are displayed on-screen.
+ *
+ * \{
+ */
+
 /*! \brief Draw string at 1x scale. */
 #define GRAPHICS_STRING_FLAG_1X 0x01
+
+/*! \brief Display the string on-screen as ALL CAPITAL LETTERS. */
 #define GRAPHICS_STRING_FLAG_ALL_CAPS 0x10
+
+/*! \brief Use a script-style (cursive-style) font to display the string. */
 #define GRAPHICS_STRING_FLAG_FONT_SCRIPT  0x20
+
+/*! \brief Draw a black outline around each character in the string. */
 #define GRAPHICS_STRING_FLAG_OUTLINE      0x80
+
+/*! \} */
 
 #ifndef GRAPHICS_TXP_R
 /*! \brief Red value for transparency color in VGA DEPTH. */
@@ -107,6 +125,7 @@ void graphics_shutdown();
 void graphics_flip();
 
 /**
+ * \brief Get the number of ticks since the program started.
  * \return A constantly increasing number of ticks since program start.
  */
 uint32_t graphics_get_ms();
@@ -131,7 +150,7 @@ void graphics_loop_end();
  * \brief Plot a discrete point on screen.
  * \param x Horizontal coordinate of point to plot.
  * \param y Vertical coordinate of point to plot.
- * \param color The color of the point to plot.
+ * \param color \ref unilayer_graphics_colors of the point to plot.
  *
  * On some platforms, namely those using USE_SOFTWARE_TEXT and
  * USE_SOFTWARE_LINES, this is the only primitive that must be defined
@@ -146,7 +165,7 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color );
  * \param y_orig Vertical coordinate of top side in pixels.
  * \param w Width of rectangle in pixels.
  * \param h Height of rectangle in pixels.
- * \param color The color of the rectangle to draw.
+ * \param color \ref unilayer_graphics_colors of the rectangle to draw.
  *
  * This uses the platform's native methods to draw a line if available, or
  * a general software emulation that relies on graphics_draw_px() if not.
@@ -162,7 +181,8 @@ void graphics_draw_block(
  * \param w Width of rectangle in pixels.
  * \param h Height of rectangle in pixels.
  * \param thickness Thickness of the rectangle border in pixels.
- * \param color The color of the borders of the rectangle to draw.
+ * \param color \ref unilayer_graphics_colors of the borders of the rectangle
+ *              to draw.
  *
  * This uses the platform's native methods to draw a line if available, or
  * a general software emulation that relies on graphics_draw_px() if not.
@@ -178,7 +198,8 @@ void graphics_draw_rect(
  * \param x2 Horizontal coordinate of the ending point in pixels.
  * \param y2 Vertical coordinate of the ending point in pixels.
  * \param thickness Thickness of the line in pixels.
- * \param color The color of the borders of the rectangle to draw.
+ * \param color \ref unilayer_graphics_colors of the borders of the line
+ *              to draw.
  * 
  * This uses the platform's native methods to draw a line if available, or
  * a general software emulation that relies on graphics_draw_px() if not.
@@ -192,8 +213,9 @@ void graphics_draw_line(
  * \param c Text character to draw.
  * \param x_orig X coordinate to draw at, in pixels.
  * \param y_orig Y coordinate to draw at, in pixels.
- * \param color Color in which to draw the character.
- * \param flags String options.
+ * \param color \ref unilayer_graphics_colors in which to draw the character.
+ * \param flags \ref unilayer_graphics_string_flags to modify how the string is
+ *              displayed.
  */
 void graphics_char_at(
    char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
@@ -205,8 +227,9 @@ void graphics_char_at(
  * \param str_sz Maximum length of the string in characters.
  * \param x_orig Left origin of the string drawn in pixels.
  * \param y_orig Top origin of the string drawn in pixels.
- * \param color Color in which to draw the string.
- * \param flags String options.
+ * \param color \ref unilayer_graphics_colors in which to draw the string.
+ * \param flags \ref unilayer_graphics_string_flags to modify how the string is
+ *              displayed.
  */
 void graphics_string_at(
    const char* str, uint16_t str_sz, uint16_t x_orig, uint16_t y_orig,

@@ -2,6 +2,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+/**
+ * \file config.h
+ * \brief Overridable defines to modify Unilayer behavior.
+ */
+
 /* Do platform tests first, so they can force options below if they need to. */
 
 #ifdef PLATFORM_WEB
@@ -69,7 +74,12 @@
 #endif /* PLATFORM_DOS, PLATFORM_SDL, PLATFORM_PALM, PLATFORM_WIN16 */
 /* ------ */
 
+/**
+ * \addtogroup unilayer_gui Unilayer Graphical User Interface
+ */
+
 #ifndef WINDOWS_MAX
+/*! \brief Maximum number of windows that can be on-screen at one time. */
 #define WINDOWS_MAX 100
 #endif /* !WINDOWS_MAX */
 
@@ -98,6 +108,8 @@
 #ifndef WINDOW_PATTERN_H
 #define WINDOW_PATTERN_H 16
 #endif /* !WINDOW_PATTERN_H */
+
+/*! \} */
 
 #ifndef UNILAYER_WINDOW_CLASS
 #define UNILAYER_WINDOW_CLASS UNILAYER_PROJECT_NAME

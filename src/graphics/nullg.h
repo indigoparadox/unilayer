@@ -52,6 +52,16 @@ struct GRAPHICS_BITMAP {
 struct GRAPHICS_ARGS {
 };
 
+/**
+ * \addtogroup unilayer_graphics_colors Unilayer Graphics Colors
+ * \brief Platform-defined colors in which to draw graphical elements.
+ *
+ * This is an abstraction to handle how different platforms define colors.
+ * These colors may appear slightly different on each platform.
+ *
+ * \{
+ */
+
 /*! \brief GRAPHICS_COLOR value for black on the current platform. */
 #define GRAPHICS_COLOR_BLACK     0
 /*! \brief GRAPHICS_COLOR value for cyan on the current platform. */
@@ -60,6 +70,8 @@ struct GRAPHICS_ARGS {
 #define GRAPHICS_COLOR_MAGENTA   2
 /*! \brief GRAPHICS_COLOR value for white on the current platform. */
 #define GRAPHICS_COLOR_WHITE     3
+
+/*! \} */ /* unilayer_graphics_colors */
 
 /*! \} */
 

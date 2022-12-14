@@ -4,9 +4,19 @@
 
 /**
  * \addtogroup unilayer_gui Unilayer Graphical User Interface
- * \brief In-engine interface for windows and controls.
+ * \brief In-engine interface for windows.
  *
+ * Windows are nested graphical controls that can be used to create an
+ * interactive interface. There are various \ref unilayer_gui_windows_types
+ * which can be used together to construct dialog boxes and menus.
+ *
+ * \warning This API is still heavily in development and is subject to change
+ *          without notice!
  * \{
+ */
+
+/*! \file window.h
+ *  \brief Tools for drawing and interacting with graphical windows on-screen.
  */
 
 /*! \brief A piece of data attached to CONTROL::data. */
@@ -45,28 +55,38 @@ struct WINDOW_FRAME {
 struct WINDOW {
    /*! \brief Unique identifier used to find this window in the global stack. */
    uint16_t id;
+   /*! \brief Unique identifier of the parent window of this window. */
    uint16_t parent_id;
-   /*! \brief Type of control defined by a constant. */
+   /*! \brief Type of window defined by a constant. */
    uint8_t type;
-   /*! \brief Current drawing status of this window. */
+   /*! \brief \ref unilayer_gui_windows_flags modifying window behavior. */
    uint8_t flags;
-   /* TODO: Work into flags. */
+   /**
+    * \brief Flags passed directly to rendering function, depending on
+    *        \ref unilayer_gui_windows_types.
+    */
    uint8_t render_flags;
    /**
-    * \brief Window coordinates and dimensions indexed as ::GUI_X, ::GUI_Y,
-    *        ::GUI_W, ::GUI_H.
+    * \brief Foreground \ref unilayer_graphics_colors with which to draw this
+    *        window's text.
     */
    GRAPHICS_COLOR fg;
+   /**
+    * \brief Background \ref unilayer_graphics_colors with which to draw this
+    *        window.
+    */
    GRAPHICS_COLOR bg;
+   /**
+    * \brief Pixel coordinates for this window on-screen; a tuple indexed as
+    *        ::GUI_X, ::GUI_Y, ::GUI_W, ::GUI_H.
+    *
+    *        Please see \ref unilayer_gui_windows_placement for more
+    *        information on window placement and sizing.
+    */
    uint16_t coords[4];
+   /*! \brief Data specific to each \ref unilayer_gui_windows_types. */
    union CONTROL_DATA data;
 };
-
-/*! \} */
-
-/*! \file window.h
- *  \brief Tools for drawing and interacting with graphical windows on-screen.
- */
 
 /**
  * \brief Specifies X coordinate in WINDOW::coords.
@@ -85,9 +105,6 @@ struct WINDOW {
  */
 #define GUI_H 3
 
-/*! \brief Maximum number of windows that can be onscreen at one time. */
-#define WINDOW_COUNT_MAX 10
-
 /**
  * \brief Size of internal text buffer used to represent
  *        ::WINDOW_FLAG_TEXT_NUM.
@@ -95,17 +112,17 @@ struct WINDOW {
 #define WINDOW_NUM_BUFFER_SZ       10
 
 /**
- * \addtogroup unilayer_gui_controls_flags GUI Control Flags
+ * \addtogroup unilayer_gui_windows_flags GUI Window Flags
  * \brief Options specifying how a ::WINDOW behaves.
  *
- * The lower 4 bits are general to all controls while the upper 4 bits are
- * specific to each ::WINDOW:type.
+ * The lower 4 bits are general to all \ref unilayer_gui_windows_types while
+ * the upper 4 bits are specific to each ::WINDOW:type.
  *
  * \{
  */
 
 /**
- * \brief WINDOW::flags indicating control is visible and interactive.
+ * \brief WINDOW::flags indicating window is visible and interactive.
  */
 #define WINDOW_FLAG_ACTIVE       0x01
 #define WINDOW_FLAG_DIRTY  0x04
@@ -114,7 +131,7 @@ struct WINDOW {
  */
 #define WINDOW_FLAG_MODAL  0x08
 /**
- * \brief WINDOW::flags indicating control option has been selected.
+ * \brief WINDOW::flags indicating window option has been selected.
  */
 #define WINDOW_FLAG_CHECKED       0x10
 
@@ -136,12 +153,12 @@ struct WINDOW {
 
 #define WINDOW_FLAG_SPRITE_BORDER_SINGLE  0x40
 
-/*! \} */
+/*! \} */ /* unilayer_gui_windows_flags */
 
 #define WINDOW_STRING_SZ_MAX 100
 
 /**
- * \addtogroup unilayer_gui_controls_placement GUI Control Placement
+ * \addtogroup unilayer_gui_windows_placement GUI Window Placement
  * \brief Options for specifying ::WINDOW placement in a ::WINDOW.
  *
  * \{
@@ -153,41 +170,65 @@ struct WINDOW {
 #define WINDOW_PLACEMENT_CENTER           0x8000
 
 /**
- * \brief Alight the control's right side (if specified as X) or bottom side
+ * \brief Alight the window's right side (if specified as X) or bottom side
  *        (if specified as Y) to the window's respective side. */
 #define WINDOW_PLACEMENT_RIGHT_BOTTOM     0x2000
 
 /**
- * \brief Place the control at the grid X or Y as relevant, and set the grid
- *        width or height respectively at the control's width or height.
+ * \brief Place the window at the grid X or Y as relevant, and set the grid
+ *        width or height respectively at the window's width or height.
  */
 #define WINDOW_PLACEMENT_GRID_RIGHT_DOWN  0xc000
 
 /**
- * \brief Place the control at the grid X or Y without modifying the grid.
+ * \brief Place the window at the grid X or Y without modifying the grid.
  */
 #define WINDOW_PLACEMENT_GRID             0x4000
 
+/**
+ * \brief Bitmask for WINDOW::coords fields ::GUI_X and ::GUI_Y that specifies
+ *        automatic placement flags.
+ */
 #define WINDOW_PLACEMENT_AUTO_MASK        0xe000
 
 /**
- * \brief Inverse of ::WINDOW_PLACEMENT_AUTO_MASK.
+ * \brief Bitmask for WINDOW::coords fields ::GUI_X and ::GUI_Y that specifies
+ *        physical placement coordinate number.
+ *        Inverse of ::WINDOW_SIZE_AUTO_MASK.
  */
 #define WINDOW_PLACEMENT_PHYS_MASK        0x1fff
 
 #define WINDOW_SIZE_AUTO                  0x8000
 
+/**
+ * \brief Bitmask for WINDOW::coords fields ::GUI_W and ::GUI_H that specifies
+ *        automatic sizing flags.
+ */
 #define WINDOW_SIZE_AUTO_MASK             (WINDOW_PLACEMENT_AUTO_MASK)
 
+/**
+ * \brief Bitmask for WINDOW::coords fields ::GUI_W and ::GUI_H that specifies
+ *        physical sizing coordinate number.
+ *        Inverse of ::WINDOW_SIZE_AUTO_MASK.
+ */
 #define WINDOW_SIZE_PHYS_MASK             (WINDOW_PLACEMENT_PHYS_MASK)
-
-/*! \} */
 
 #define window_screen_reset_grid() memory_zero_ptr( g_window_screen_grid, 4 * sizeof( int16_t ) );
 
+/**
+ * \brief Set the physical coordinates of a window without corrupting attached
+ *        flags.
+ * \param window Locked ::MEMORY_PTR to the window to modify.
+ */
 #define window_update_coords( window, x_y_w_h, coord ) (window)->coords[x_y_w_h] = ((window)->coords[x_y_w_h] & WINDOW_PLACEMENT_AUTO_MASK) | (WINDOW_PLACEMENT_PHYS_MASK & (coord));
 
+/**
+ * \brief Get the physical coordinates of a window without flags attached.
+ * \param window Locked ::MEMORY_PTR to the window to reference.
+ */
 #define window_get_coords( window, x_y_w_h ) (((window)->coords[x_y_w_h] & WINDOW_PLACEMENT_PHYS_MASK))
+
+/*! \} */ /* unilayer_gui_windows_placement */
 
 #ifdef WINDOW_TRACE
 #  define window_trace_printf( lvl, ... ) debug_printf( lvl, __VA_ARGS__ )
@@ -270,7 +311,48 @@ int16_t window_modal();
 
 #define window_modal() (g_window_modals)
 
-#define WINDOW_CB_TABLE( f ) f( 0, LABEL ) f( 1, BUTTON ) f( 2, CHECK ) f( 3, SPRITE ) f( 4, WINDOW )
+/**
+ * \addtogroup unilayer_gui_windows_types GUI Window Types
+ * \brief Window interaction modes.
+ * \{
+ */
+
+/**
+ * \brief \b WINDOW_TYPE_WINDOW: A parent container to group subordinate
+ *        windows with a graphical background.
+ *
+ * WINDOW::render_flags: The index of the ::WINDOW_FRAME to use.
+ */
+#define WINDOW_CB_TABLE_4( f ) f( 4, WINDOW )
+
+/**
+ * \brief \b WINDOW_TYPE_SPRITE: A sprite from a ::GRAPHICS_BITMAP spritesheet.
+ */
+#define WINDOW_CB_TABLE_3( f ) f( 3, SPRITE ) WINDOW_CB_TABLE_4( f )
+
+/**
+ * \brief \b WINDOW_TYPE_CHECK: A toggleable checkbox.
+ *
+ * \warning Not yet implemented!
+ */
+#define WINDOW_CB_TABLE_2( f ) f( 2, CHECK ) WINDOW_CB_TABLE_3( f  )
+
+/**
+ * \brief \b WINDOW_TYPE_BUTTON: A clickable button.
+ *
+ * \warning Not yet implemented!
+ */
+#define WINDOW_CB_TABLE_1( f ) f( 1, BUTTON ) WINDOW_CB_TABLE_2( f )
+
+/**
+ * \brief \b WINDOW_TYPE_LABEL: A static text label.
+ *
+ * WINDOW::render_flags : These are \ref unilayer_graphics_string_flags passed
+ * directly to graphics_string_at().
+ */
+#define WINDOW_CB_TABLE( f ) f( 0, LABEL ) WINDOW_CB_TABLE_1( f )
+
+/*! \} */ /* unilayer_gui_windows_types */
 
 typedef int16_t (*WINDOW_CB_DRAW)( uint16_t w_id, struct WINDOW* windows );
 

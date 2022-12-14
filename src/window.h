@@ -170,17 +170,36 @@ struct WINDOW {
 
 #define WINDOW_PLACEMENT_AUTO_MASK        0xe000
 
+/**
+ * \brief Inverse of ::WINDOW_PLACEMENT_AUTO_MASK.
+ */
 #define WINDOW_PLACEMENT_PHYS_MASK        0x1fff
 
 #define WINDOW_SIZE_AUTO                  0x8000
 
-#define WINDOW_SIZE_AUTO_MASK             0xe000
+#define WINDOW_SIZE_AUTO_MASK             (WINDOW_PLACEMENT_AUTO_MASK)
 
-#define WINDOW_SIZE_PHYS_MASK             0x1fff
+#define WINDOW_SIZE_PHYS_MASK             (WINDOW_PLACEMENT_PHYS_MASK)
 
 /*! \} */
 
 #define window_screen_reset_grid() memory_zero_ptr( g_window_screen_grid, 4 * sizeof( int16_t ) );
+
+#define window_update_coords( window, x_y_w_h, coord ) (window)->coords[x_y_w_h] = (c->coords[x_y_w_h] & WINDOW_PLACEMENT_AUTO_MASK) | (WINDOW_PLACEMENT_PHYS_MASK & (coord));
+
+#define window_get_coords( window, x_y_w_h ) (((window)->coords[x_y_w_h] & WINDOW_PLACEMENT_PHYS_MASK))
+
+#ifdef WINDOW_TRACE
+#  define window_trace_printf( lvl, ... ) debug_printf( lvl, __VA_ARGS__ )
+#else
+/**
+ * \brief Alias for debug_printf() enabled when WINDOW_TRACE is defined.
+ *
+ * This was made its own alias since the GUI can get rather chatty when it's
+ * enabled!
+ */
+#  define window_trace_printf( ... )
+#endif /* WINDOW_TRACE */
 
 #ifdef DEPTH_VGA
 #  define WINDOW_PREFAB_DEFAULT_FG() GRAPHICS_COLOR_WHITE
@@ -259,9 +278,7 @@ typedef int16_t (*WINDOW_CB_DRAW)( uint16_t w_id, struct WINDOW* windows );
  * \return 1 if successful and 0 otherwise.
  */
 typedef uint8_t (*WINDOW_CB_SZ)(
-   uint16_t w_id, struct WINDOW* windows, int16_t r[2] );
-
-
+   uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out );
 
 #ifdef WINDOW_C
 
@@ -282,7 +299,7 @@ static int16_t g_window_screen_grid[4] = {
 
 WINDOW_CB_TABLE( WINDOW_CB_DRAW_TABLE_PROTOTYPES );
 
-#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, int16_t r[2] );
+#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out );
 
 WINDOW_CB_TABLE( WINDOW_CB_SZ_TABLE_PROTOTYPES );
 

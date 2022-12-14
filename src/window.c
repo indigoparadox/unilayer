@@ -28,27 +28,46 @@ static struct WINDOW* window_get( uint16_t id, struct WINDOW* windows ) {
 }
 
 static void window_placement(
-   struct WINDOW* c, struct WINDOW* p, int16_t coord, uint8_t x_y
+   int16_t w_id, int16_t coord, uint8_t x_y, struct WINDOW* windows
 ) {
    int16_t* p_grid = NULL;
-   const uint16_t* p_coords;
+   uint16_t parent_coords[4];
+   struct WINDOW* p = NULL,
+      * c = NULL;
 
    assert( 2 > x_y );
+
+   c = window_get( w_id, windows );
+
+   /* This is only called internally so it should NEVER have a null c! */
+   assert( NULL != c );
+
+   if( 0 < c->parent_id ) {
+      p = window_get( c->parent_id, windows );
+
+      /* Parent ID should be validated on push! */
+      assert( NULL != p );
+   }
 
    if( NULL == p ) {
       /* Position relative to screen. */
 #ifdef WINDOW_TRACE
       debug_printf( 1, "window %u rel screen", c->id );
 #endif /* WINDOW_TRACE */
-      p_coords = g_window_screen_coords;
+      parent_coords[0] = g_window_screen_coords[0];
+      parent_coords[1] = g_window_screen_coords[1];
+      parent_coords[2] = g_window_screen_coords[2];
+      parent_coords[3] = g_window_screen_coords[3];
       p_grid = g_window_screen_grid;
    } else {
       /* Position relative to parent. */
 #ifdef WINDOW_TRACE
       debug_printf( 1, "window %u rel window %d", c->id, c->parent_id );
 #endif /* WINDOW_TRACE */
-      p_coords = g_window_screen_coords;
-      p_coords = p->coords;
+      parent_coords[0] = window_get_coords( p, 0 );
+      parent_coords[1] = window_get_coords( p, 1 );
+      parent_coords[2] = window_get_coords( p, 2 );
+      parent_coords[3] = window_get_coords( p, 3 );
       p_grid = p->data.grid;
    }
 
@@ -61,35 +80,36 @@ static void window_placement(
    switch( (coord & WINDOW_PLACEMENT_AUTO_MASK) ){
    case WINDOW_PLACEMENT_CENTER:
       /* Window width / 2 - Control width / 2 */
-      assert( p_coords[x_y + 2] > 0 );
-      c->coords[x_y] = (p_coords[x_y + 2] / 2) - (c->coords[x_y + 2] / 2);
+      assert( parent_coords[x_y + 2] > 0 );
+      window_update_coords( c, x_y, 
+         (parent_coords[x_y + 2] / 2) - (window_get_coords( c, x_y + 2 ) / 2) );
 #ifdef WINDOW_TRACE
       debug_printf( 1, "window %u center coord %d (%d / 2) - (%d / 2): %d",
-         c->id, x_y, p_coords[x_y + 2], c->coords[x_y + 2], c->coords[x_y] );
+         c->id, x_y, parent_coords[x_y + 2], c->coords[x_y + 2], c->coords[x_y] );
 #endif /* WINDOW_TRACE */
       break;
 
    case WINDOW_PLACEMENT_RIGHT_BOTTOM:
-      c->coords[x_y] =
+      window_update_coords( c, x_y, 
          /* Window width - Padding - Control width */
-         p_coords[x_y + 2] - WINDOW_PADDING_OUTSIDE - c->coords[x_y + 2];
+         parent_coords[x_y + 2] - WINDOW_PADDING_OUTSIDE - 
+               window_get_coords( c, x_y + 2 ) );
       break;
 
    case WINDOW_PLACEMENT_GRID_RIGHT_DOWN:
       p_grid[x_y + 2] = p_grid[x_y];
-      p_grid[x_y] += c->coords[x_y + 2] + WINDOW_PADDING_INSIDE;
-      /* No break. */
+      p_grid[x_y] += (c->coords[x_y + 2] & WINDOW_PLACEMENT_PHYS_MASK) +
+         WINDOW_PADDING_INSIDE;
+      /* No break; proceed to place according to modified grid. */
 
    case WINDOW_PLACEMENT_GRID:
-#ifdef WINDOW_TRACE
-      debug_printf( 1, " window %u adding control using grid at: %d",
+      window_trace_printf( 1, " window %u adding control using grid at: %d",
          c->id, p_grid[x_y + 2] );
-#endif /* WINDOW_TRACE */
-      c->coords[x_y] = p_grid[x_y + 2];
+      window_update_coords( c, x_y, p_grid[x_y + 2] );
       break;
 
    default:
-      c->coords[x_y] = coord;
+      window_update_coords( c, x_y, coord );
       break;
    }
 }
@@ -98,7 +118,7 @@ static int16_t window_sizing(
    int16_t w_id, int16_t dimension, uint8_t w_h,
    struct WINDOW* windows
 ) {
-   int16_t win_sz[2];
+   uint16_t win_sz; /* What the callback will write to. */
    int16_t retval = 0;
    struct WINDOW* c = NULL;
 
@@ -112,6 +132,11 @@ static int16_t window_sizing(
    c = window_get( w_id, windows );
    assert( NULL != c );
 
+   /* Set the output variable to the FULL input, without window_get_coords(),
+    * in case callback needs flags!
+    */
+   win_sz = dimension;
+
    /* Width and Height */
    if( WINDOW_SIZE_AUTO != dimension && 0 < dimension ) {
       c->coords[w_h] = dimension;
@@ -122,14 +147,15 @@ static int16_t window_sizing(
       retval = dimension;
 
    } else if(
-      gc_window_sz_callbacks[c->type]( w_id, windows, win_sz )
+      gc_window_sz_callbacks[c->type]( w_id, windows, w_h, &win_sz )
    ) {
-      c->coords[w_h] = win_sz[w_h - 2];
+      /* Set without window_update_coords(), to preserve flags! */
+      c->coords[w_h] = win_sz;
 #ifdef WINDOW_TRACE
       debug_printf( 1, "window %u auto-size %d: %d",
          c->id, w_h, win_sz[w_h - 2] );
 #endif /* WINDOW_TRACE */
-      retval = win_sz[w_h - 2];
+      retval = win_sz;
 
    } else {
       error_printf( "unable to automatically size window" );
@@ -139,6 +165,63 @@ static int16_t window_sizing(
    /* TODO: Make sure window doesn't exceed parent size. */
 
    return retval;
+}
+
+static void window_parent_sizing(
+   int16_t w_id, uint8_t w_h, struct WINDOW* windows
+) {
+   struct WINDOW* c = NULL,
+      * p = NULL;
+   int16_t sz_mod = 0;
+   uint8_t c_extreme_x_y = 0;
+
+   c = window_get( w_id, windows );
+
+   /* TODO: Break this out into a separate function to run after all children a
+e sized and placed! */
+   debug_printf( 1, "windows %u parent is %u", c->id, c->parent_id );
+   if( 0 < c->parent_id ) {
+      p = window_get( c->parent_id, windows );
+   }
+
+   if( NULL == p ) {
+      /* No valid parent. */
+      return;
+   }
+
+   if(
+      WINDOW_PLACEMENT_CENTER != (p->coords[w_h] & WINDOW_PLACEMENT_AUTO_MASK)
+   ) {
+      /* Parent is not auto-sized. */
+      debug_printf( 2, "not autosized (%d)!",
+         p->coords[w_h] );
+      return;
+   }
+
+   c_extreme_x_y = 
+      window_get_coords( c, w_h ) + window_get_coords( c, w_h - 2 );
+   if(
+      /* Parent's e.g. x + w */
+      window_get_coords( p, w_h ) >
+      /* Child's e.g. x + w */
+      c_extreme_x_y
+   ) {
+      debug_printf( 1, "parent %u sz(%d) %d larger than %d",
+         p->id, w_h,
+         c_extreme_x_y, window_get_coords( p, w_h ) );
+      return;
+   }
+
+   window_update_coords( p, w_h, c_extreme_x_y );
+   /* TODO: Determine whether to use WINDOW_PATTERN_W or _H! */
+   sz_mod = window_get_coords( p, w_h ) % WINDOW_PATTERN_W;
+   debug_printf( 2,
+      "bumping auto window %d sz(%d) %d up by %d to match pattern",
+      p->id, w_h, window_get_coords( p, w_h ), (WINDOW_PATTERN_H - sz_mod) );
+   window_update_coords( p, w_h,
+      window_get_coords( p, w_h ) + (WINDOW_PATTERN_H - sz_mod) );
+   debug_printf( 2, "auto window %d sz(%d) now %d",
+      p->id, w_h, window_get_coords( p, w_h ) );
 }
 
 static void window_draw_text(
@@ -228,7 +311,9 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
             /* Bottom Left */
             bg_idx = frames[c->render_flags].bl;
          
-         } else if( x_max - WINDOW_PATTERN_W == x && y_max - WINDOW_PATTERN_H == y ) {
+         } else if(
+            x_max - WINDOW_PATTERN_W == x && y_max - WINDOW_PATTERN_H == y
+         ) {
             /* Bottom Right */
             bg_idx = frames[c->render_flags].br;
          
@@ -414,28 +499,32 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 /* === Sizing Callbacks === */
 
 uint8_t window_sz_WINDOW(
-   uint16_t w_id, struct WINDOW* windows, int16_t r[2]
+   uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out
 ) {
+   struct WINDOW* w = NULL;
    /* TODO */
+   w = window_get( w_id, windows );
+   debug_printf( 2, "setting window sz(%d) to %d", w_h, *out );
+   w->coords[w_h] = *out;
    return 0;
 }
 
 uint8_t window_sz_BUTTON(
-   uint16_t w_id, struct WINDOW* windows, int16_t r[2]
+   uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out
 ) {
    /* TODO */
    return 0;
 }
 
 uint8_t window_sz_CHECK(
-   uint16_t w_id, struct WINDOW* windows, int16_t r[2]
+   uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out
 ) {
    /* TODO */
    return 0;
 }
 
 uint8_t window_sz_LABEL(
-   uint16_t w_id, struct WINDOW* windows, int16_t r[2]
+   uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out
 ) {
    int16_t str_sz = 0;
    struct GRAPHICS_RECT sz;
@@ -448,18 +537,20 @@ uint8_t window_sz_LABEL(
    str_sz = window_get_text( c, str_ptr, WINDOW_STRING_SZ_MAX );
    graphics_string_sz( str_ptr, str_sz, 0, &sz );
 
-   r[0] = sz.w;
-   r[1] = sz.h;
+   if( GUI_W == w_h ) {
+      *out = sz.w;
+   } else {
+      *out = sz.h;
+   }
 
    return 1;
 }
 
 uint8_t window_sz_SPRITE(
-   uint16_t w_id, struct WINDOW* windows, int16_t r[2]
+   uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out
 ) {
    /* TODO: Verify sprite exists. */
-   r[0] = WINDOW_SPRITE_W + 4; /* For border. */
-   r[1] = WINDOW_SPRITE_H + 4; /* For border. */
+   *out = WINDOW_SPRITE_W + 4; /* For border. */
    return 1;
 }
 
@@ -581,8 +672,12 @@ int16_t window_draw_all() {
          continue;
       }
 
-      assert( 0 == windows[i].coords[GUI_W] % WINDOW_PATTERN_W );
-      assert( 0 == windows[i].coords[GUI_H] % WINDOW_PATTERN_H );
+      debug_printf( 3, "win w: %d",
+         windows[i].coords[GUI_W] );
+      assert( 0 ==
+         window_get_coords( &(windows[i]), GUI_W ) % WINDOW_PATTERN_W );
+      assert( 0 == 
+         window_get_coords( &(windows[i]), GUI_H ) % WINDOW_PATTERN_H );
 
       assert( NULL != windows );
       blit_retval = gc_window_draw_callbacks[windows[i].type](
@@ -692,8 +787,10 @@ int16_t window_push(
    /* X/Y sizing and placement. Sizing comes first, used for centering. */
    window_sizing( id, w, GUI_W, windows );
    window_sizing( id, h, GUI_H, windows );
-   window_placement( window_new, parent, x, GUI_X );
-   window_placement( window_new, parent, y, GUI_Y );
+   window_placement( id, x, GUI_X, windows );
+   window_placement( id, y, GUI_Y, windows );
+   window_parent_sizing( id, GUI_W, windows );
+   window_parent_sizing( id, GUI_H, windows );
 
    /* Increment modal counter if MODAL flag specified. */
    if( WINDOW_FLAG_MODAL == (WINDOW_FLAG_MODAL & window_new->flags) ) {

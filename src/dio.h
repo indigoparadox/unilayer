@@ -82,6 +82,41 @@ struct DIO_STREAM {
 };
 
 /**
+ * \addtogroup unilayer_dio_list Unilayer Static Lists
+ * \{
+ */
+
+#define LIST_ERROR_MAX -100
+
+/**
+ * \brief Append a copy of the given node to the end of a static list.
+ * \param node Locked ::MEMORY_PTR to a node to copy to the end of the list.
+ * \param list Locked ::MEMORY_PTR to the list to manipulate.
+ * \param list_sz Number of active items in the list.
+ * \param list_max Maximum number of active items the list can hold.
+ * \param list_type Type of items in the list.
+ */
+#define dio_list_append( node, list, list_sz, list_max, list_type ) \
+   if( (list_sz) + 1 >= (list_max) ) { \
+      g_dio_error = LIST_ERROR_MAX; \
+   } else { \
+      memory_copy_ptr( &(list[list_sz]), node, sizeof( list_type ) ); \
+      (list_sz)++; \
+   }
+
+/**
+ * \brief Remove an item from a static list and move the other items up, then
+ *        shrink the list.
+ * \param idx Index of the item to remove.
+ * \param list Locked ::MEMORY_PTR to the list to manipulate.
+ * \param list_sz Number of active items in the list.
+ * \param list_type Type of items in the list.
+ */
+#define dio_list_remove( idx, list, list_sz, list_type ) assert( (idx) < (list_sz) ); while( (idx) + 1 < (list_sz) ) { memory_copy_ptr( &(list[idx]), &(list[idx + 1]), sizeof( list_type ) ); (idx)++; } (list_sz)--;
+
+/*! \} */ /* unilayer_dio_list */
+
+/**
  * \brief Open a stream as a file on disk.
  * \param path Path to the file on disk to open.
  * \param mode Standard FILE mode string (e.g. "r", "w", or "rb" for binary).
@@ -116,7 +151,14 @@ int16_t dio_itoa( char*, uint16_t, int16_t, uint8_t );
 int16_t dio_atoi( const char*, uint8_t );
 int16_t dio_snprintf( char*, uint16_t, const char*, ... );
 
-/*! \} */
+#ifdef DIO_C
+int8_t g_dio_error = 0;
+#else
+/*! \brief Holds return errors for macro-based utilities. */
+extern int8_t g_dio_error;
+#endif /* DIO_C */
+
+/*! \} */ /* unilayer_dio */
 
 #endif /* DIO_H */
 

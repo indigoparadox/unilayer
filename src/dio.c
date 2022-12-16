@@ -1,4 +1,5 @@
 
+#define DIO_C
 #include "unilayer.h"
 
 #include <stdarg.h>

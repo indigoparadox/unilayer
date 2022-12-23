@@ -6,6 +6,9 @@ This is a intended to be a rough abstraction layer designed for working with ret
 ## TODO
 
 - Organize and add make support for libraries? Or a more thorough build system?
+- Add VGA support for DOS.
+- Improve documentation.
+- Add native bitmap support at runtime.
 
 ## Adding a Platform
 

@@ -4,12 +4,21 @@
 
 /* TODO: VGA mode. */
 
-#define GRAPHICS_M_320_200_4_CGA  0x05
-#define GRAPHICS_M_320_200_256_V  0x13
+#if defined( DEPTH_VGA )
 
-#define GRAPHICS_M_320_200_256_VGA_A   0xA0000000L
-#define GRAPHICS_M_320_200_4_CGA_A     (char far*)0xB8000000L
-#define GRAPHICS_M_320_200_4_CGA_A_2   (char far*)0xB8002000L
+#  define GRAPHICS_VGA_MODE         0x13
+#  define GRAPHICS_VGA_ADDR         (uint8_t far*)0xA0000000L
+
+#elif defined( DEPTH_CGA )
+
+#define GRAPHICS_CGA_MODE           0x05
+#define GRAPHICS_CGA_ADDR_1         (uint8_t far*)0xB8000000L
+#define GRAPHICS_CGA_ADDR_2         (uint8_t far*)0xB8002000L
+
+/* The offset between the start of the even/odd CGA planes. */
+#define GRAPHICS_CGA_PLANE_OFFSET   0x2000
+
+#endif /* DEPTH_VGA || DEPTH_CGA */
 
 #ifndef GRAPHICS_MODE
 #define GRAPHICS_MODE      0x05
@@ -23,10 +32,10 @@
 #define CGA_COLD           0x01
 #endif /* CGA_COLD */
 
-#if GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
-#define GRAPHICS_ADDR     GRAPHICS_M_320_200_4_CGA_A
-#elif GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
-#define GRAPHICS_ADDR     GRAPHICS_M_320_200_256_VGA_A
+#if defined( DEPTH_VGA )
+#  define GRAPHICS_ADDR     GRAPHICS_VGA_ADDR
+#elif defined( DEPTH_CGA )
+#  define GRAPHICS_ADDR     GRAPHICS_CGA_ADDR_1
 #endif /* GRAPHICS_MODE */
 
 #ifndef DOS_TIMER_DIV
@@ -49,14 +58,31 @@
 #include "formats/cga.h"
 
 #ifdef USE_DOUBLEBUF
-static uint8_t huge g_buffer[76800]; /* Sized for 0x13. */
+#  if defined( DEPTH_VGA )
+#     define DOUBLEBUF_SZ 76800
+#  elif defined( DEPTH_CGA )
+#     define DOUBLEBUF_SZ 16000
+#  else
+#     error "double-buffer unsupported in this depth"
+#  endif /* DEPTH_VGA || DEPTH_CGA */
+
+static uint8_t g_buffer[DOUBLEBUF_SZ];
+
 #else
-static uint8_t far* g_buffer = (uint8_t far *)GRAPHICS_ADDR;
+
+/* Point directly to graphics memory. */
+static uint8_t far* g_buffer = GRAPHICS_ADDR;
+
 #endif /* USE_DOUBLEBUF */
 
+#ifdef DEPTH_CGA
+/* This is a solid 4 pixels of the color indexed by CGA order for use in
+ * filling.
+ */
 uint8_t g_cga_color_packed[] = {
    0x00, 0x55, 0xaa, 0xff
 };
+#endif /* DEPTH_CGA */
 
 typedef void (__interrupt __far* INTFUNCPTR)( void );
 INTFUNCPTR g_old_timer_interrupt;
@@ -141,16 +167,20 @@ int16_t graphics_platform_init() {
 
    memory_zero_ptr( &r, sizeof( union REGS ) );
 
+   /* Use the graphics mode defined above. */
 	r.h.ah = 0;
 	r.h.al = GRAPHICS_MODE;
 	int86( 0x10, &r, &r );
 
    memory_zero_ptr( &r, sizeof( union REGS ) );
 
+#ifdef DEPTH_CGA
+   /* Set the CGA palette. */
    r.h.ah = 0x0b;
    r.h.bh = 0x01;
    r.h.bl = CGA_COLD;
 	int86( 0x10, &r, &r );
+#endif /* DEPTH_CGA */
 
    graphics_install_timer();
 
@@ -166,6 +196,7 @@ void graphics_platform_shutdown() {
 
    memory_zero_ptr( &r, sizeof( union REGS ) );
 
+   /* Reset the display back to text mode. */
 	r.h.ah = 0;
 	r.h.al = TEXT_MODE;
 	int86( 0x10, &r, &r );
@@ -173,13 +204,7 @@ void graphics_platform_shutdown() {
 
 void graphics_flip() {
 #ifdef USE_DOUBLEBUF
-#if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
-      _fmemcpy( GRAPHICS_M_320_200_256_VGA_A,
-         g_buffer, SCREEN_W * SCREEN_H );
-#elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
-      /* memory_copy_ptr both planes. */
-      _fmemcpy( GRAPHICS_M_320_200_4_CGA_A, g_buffer, 16000 );
-#endif /* GRAPHICS_MODE */
+      _fmemcpy( GRAPHICS_ADDR, g_buffer, DOUBLEBUF_SZ );
 #endif /* USE_DOUBLEBUF */
 }
 
@@ -210,32 +235,38 @@ void graphics_draw_px( uint16_t x, uint16_t y, GRAPHICS_COLOR color ) {
       scaled_x = x,
       scaled_y = y;
 
-#if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
+#if defined( DEPTH_VGA )
+
+      /* Just write directly to the address. */
       screen_byte_offset = ((y * SCREEN_W) + x);
       g_buffer[screen_byte_offset] = color;
-#elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
-#ifdef USE_LOOKUPS
+
+#elif defined( DEPTH_CGA )
+
+#  ifdef USE_LOOKUPS
       /* Use pre-generated lookup tables for offsets to improve performance. */
       screen_byte_offset = gc_offsets_cga_bytes_p1[scaled_y][scaled_x];
       bit_offset = gc_offsets_cga_bits_p1[scaled_y][scaled_x];
-#else
+#  else
       /* Divide y by 2 since both planes are SCREEN_H / 2 high. */
       /* Divide result by 4 since it's 2 bits per pixel. */
       screen_byte_offset = (((scaled_y / 2) * SCREEN_W) + scaled_x) / 4;
       /* Shift the bits over by the remainder. */
       bit_offset = 
          6 - (((((scaled_y / 2) * SCREEN_W) + scaled_x) % 4) * 2);
-#endif /* USE_LOOKUPS */
+#  endif /* USE_LOOKUPS */
 
       /* Clear the existing pixel. */
       if( 1 == scaled_y % 2 ) {
-         g_buffer[0x2000 + screen_byte_offset] &= ~(0x03 << bit_offset);
-         g_buffer[0x2000 + screen_byte_offset] |= (color << bit_offset);
+         g_buffer[GRAPHICS_CGA_PLANE_OFFSET + screen_byte_offset] &= ~(0x03 << bit_offset);
+         g_buffer[GRAPHICS_CGA_PLANE_OFFSET + screen_byte_offset] |= (color << bit_offset);
       } else {
          g_buffer[screen_byte_offset] &= ~(0x03 << bit_offset);
          g_buffer[screen_byte_offset] |= (color << bit_offset);
       }
-#endif /* GRAPHICS_MODE */
+#else
+#  error "graphics mode unsupported"
+#endif /* DEPTH_VGA || DEPTH_CGA */
 }
 
 int16_t graphics_platform_blit_partial_at(
@@ -248,6 +279,12 @@ int16_t graphics_platform_blit_partial_at(
    /* Still not sure why copy seems to start w/2px in? */
    int16_t retval = 1,
       bmp_line_step = 0; /* Advance this many bytes between source lines. */
+
+#if defined( DEPTH_VGA )
+
+   /* TODO */
+
+#elif defined( DEPTH_CGA )
    uint8_t* plane_1 = NULL;
    uint8_t* plane_2 = NULL;
 
@@ -255,10 +292,6 @@ int16_t graphics_platform_blit_partial_at(
    plane_1 -= bmp->w / 8;
    plane_2 = memory_lock( bmp->plane_2 );
    plane_2 -= bmp->w / 8;
-
-#if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
-#error "not implemented"
-#elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
 
    if( NULL == plane_1 || NULL == plane_2 ) {
       retval = 0;
@@ -295,7 +328,9 @@ int16_t graphics_platform_blit_partial_at(
 
       /* 4px per byte * 4 bytes = 16 px. */
       _fmemcpy( &(g_buffer[screen_byte_offset]), plane_1, 4 );
-      _fmemcpy( &(g_buffer[0x2000 + screen_byte_offset]), plane_2, 4 );
+      _fmemcpy(
+         &(g_buffer[GRAPHICS_CGA_PLANE_OFFSET + screen_byte_offset]),
+         plane_2, 4 );
 
       /* Advance source address by bytes per copy. */
       plane_1 += bmp_line_step;
@@ -303,6 +338,7 @@ int16_t graphics_platform_blit_partial_at(
 	}
 #endif /* GRAPHICS_MODE */
 
+#ifdef DEPTH_CGA
 cleanup:
 
    if( NULL != plane_1 ) {
@@ -312,6 +348,7 @@ cleanup:
    if( NULL != plane_2 ) {
       plane_2 = memory_unlock( bmp->plane_2 );
    }
+#endif /* DEPTH_CGA */
 
    return retval;
 }
@@ -320,16 +357,19 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    GRAPHICS_COLOR color
 ) {
+   uint16_t y = 0;
+
+#if defined( DEPTH_VGA )
+   for( y = y_orig ; y < y_orig + h ; y++ ) {
+      _fmemset( GRAPHICS_ADDR + (y * SCREEN_W) + x_orig, color, h );
+   }
+
+#elif defined( DEPTH_CGA )
    int16_t screen_byte_offset = 0;
-   uint16_t
-      y = 0,
-      x = 0,
+   uint16_t x = 0,
       x_end = x_orig + w,
       w_bytes = w / 4;
 
-#if GRAPHICS_M_320_200_256_VGA == GRAPHICS_MODE
-#  error "not implemented"
-#elif GRAPHICS_M_320_200_4_CGA == GRAPHICS_MODE
    for( y = y_orig ; y < y_orig + h ; y++ ) {
 
       if( 0 == x_orig % 4 && 0 == w % 4 ) {
@@ -340,10 +380,10 @@ void graphics_draw_block(
 #  endif /* USE_LOOKUPS */
          /* Apply to correct even/odd CGA plane. */
          if( 0 == y % 2 ) {
-            _fmemset( GRAPHICS_M_320_200_4_CGA_A + screen_byte_offset,
+            _fmemset( GRAPHICS_CGA_ADDR_1 + screen_byte_offset,
                g_cga_color_packed[color], w_bytes );
          } else {
-            _fmemset( GRAPHICS_M_320_200_4_CGA_A_2 + screen_byte_offset,
+            _fmemset( GRAPHICS_CGA_ADDR_2 + screen_byte_offset,
                g_cga_color_packed[color], w_bytes );
          }
       } else {
@@ -353,7 +393,9 @@ void graphics_draw_block(
          }
       }
    }
-#endif /* GRAPHICS_MODE */
+#else
+#  error "graphics mode unsupported"
+#endif /* DEPTH_VGA || DEPTH_CGA */
 
 }
 

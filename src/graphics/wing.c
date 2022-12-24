@@ -279,6 +279,8 @@ int16_t graphics_platform_blit_partial_at(
    debug_printf( 0, "blitting resource #%d to %d, %d x %d, %d...",
       bmp->id, d_x, d_y, w, h );
 
+   /* TODO: Check for DC creation failure and goto cleanup! */
+
    /* Create HDC for the off-screen buffer to blit to. */
    hdcBuffer = CreateCompatibleDC( (HDC)NULL );
    oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
@@ -378,6 +380,7 @@ void graphics_draw_block(
    hdcBuffer = CreateCompatibleDC( (HDC)NULL );
    if( (HDC)NULL == hdcBuffer ) {
       error_printf( "screen buffer HDC is NULL" );
+      /* TODO: Cleanup! */
       return;
    }
    oldHbmBuffer = SelectObject( hdcBuffer, g_screen.bitmap );
@@ -385,6 +388,7 @@ void graphics_draw_block(
    brush = CreateSolidBrush( color );
    if( (HBRUSH)NULL == brush ) {
       error_printf( "brush is NULL" );
+      /* TODO: Cleanup! */
       return;
    }
 
@@ -466,6 +470,7 @@ void graphics_draw_line(
    pen = CreatePen( PS_SOLID, thickness, color );
    if( (HPEN)NULL == pen ) {
       error_printf( "pen is NULL" );
+      /* TODO: Cleanup! */
       return;
    }
    oldPen = SelectObject( hdcBuffer, pen );

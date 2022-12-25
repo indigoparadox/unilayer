@@ -504,21 +504,24 @@ void graphics_string_at(
    SIZE sz;
    int16_t str_len = 0;
 
-   assert( x_orig < SCREEN_W );
-   assert( y_orig < SCREEN_H );
-
    memory_zero_ptr( &sz, sizeof( SIZE ) );
 
    str_len = memory_strnlen_ptr( str, str_sz );
    GetTextExtentPoint( g_hdc_buffer, str, str_len, &sz );
    rect.left = x_orig;
-   rect.top = y_orig;
+   rect.top = y_orig - 4; /* Move text 4px up or it looks weird. */
    rect.right = (x_orig + sz.cx);
    rect.bottom = (y_orig + sz.cy);
+
+   SetTextColor( g_hdc_buffer, color );
+   SetBkMode( g_hdc_buffer, TRANSPARENT );
 
    if( 0 == DrawText( g_hdc_buffer, str, str_len, &rect, 0 ) ) {
       error_printf( "unable to draw string at %u, %u", x_orig, y_orig );
    }
+
+   SetBkMode( g_hdc_buffer, OPAQUE );
+   SetTextColor( g_hdc_buffer, GRAPHICS_COLOR_BLACK );
 
 }
 

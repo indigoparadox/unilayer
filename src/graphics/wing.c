@@ -15,6 +15,8 @@ extern HWND g_window;
 extern MEMORY_HANDLE g_state_handle;
 
 struct GRAPHICS_BITMAP g_screen;
+static HDC g_hdc_buffer = (HDC)NULL;
+static HBITMAP g_old_hbm_buffer = (HBITMAP)NULL;
 volatile uint32_t g_ms;
 
 struct GRAPHICS_ARGS g_graphics_args;
@@ -37,9 +39,7 @@ static LRESULT CALLBACK WndProc(
 ) {
    PAINTSTRUCT ps;
    HDC hdc_screen = (HDC)NULL;
-   HDC hdc_buffer = (HDC)NULL;
    BITMAP srcBitmap;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
 
    switch( message ) {
       case WM_CREATE:
@@ -59,16 +59,14 @@ static LRESULT CALLBACK WndProc(
             g_screen.bitmap = CreateCompatibleBitmap( hdc_screen,
                SCREEN_W, SCREEN_H );
             g_screen.initialized = 1;
+            bmp_get_hdc(
+               g_screen.bitmap, g_hdc_buffer, g_old_hbm_buffer,
+               (HDC)NULL, cleanup_paint );
          }
          if( (HBITMAP)NULL == g_screen.bitmap ) {
             error_printf( "screen buffer bitmap is NULL" );
             break;
          }
-
-         /* Create a new HDC for buffer and select buffer into it. */
-         bmp_get_hdc(
-            g_screen.bitmap, hdc_buffer, old_hbm_buffer,
-            hdc_screen, cleanup_paint );
 
          /* Load parameters of the buffer into info object (srcBitmap). */
          GetObject( g_screen.bitmap, sizeof( BITMAP ), &srcBitmap );
@@ -80,7 +78,7 @@ static LRESULT CALLBACK WndProc(
             hdc_screen,
             0, 0,
             SCREEN_REAL_W, SCREEN_REAL_H,
-            hdc_buffer,
+            g_hdc_buffer,
             0, 0,
             srcBitmap.bmWidth,
             srcBitmap.bmHeight,
@@ -89,7 +87,6 @@ static LRESULT CALLBACK WndProc(
 
       cleanup_paint:
 
-         bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
          DeleteDC( hdc_screen );
 
          EndPaint( hWnd, &ps );
@@ -173,6 +170,7 @@ int16_t graphics_platform_init() {
 }
 
 void graphics_platform_shutdown() {
+   bmp_cleanup_hdc( g_hdc_buffer, g_old_hbm_buffer );
 }
 
 void graphics_flip() {
@@ -201,10 +199,8 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h
 ) {
-   HDC hdc_buffer = (HDC)NULL;
    HDC hdc_src = (HDC)NULL;
    HBITMAP old_hbm_src = (HBITMAP)NULL;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
 #ifdef DEPTH_VGA
    HDC hdc_src_mask = (HDC)NULL;
    HBITMAP old_hbm_src_mask = (HBITMAP)NULL;
@@ -221,8 +217,6 @@ int16_t graphics_platform_blit_partial_at(
    /* Get the HDCs for the source and screen buffer. */
    bmp_get_hdc(
       bmp->bitmap, hdc_src, old_hbm_src, (HDC)NULL, cleanup ) 
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup ) 
 
 #ifdef DEPTH_VGA
 
@@ -231,20 +225,19 @@ int16_t graphics_platform_blit_partial_at(
       bmp->mask, hdc_src_mask, old_hbm_src_mask, (HDC)NULL, cleanup ) 
 
    /* Use mask to blit transparency. */
-   BitBlt( hdc_buffer, d_x, d_y, w, h, hdc_src_mask, s_x, s_y, SRCAND );
-   BitBlt( hdc_buffer, d_x, d_y, w, h, hdc_src, s_x, s_y, SRCPAINT );
+   BitBlt( g_hdc_buffer, d_x, d_y, w, h, hdc_src_mask, s_x, s_y, SRCAND );
+   BitBlt( g_hdc_buffer, d_x, d_y, w, h, hdc_src, s_x, s_y, SRCPAINT );
 
 #else
 
    /* Simple blit without transparency. */
-   BitBlt( hdc_buffer, d_x, d_y, w, h, hdc_src, s_x, s_y, SRCCOPY );
+   BitBlt( g_hdc_buffer, d_x, d_y, w, h, hdc_src, s_x, s_y, SRCCOPY );
 
 #endif /* DEPTH_VGA */
 
 cleanup:
 
    bmp_cleanup_hdc( hdc_src, old_hbm_src );
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
 
 #ifdef DEPTH_VGA
    bmp_cleanup_hdc( hdc_src_mask, old_hbm_src_mask );
@@ -254,27 +247,13 @@ cleanup:
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
-   HDC hdc_buffer = (HDC)NULL;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
-
-   /* Create HDC for the off-screen buffer to blit to. */
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup ) 
-
-   SetPixel( hdc_buffer, x, y, color );
-
-cleanup:
-
-   /* Reselect the initial objects into the provided DCs. */
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
+   SetPixel( g_hdc_buffer, x, y, color );
 }
 
 void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    const GRAPHICS_COLOR color
 ) {
-   HDC hdc_buffer = (HDC)NULL;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
    RECT rect;
    HBRUSH brush = (HBRUSH)NULL;
 
@@ -283,10 +262,6 @@ void graphics_draw_block(
    rect.right = x_orig + w;
    rect.bottom = y_orig + h;
 
-   /* Create HDC for the off-screen buffer to blit to. */
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup );
-
    brush = CreateSolidBrush( color );
    if( (HBRUSH)NULL == brush ) {
       error_printf( "brush is NULL" );
@@ -294,22 +269,17 @@ void graphics_draw_block(
       return;
    }
 
-   FillRect( hdc_buffer, &rect, brush );
-
-cleanup:
+   FillRect( g_hdc_buffer, &rect, brush );
 
    if( (HBRUSH)NULL != brush ) {
       DeleteObject( brush );
    }
-
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
 }
 
 void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    uint16_t thickness, const GRAPHICS_COLOR color
 ) {
-   HDC hdc_buffer = (HDC)NULL;
    HBITMAP old_hbm_buffer = (HBITMAP)NULL;
    HPEN pen = (HPEN)NULL;
    HPEN old_pen = (HPEN)NULL;
@@ -318,11 +288,8 @@ void graphics_draw_rect(
    /* TODO: Standardize this to use GDI Rectangle(). */
 
 #ifndef PLATFORM_WINCE /* TODO */
-   /* Create HDC for the off-screen buffer to blit to. */
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup );
 
-   bmp_create_pen( pen, thickness, color, hdc_buffer, old_pen, cleanup );
+   bmp_create_pen( pen, thickness, color, g_hdc_buffer, old_pen, cleanup );
 
    /* MoveTo( hdc_buffer, x1, y1 );
    LineTo( hdc_buffer, x2, y2 );*/
@@ -340,12 +307,11 @@ void graphics_draw_rect(
 
    points[4].x = (x_orig);
    points[4].y = (y_orig);
-   Polyline( hdc_buffer, points, 5 );
+   Polyline( g_hdc_buffer, points, 5 );
 
 cleanup:
 
-   bmp_cleanup_pen( pen, hdc_buffer, old_pen );
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
+   bmp_cleanup_pen( pen, g_hdc_buffer, old_pen );
 
 #endif /* PLATFORM_WINCE */
 }
@@ -354,18 +320,13 @@ void graphics_draw_line(
    uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
    uint16_t thickness, const GRAPHICS_COLOR color
 ) {
-   HDC hdc_buffer = (HDC)NULL;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
    HPEN pen = (HPEN)NULL;
    HPEN old_pen = (HPEN)NULL;
    POINT points[2];
 
 #ifndef PLATFORM_WINCE /* TODO */
-   /* Create HDC for the off-screen buffer to blit to. */
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup );
 
-   bmp_create_pen( pen, thickness, color, hdc_buffer, old_pen, cleanup );
+   bmp_create_pen( pen, thickness, color, g_hdc_buffer, old_pen, cleanup );
 
    /* MoveTo( hdc_buffer, x1, y1 );
    LineTo( hdc_buffer, x2, y2 );*/
@@ -373,12 +334,11 @@ void graphics_draw_line(
    points[0].y = y1;
    points[1].x = x2;
    points[1].y = y2;
-   Polyline( hdc_buffer, points, 2 );
+   Polyline( g_hdc_buffer, points, 2 );
 
 cleanup:
 
-   bmp_cleanup_pen( pen, hdc_buffer, old_pen );
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
+   bmp_cleanup_pen( pen, g_hdc_buffer, old_pen );
 
 #endif /* PLATFORM_WINCE */
 }
@@ -526,30 +486,20 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
 void graphics_string_sz(
    const char* str, uint16_t str_sz, uint8_t flags, struct GRAPHICS_RECT* sz_out
 ) {
-   HDC hdc_buffer = (HDC)NULL;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
    SIZE sz;
    int16_t str_len = 0;
 
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup );
-
    str_len = memory_strnlen_ptr( str, str_sz );
-   GetTextExtentPoint( hdc_buffer, str, str_len, &sz );
+   GetTextExtentPoint( g_hdc_buffer, str, str_len, &sz );
    sz_out->w = sz.cx;
    sz_out->h = sz.cy;
 
-cleanup:
-
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
 }
 
 void graphics_string_at(
    const char* str, uint16_t str_sz, uint16_t x_orig, uint16_t y_orig,
    GRAPHICS_COLOR color, uint8_t flags
 ) {
-   HDC hdc_buffer = (HDC)NULL;
-   HBITMAP old_hbm_buffer = (HBITMAP)NULL;
    RECT rect;
    SIZE sz;
    int16_t str_len = 0;
@@ -559,23 +509,17 @@ void graphics_string_at(
 
    memory_zero_ptr( &sz, sizeof( SIZE ) );
 
-   bmp_get_hdc(
-      g_screen.bitmap, hdc_buffer, old_hbm_buffer, (HDC)NULL, cleanup );
-
    str_len = memory_strnlen_ptr( str, str_sz );
-   GetTextExtentPoint( hdc_buffer, str, str_len, &sz );
+   GetTextExtentPoint( g_hdc_buffer, str, str_len, &sz );
    rect.left = x_orig;
    rect.top = y_orig;
    rect.right = (x_orig + sz.cx);
    rect.bottom = (y_orig + sz.cy);
 
-   if( 0 == DrawText( hdc_buffer, str, str_len, &rect, 0 ) ) {
+   if( 0 == DrawText( g_hdc_buffer, str, str_len, &rect, 0 ) ) {
       error_printf( "unable to draw string at %u, %u", x_orig, y_orig );
    }
 
-cleanup:
-
-   bmp_cleanup_hdc( hdc_buffer, old_hbm_buffer );
 }
 
 #endif /* !USE_SOFTWARE_TEXT */

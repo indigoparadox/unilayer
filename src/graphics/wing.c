@@ -123,6 +123,7 @@ static LRESULT CALLBACK WndProc(
 
 int16_t graphics_platform_init() {
    WNDCLASS wc = { 0 };
+   RECT wr = { 0, 0, 0, 0 };
 
    memset( &g_screen, '\0', sizeof( struct GRAPHICS_BITMAP ) );
    memset( &wc, '\0', sizeof( WNDCLASS ) );
@@ -141,11 +142,16 @@ int16_t graphics_platform_init() {
       return 0;
    }
 
+   /* Get client area size. */
+   wr.right = SCREEN_REAL_W;
+   wr.bottom = SCREEN_REAL_H;
+   AdjustWindowRect( &wr, WS_OVERLAPPEDWINDOW, FALSE );
+
    g_window = CreateWindowEx(
       0, UNILAYER_WINDOW_CLASS "WindowClass", UNILAYER_WINDOW_TITLE,
       WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
       CW_USEDEFAULT, CW_USEDEFAULT,
-      SCREEN_REAL_W, SCREEN_REAL_H, 0, 0, g_instance, 0
+      wr.right - wr.left, wr.bottom - wr.top, 0, 0, g_instance, 0
    );
 
    if( !g_window ) {
@@ -494,6 +500,13 @@ void graphics_string_sz(
    sz_out->w = sz.cx;
    sz_out->h = sz.cy;
 
+}
+
+void graphics_char_at(
+   char c, uint16_t x_orig, uint16_t y_orig, GRAPHICS_COLOR color,
+   uint8_t flags
+) {
+   /* TODO */
 }
 
 void graphics_string_at(

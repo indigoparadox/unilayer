@@ -31,6 +31,15 @@ typedef int (*loop_iter)( void* );
 #define loop_globals() extern uint8_t g_running; extern loop_iter g_loop_iter; extern void* g_loop_data;
 #endif /* MAIN_C */
 
+/* Allow overriding which memory system is used with a define. */
+#if defined( MEMORY_FAKE )
+#  define include_memory( default_h ) "memory/fakem.h"
+#elif defined( MEMORY_WIN )
+#  define include_memory( default_h ) "memory/winm.h"
+#else
+#  define include_memory( default_h ) default_h
+#endif
+
 #ifdef PLATFORM_DOS
 
 #  ifndef SCREEN_W
@@ -190,7 +199,7 @@ loop_globals();
 #  include <windows.h>
 #  include <mtypes.h>
 loop_globals();
-#  include "memory/winm.h"
+#  include include_memory( "memory/winm.h" )
 #  include "resinc.h"
 #  include "input/wini.h"
 #  include "graphics/wing.h"

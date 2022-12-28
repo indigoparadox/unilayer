@@ -242,7 +242,9 @@ loop_globals();
 
 #elif defined( PLATFORM_NDS )
 
-#  define LOG_TO_FILE
+#  ifndef LOG_TO_FILE
+#     define LOG_TO_FILE
+#  endif /* !LOG_TO_FILE */
 #  define LOG_FILE_NAME "lognds.txt"
 #  include <nds.h>
 #  include <mtypes.h>

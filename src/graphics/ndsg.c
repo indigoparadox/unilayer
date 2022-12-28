@@ -81,11 +81,13 @@ void graphics_draw_line(
 
 #endif /* !USE_SOFTWARE_LINES */
 
-int32_t graphics_platform_load_bitmap( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_load_bitmap(
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
+) {
    /* TODO */
 }
 
-int32_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
+int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    /* TODO */
 }
 

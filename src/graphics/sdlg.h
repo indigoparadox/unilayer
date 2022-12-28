@@ -11,7 +11,12 @@ struct GRAPHICS_BITMAP {
    uint16_t ref_count;
 
    SDL_Surface* surface;
+
+#ifdef PLATFORM_SDL1
+   void* res5;
+#else
    SDL_Texture* texture;
+#endif /* PLATFORM_SDL1 */
 
    /* Unused Overrides */
    uint32_t res1;

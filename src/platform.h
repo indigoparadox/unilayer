@@ -8,8 +8,12 @@
  */
 
 #if defined( PLATFORM_WIN16 ) || defined( PLATFORM_WIN32 ) || defined( PLATFORM_WINCE )
-#define PLATFORM_WIN
+#  define PLATFORM_WIN
 #endif /* PLATFORM_WIN16 || PLATFORM_WIN32 || PLATFORM_WINCE */
+
+#if defined( PLATFORM_SDL1 ) || defined( PLATFORM_SDL2 )
+#  define PLATFORM_SDL
+#endif /* PLATFORM_SDL1 || PLATFORM_SDL2 */
 
 #if defined( DEPTH_VGA )
 #  define DEPTH_SPEC "16x16x16"
@@ -68,6 +72,11 @@ loop_globals();
 #  ifndef SCREEN_H
 #     define SCREEN_H 160
 #  endif /* !SCREEN_H */
+
+#  ifdef PLATFORM_SDL1
+   /* SDL1 doesn't have SDL2's primative routines. */
+#     define USE_SOFTWARE_LINES
+#  endif /* PLATFORM_SDL1 */
 
 #  include <mtypes.h>
 loop_globals();

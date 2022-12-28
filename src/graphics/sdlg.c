@@ -7,9 +7,18 @@
 #include <time.h> /* For time() and time_t. */
 #include <stdlib.h> /* For rand(). */
 
+#ifdef PLATFORM_SDL1
+
+SDL_Surface* g_screen = NULL;
+int g_screen_locks = 0;
+
+#else
+
 SDL_Window* g_window = NULL;
 SDL_Renderer* g_window_renderer = NULL;
 SDL_Texture* g_buffer_tex = NULL;
+
+#endif /* PLATFORM_SDL2 */
 
 volatile uint32_t g_ms;
 
@@ -28,6 +37,16 @@ int16_t graphics_platform_init() {
    if( SDL_Init( SDL_INIT_EVERYTHING ) ) {
       error_printf( "error initializing SDL: %s", SDL_GetError() );
    }
+
+#ifdef PLATFORM_SDL1
+
+   g_screen = SDL_SetVideoMode( g_screen_real_w, g_screen_real_h, 8,
+      SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_ANYFORMAT );
+   if( NULL == g_screen ) {
+      return 0;
+   }
+
+#else
 
    /* Create the main window. */
    g_window = SDL_CreateWindow( UNILAYER_WINDOW_TITLE,
@@ -48,21 +67,40 @@ int16_t graphics_platform_init() {
       SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
       g_screen_real_w, g_screen_real_h );
 
+#endif /* PLATFORM_SDL1 */
+
    srand( (unsigned int)time( &tm ) );
 
    return 1;
 }
 
 void graphics_platform_shutdown() {
+#ifndef PLATFORM_SDL1
    SDL_DestroyWindow( g_window );
+#endif /* PLATFORM_SDL1 */
    SDL_Quit();
 }
 
 void graphics_lock() {
+#ifdef PLATFORM_SDL1
+   /* SDL_LockSurface( g_screen ); */
+   g_screen_locks++;
+   assert( 1 == g_screen_locks );
+#else
    SDL_SetRenderTarget( g_window_renderer, g_buffer_tex );
+#endif /* PLATFORM_SDL1 */
 }
 
 void graphics_release() {
+
+#ifdef PLATFORM_SDL1
+
+   g_screen_locks--;
+   /* SDL_UnlockSurface( g_screen ); */
+   SDL_Flip( g_screen );
+
+#else
+
    SDL_Rect d_r;
    uint8_t zoom_factor = 0;
 
@@ -88,11 +126,12 @@ void graphics_release() {
       d_r.w = g_screen_real_w;
       d_r.h = g_screen_real_h;
    }
-   /* g_screen_real_w */
 
+   /* Render the buffer texture to the main window. */
    SDL_SetRenderTarget( g_window_renderer, NULL );
    SDL_RenderCopyEx( g_window_renderer, g_buffer_tex, NULL, &d_r, 0, NULL, 0 );
    SDL_RenderPresent( g_window_renderer );
+#endif /* PLATFORM_SDL1 */
 }
 
 int16_t graphics_get_random( int16_t start, int16_t range ) {
@@ -116,8 +155,16 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
-   SDL_SetRenderDrawColor( g_window_renderer,  color->r, color->g, color->b, 255 );
+#ifdef PLATFORM_SDL1
+   /* int offset = 0;
+   offset = (y * g_screen->pitch) + (x * g_screen->format->BytesPerPixel);
+   ((uint8_t*)(g_screen->pixels))[offset] = SDL_MapRGB(
+      g_screen->format, color->r, color->g, color->b ); */
+#else
+   SDL_SetRenderDrawColor(
+      g_window_renderer,  color->r, color->g, color->b, 255 );
    SDL_RenderDrawPoint( g_window_renderer, x, y );
+#endif /* PLATFORM_SDL1 */
 }
 
 int16_t graphics_platform_blit_partial_at(
@@ -128,14 +175,21 @@ int16_t graphics_platform_blit_partial_at(
    SDL_Rect dest_rect = { d_x, d_y, w, h };
    SDL_Rect src_rect = { s_x, s_y, w, h };
 
-   if( NULL == bmp || NULL == bmp->texture ) {
-      error_printf( "NULL bitmap passed" );
-      return 0;
-   }
+   assert(
+      NULL != bmp
+#ifndef PLATFORM_SDL1
+      && NULL != bmp->texture
+#endif /* !PLATFORM_SDL1 */
+   );
 
    resource_debug_printf( 0, "blitting to %d, %d x %d, %d...",
       bmp->id, d_x, d_y, w, h );
+
+#ifdef PLATFORM_SDL1
+   SDL_BlitSurface( bmp->surface, &src_rect, g_screen, &dest_rect );
+#else
    SDL_RenderCopy( g_window_renderer, bmp->texture, &src_rect, &dest_rect );
+#endif /* PLATFORM_SDL1 */
 
    return 1;
 }
@@ -151,11 +205,17 @@ void graphics_draw_block(
    area.w = w;
    area.h = h;
 
-   SDL_SetRenderDrawColor( g_window_renderer,  color->r, color->g, color->b, 255 );
+#ifdef PLATFORM_SDL1
+   SDL_FillRect( g_screen, &area, SDL_MapRGB(
+      g_screen->format, color->r, color->g, color->b ) );
+#else
+   SDL_SetRenderDrawColor(
+      g_window_renderer,  color->r, color->g, color->b, 255 );
    SDL_RenderFillRect( g_window_renderer, &area );
+#endif /* PLATFORM_SDL1 */
 }
 
-#ifndef USE_SOFTWARE_LINES
+#if !defined( PLATFORM_SDL1 ) && !defined( USE_SOFTWARE_LINES )
 
 void graphics_draw_rect(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
@@ -192,7 +252,7 @@ void graphics_draw_line(
    }
 }
 
-#endif /* !USE_SOFTWARE_LINES */
+#endif /* !PLATFORM_SDL1 && !USE_SOFTWARE_LINES */
 
 int16_t graphics_platform_load_bitmap(
    RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
@@ -201,6 +261,12 @@ int16_t graphics_platform_load_bitmap(
    int16_t retval = 1;
    uint32_t buffer_sz = 0;
    SDL_RWops* bmp_stream;
+#ifdef DEPTH_VGA
+   int cc_flags = 0;
+#endif /* DEPTH_VGA */
+#ifdef PLATFORM_SDL1
+   SDL_Surface* tmp_surface = NULL;
+#endif /* PLATFORM_SDL1 */
 
    assert( NULL != b );
    assert( 0 == b->ref_count );
@@ -211,7 +277,28 @@ int16_t graphics_platform_load_bitmap(
    /* Parse buffered resource into SDL. */
    debug_printf( 0, "SDL loading surface for bitmap... (%d bytes)", buffer_sz );
    bmp_stream = SDL_RWFromMem( buffer, buffer_sz );
+
+#ifdef PLATFORM_SDL1
+   tmp_surface = SDL_LoadBMP_RW( bmp_stream, 1 ); /* Free stream on close. */
+   if( NULL == tmp_surface ) {
+      error_printf( "SDL unable to load bitmap: %s", SDL_GetError() );
+      retval = 0;
+      goto cleanup;
+   }
+
+   b->surface = SDL_DisplayFormat( tmp_surface );
+
+#  ifdef DEPTH_VGA
+   cc_flags = SDL_RLEACCEL | SDL_SRCCOLORKEY;
+#  endif /* DEPTH_VGA */
+#else
    b->surface = SDL_LoadBMP_RW( bmp_stream, 1 ); /* Free stream on close. */
+
+#  ifdef DEPTH_VGA
+   cc_flags = SDL_TRUE;
+#  endif /* DEPTH_VGA */
+#endif /* PLATFORM_SDL1 */
+
    if( NULL == b->surface ) {
       error_printf( "SDL unable to load bitmap: %s", SDL_GetError() );
       retval = 0;
@@ -220,10 +307,12 @@ int16_t graphics_platform_load_bitmap(
 
 #ifdef DEPTH_VGA
    /* Setup transparency if we're using VGA. */
-   SDL_SetColorKey( b->surface, SDL_TRUE, SDL_MapRGB( b->surface->format,
-      0xff, 0x55, 0xff ) );
+   /* TODO: Color key from constants. */
+   SDL_SetColorKey( b->surface, cc_flags, SDL_MapRGB( b->surface->format,
+      GRAPHICS_TXP_R, GRAPHICS_TXP_G, GRAPHICS_TXP_B ) );
 #endif /* DEPTH_VGA */
 
+#ifndef PLATFORM_SDL1
    b->texture = SDL_CreateTextureFromSurface( g_window_renderer, b->surface );
    if( NULL == b->texture ) {
       error_printf( "SDL unable to create texture: %s", SDL_GetError() );
@@ -235,8 +324,15 @@ int16_t graphics_platform_load_bitmap(
       goto cleanup;
    }
    debug_printf( 1, "SDL created texture for bitmap" );
+#endif /* !PLATFORM_SDL1 */
 
 cleanup:
+
+#ifdef PLATFORM_SDL1
+   if( NULL != tmp_surface ) {
+      SDL_FreeSurface( tmp_surface );
+   }
+#endif /* PLATFORM_SDL1 */
 
    if( NULL != buffer ) {
       buffer = resource_unlock_handle( res_handle );
@@ -260,7 +356,9 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    if( 0 == b->ref_count ) {
       resource_debug_printf( 2, "unloading texture and surface for %s",
          b->id, "bitmap" );
+#ifndef PLATFORM_SDL1
       SDL_DestroyTexture( b->texture );
+#endif /* !PLATFORM_SDL1 */
       SDL_FreeSurface( b->surface );
       b->initialized = 0;
       return 1;

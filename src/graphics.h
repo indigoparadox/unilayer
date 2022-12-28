@@ -41,6 +41,7 @@
 /*! \} */
 
 #define GRAPHICS_FLAG_SHAKING_MASK 0x03
+#define GRAPHICS_FLAG_ZOOM_MASK 0x0c
 
 #ifndef GRAPHICS_TXP_R
 /*! \brief Red value for transparency color in VGA DEPTH. */
@@ -74,6 +75,10 @@
 #define graphics_char_is_printable( c ) (('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || ('0' <= c && '9' >= c) || '.' == c || ',' == c || ':' == c || ';' == c || '!' == c || '/' == c || ' ' == c)
 
 #define graphics_draw_char_outline( x, y, flags ) if( GRAPHICS_STRING_FLAG_OUTLINE == (GRAPHICS_STRING_FLAG_OUTLINE & flags) ) { graphics_draw_px( x, y, GRAPHICS_COLOR_BLACK ); }
+
+#define graphics_set_screen_shake( shake ) g_screen_flags &= ~GRAPHICS_FLAG_SHAKING_MASK; g_screen_flags |= (GRAPHICS_FLAG_SHAKING_MASK & shake);
+
+#define graphics_set_screen_zoom( zoom ) g_screen_flags &= ~GRAPHICS_FLAG_ZOOM_MASK; g_screen_flags |= (((zoom) << 2) & GRAPHICS_FLAG_ZOOM_MASK)
 
 /**
  * \brief Struct representing a graphical rectangle.

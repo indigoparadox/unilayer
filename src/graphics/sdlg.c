@@ -64,16 +64,30 @@ void graphics_lock() {
 
 void graphics_release() {
    SDL_Rect d_r;
+   uint8_t zoom_factor = 0;
 
-   if( 0 != (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags) ) {
+   if( 0 != (GRAPHICS_FLAG_ZOOM_MASK & g_screen_flags) ) {
+      /* Zoomed into the center of the screen. */
+      zoom_factor = ((GRAPHICS_FLAG_ZOOM_MASK & g_screen_flags) >> 2);
+      debug_printf( 3, "zoom: %02x", zoom_factor );
+      d_r.x = 0 - ((zoom_factor * SCREEN_W) / 2);
+      d_r.y = 0 - ((zoom_factor * SCREEN_H) / 2);
+      d_r.w = ((zoom_factor + 1) * SCREEN_W);
+      d_r.h = ((zoom_factor + 1) * SCREEN_H);
+
+   } else if( 0 != (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags) ) {
+      /* Random shaking. */
       d_r.x = rand() % (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags);
       d_r.y = rand() % (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags);
+      d_r.w = g_screen_real_w;
+      d_r.h = g_screen_real_h;
    } else {
+      /* Normal stretch blit. */
       d_r.x = 0;
       d_r.y = 0;
+      d_r.w = g_screen_real_w;
+      d_r.h = g_screen_real_h;
    }
-   d_r.w = g_screen_real_w;
-   d_r.h = g_screen_real_h;
    /* g_screen_real_w */
 
    SDL_SetRenderTarget( g_window_renderer, NULL );

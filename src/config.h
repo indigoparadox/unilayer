@@ -181,15 +181,5 @@
 #define FONT_H 8
 #define FONT_SPACE 0
 
-/* Derived Parameters */
-
-#if defined( SCREEN_W ) && defined( SCREEN_SCALE )
-#define SCREEN_REAL_W (SCREEN_W * SCREEN_SCALE)
-#endif /* SCREEN_W, SCREEN_SCALE */
-
-#if defined( SCREEN_H ) && defined( SCREEN_SCALE )
-#define SCREEN_REAL_H (SCREEN_H * SCREEN_SCALE)
-#endif /* SCREEN_H, SCREEN_SCALE */
-
 #endif /* CONFIG_H */
 

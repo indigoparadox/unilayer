@@ -77,7 +77,7 @@ static LRESULT CALLBACK WndProc(
          StretchBlt(
             hdc_screen,
             0, 0,
-            SCREEN_REAL_W, SCREEN_REAL_H,
+            g_screen_real_w, g_screen_real_h,
             g_hdc_buffer,
             0, 0,
             srcBitmap.bmWidth,
@@ -105,6 +105,11 @@ static LRESULT CALLBACK WndProc(
             DeleteObject( g_screen.bitmap );
          }
          PostQuitMessage( 0 );
+         break;
+
+      case WM_SIZE:
+         g_screen_real_w = LOWORD( lParam );
+         g_screen_real_h = HIWORD( lParam );
          break;
 
       case WM_TIMER:
@@ -143,13 +148,13 @@ int16_t graphics_platform_init() {
    }
 
    /* Get client area size. */
-   wr.right = SCREEN_REAL_W;
-   wr.bottom = SCREEN_REAL_H;
+   wr.right = g_screen_real_w;
+   wr.bottom = g_screen_real_h;
    AdjustWindowRect( &wr, WS_OVERLAPPEDWINDOW, FALSE );
 
    g_window = CreateWindowEx(
       0, UNILAYER_WINDOW_CLASS "WindowClass", UNILAYER_WINDOW_TITLE,
-      WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+      WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT,
       wr.right - wr.left, wr.bottom - wr.top, 0, 0, g_instance, 0
    );
@@ -179,7 +184,11 @@ void graphics_platform_shutdown() {
    bmp_cleanup_hdc( g_hdc_buffer, g_old_hbm_buffer );
 }
 
-void graphics_flip() {
+void graphics_lock() {
+
+}
+
+void graphics_release() {
    /* The closest analog to the actual graphics_flip(): */
    if( (HWND)NULL != g_window ) {
       InvalidateRect( g_window, 0, TRUE );

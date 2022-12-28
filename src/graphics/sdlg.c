@@ -8,8 +8,8 @@
 #include <stdlib.h> /* For rand(). */
 
 SDL_Window* g_window = NULL;
-SDL_Surface* g_screen = NULL;
-SDL_Renderer* g_renderer = NULL;
+SDL_Renderer* g_window_renderer = NULL;
+SDL_Texture* g_buffer_tex = NULL;
 
 volatile uint32_t g_ms;
 
@@ -29,31 +29,24 @@ int16_t graphics_platform_init() {
       error_printf( "error initializing SDL: %s", SDL_GetError() );
    }
 
-   /*SDL_CreateWindowAndRenderer(
-      SCREEN_REAL_W, SCREEN_REAL_H, 0, &g_window, &g_renderer );*/
+   /* Create the main window. */
    g_window = SDL_CreateWindow( UNILAYER_WINDOW_TITLE,
       SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-      SCREEN_REAL_W, SCREEN_REAL_H, 0 );
+      g_screen_real_w, g_screen_real_h, SDL_WINDOW_RESIZABLE );
    if( NULL == g_window ) {
       return 0;
    }
-   g_screen = SDL_GetWindowSurface( g_window );
-   if( NULL == g_screen ) {
-      return 0;
-   }
-   g_renderer = SDL_CreateSoftwareRenderer( g_screen );
-   if( NULL == g_renderer ) {
+
+   /* Create the renderer. */
+   g_window_renderer = SDL_CreateRenderer(
+      g_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE );
+   if( NULL == g_window_renderer ) {
       return 0;
    }
 
-#ifdef DEBUG_CGA_EMU
-   area.x = 0;
-   area.y = 0;
-   area.w = SCREEN_REAL_W;
-   area.h = SCREEN_REAL_H;
-   SDL_SetRenderDrawColor( g_renderer,  0, 0, 0, 255 );
-   SDL_RenderFillRect( g_renderer, &area );
-#endif /* DEBUG_CGA_EMU */
+   g_buffer_tex = SDL_CreateTexture( g_window_renderer,
+      SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+      g_screen_real_w, g_screen_real_h );
 
    srand( (unsigned int)time( &tm ) );
 
@@ -65,8 +58,14 @@ void graphics_platform_shutdown() {
    SDL_Quit();
 }
 
-void graphics_flip() {
-   SDL_UpdateWindowSurface( g_window );
+void graphics_lock() {
+   SDL_SetRenderTarget( g_window_renderer, g_buffer_tex );
+}
+
+void graphics_release() {
+   SDL_SetRenderTarget( g_window_renderer, NULL );
+   SDL_RenderCopyEx( g_window_renderer, g_buffer_tex, NULL, NULL, 0, NULL, 0 );
+   SDL_RenderPresent( g_window_renderer );
 }
 
 int16_t graphics_get_random( int16_t start, int16_t range ) {
@@ -90,15 +89,8 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
-   int x_s = 0, y_s = 0;
-   SDL_SetRenderDrawColor( g_renderer,  color->r, color->g, color->b, 255 );
-   x *= SCREEN_SCALE;
-   y *= SCREEN_SCALE;
-   for( y_s = 0 ; SCREEN_SCALE > y_s ; y_s++ ) {
-      for( x_s = 0 ; SCREEN_SCALE > x_s ; x_s++ ) {
-         SDL_RenderDrawPoint( g_renderer, x + x_s, y + y_s );
-      }
-   }
+   SDL_SetRenderDrawColor( g_window_renderer,  color->r, color->g, color->b, 255 );
+   SDL_RenderDrawPoint( g_window_renderer, x, y );
 }
 
 int16_t graphics_platform_blit_partial_at(
@@ -106,13 +98,8 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
-   SDL_Rect dest_rect = {
-      d_x * SCREEN_SCALE, 
-      d_y * SCREEN_SCALE,
-      w * SCREEN_SCALE, 
-      h * SCREEN_SCALE};
-   SDL_Rect src_rect = {
-      s_x, s_y, w, h };
+   SDL_Rect dest_rect = { d_x, d_y, w, h };
+   SDL_Rect src_rect = { s_x, s_y, w, h };
 
    if( NULL == bmp || NULL == bmp->texture ) {
       error_printf( "NULL bitmap passed" );
@@ -121,7 +108,7 @@ int16_t graphics_platform_blit_partial_at(
 
    resource_debug_printf( 0, "blitting to %d, %d x %d, %d...",
       bmp->id, d_x, d_y, w, h );
-   SDL_RenderCopy( g_renderer, bmp->texture, &src_rect, &dest_rect );
+   SDL_RenderCopy( g_window_renderer, bmp->texture, &src_rect, &dest_rect );
 
    return 1;
 }
@@ -132,13 +119,13 @@ void graphics_draw_block(
 ) {
    SDL_Rect area;
 
-   area.x = x_orig * SCREEN_SCALE;
-   area.y = y_orig * SCREEN_SCALE;
-   area.w = w * SCREEN_SCALE;
-   area.h = h * SCREEN_SCALE;
+   area.x = x_orig;
+   area.y = y_orig;
+   area.w = w;
+   area.h = h;
 
-   SDL_SetRenderDrawColor( g_renderer,  color->r, color->g, color->b, 255 );
-   SDL_RenderFillRect( g_renderer, &area );
+   SDL_SetRenderDrawColor( g_window_renderer,  color->r, color->g, color->b, 255 );
+   SDL_RenderFillRect( g_window_renderer, &area );
 }
 
 #ifndef USE_SOFTWARE_LINES
@@ -149,42 +136,31 @@ void graphics_draw_rect(
 ) {
    SDL_Rect area;
 
-   area.x = x_orig * SCREEN_SCALE;
-   area.y = y_orig * SCREEN_SCALE;
-   area.w = w * SCREEN_SCALE;
-   area.h = h * SCREEN_SCALE;
+   area.x = x_orig;
+   area.y = y_orig;
+   area.w = w;
+   area.h = h;
 
    /* TODO: Handle thickness. */
 
-   SDL_SetRenderDrawColor( g_renderer,  color->r, color->g, color->b, 255 );
-   SDL_RenderDrawRect( g_renderer, &area );
+   SDL_SetRenderDrawColor( g_window_renderer,  color->r, color->g, color->b, 255 );
+   SDL_RenderDrawRect( g_window_renderer, &area );
 }
 
 void graphics_draw_line(
    uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t thickness,
    const GRAPHICS_COLOR color
 ) {
-   int16_t i = 0,
-      j = 0;
+   int16_t i = 0;
 
-   SDL_SetRenderDrawColor( g_renderer, color->r, color->g, color->b, 255 );
+   SDL_SetRenderDrawColor( g_window_renderer, color->r, color->g, color->b, 255 );
    /* TODO: Handle thickness. */
    for( i = 0 ; thickness > i ; i++ ) {
-      if( SCREEN_SCALE > 1 ) {
-         for( j = 0 ; SCREEN_SCALE > j ; j++ ) {
-            SDL_RenderDrawLine( g_renderer,
-               ((x1 + i) * SCREEN_SCALE) + j,
-               ((y1 + i) * SCREEN_SCALE) + j,
-               ((x2 + i) * SCREEN_SCALE) + j,
-               ((y2 + i) * SCREEN_SCALE) + j );
-         }
-      } else {
-         SDL_RenderDrawLine( g_renderer,
-            (x1 + i) * SCREEN_SCALE,
-            (y1 + i) * SCREEN_SCALE,
-            (x2 + i) * SCREEN_SCALE,
-            (y2 + i) * SCREEN_SCALE );
-      }
+      SDL_RenderDrawLine( g_window_renderer,
+         (x1 + i),
+         (y1 + i),
+         (x2 + i),
+         (y2 + i) );
    }
 }
 
@@ -220,7 +196,7 @@ int16_t graphics_platform_load_bitmap(
       0xff, 0x55, 0xff ) );
 #endif /* DEPTH_VGA */
 
-   b->texture = SDL_CreateTextureFromSurface( g_renderer, b->surface );
+   b->texture = SDL_CreateTextureFromSurface( g_window_renderer, b->surface );
    if( NULL == b->texture ) {
       error_printf( "SDL unable to create texture: %s", SDL_GetError() );
       retval = 0;

@@ -35,7 +35,11 @@ void graphics_platform_shutdown() {
    endwin();
 }
 
-void graphics_flip() {
+void graphics_lock() {
+
+}
+
+void graphics_release() {
    refresh();
 }
 

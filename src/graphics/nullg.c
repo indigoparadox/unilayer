@@ -9,7 +9,10 @@ int16_t graphics_platform_init() {
 void graphics_platform_shutdown() {
 }
 
-void graphics_flip() {
+void graphics_lock() {
+}
+
+void graphics_release() {
 }
 
 int16_t graphics_get_random( int16_t start, int16_t range ) {

@@ -202,7 +202,10 @@ void graphics_platform_shutdown() {
 	int86( 0x10, &r, &r );
 }
 
-void graphics_flip() {
+void graphics_lock() {
+}
+
+void graphics_release() {
 #ifdef USE_DOUBLEBUF
       _fmemcpy( GRAPHICS_ADDR, g_buffer, DOUBLEBUF_SZ );
 #endif /* USE_DOUBLEBUF */

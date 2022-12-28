@@ -16,7 +16,11 @@ void graphics_platform_shutdown() {
    /* TODO */
 }
 
-void graphics_flip() {
+void graphics_lock() {
+
+}
+
+void graphics_release() {
    /* TODO */
 }
 

@@ -2,6 +2,9 @@
 #define GRAPHICS_C
 #include "unilayer.h"
 
+uint16_t g_screen_real_w = 0;
+uint16_t g_screen_real_h = 0;
+
 #ifdef USE_SOFTWARE_TEXT
 #include "data/font8x8.h"
 #endif /* USE_SOFTWARE_TEXT */
@@ -13,6 +16,12 @@ static int16_t gs_graphics_cache_sz = 0;
 
 int16_t graphics_init() {
    int16_t retval = 1;
+
+#if defined( SCREEN_W ) && defined( SCREEN_H )
+   /* Set the screen real width from constants to start. */
+   g_screen_real_w = SCREEN_W;
+   g_screen_real_h = SCREEN_H;
+#endif /* SCREEN_W && SCREEN_H */
 
    retval = graphics_platform_init();
    if( !retval ) {
@@ -199,11 +208,11 @@ void graphics_string_at(
 
    while(
       '\0' != str[i]
-#if defined( SCREEN_REAL_W ) && defined( SCREEN_REAL_H )
+#if defined( SCREEN_W ) && defined( SCREEN_H )
       &&
-      x_orig + FONT_W < SCREEN_REAL_W && /* On-screen (x-axis). */
-      y_orig + FONT_H < SCREEN_REAL_H    /* On-screen (y-axis). */
-#endif /* SCREEN_REAL_W && SCREEN_REAL_H */
+      x_orig + FONT_W < SCREEN_W && /* On-screen (x-axis). */
+      y_orig + FONT_H < SCREEN_H    /* On-screen (y-axis). */
+#endif /* SCREEN_W && SCREEN_H */
    ) {
       if( '\n' == str[i] ) {
          /* Shift the "cursor" down and back. */

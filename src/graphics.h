@@ -119,10 +119,12 @@ int16_t graphics_init();
 
 void graphics_shutdown();
 
+void graphics_lock();
+
 /**
  * \brief Draw the current graphics buffer on-screen.
  */
-void graphics_flip();
+void graphics_release();
 
 /**
  * \brief Get the number of ticks since the program started.
@@ -321,8 +323,13 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b );
 int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP*,
    uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );
+
 int16_t graphics_platform_init();
 void graphics_platform_shutdown();
+
+extern uint16_t g_screen_real_w;
+extern uint16_t g_screen_real_h;
+
 #endif /* GRAPHICS_C */
 
 /*! \} */

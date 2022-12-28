@@ -85,7 +85,10 @@ void graphics_platform_shutdown() {
    XCloseDisplay( g_display );
 }
 
-void graphics_flip() {
+void graphics_lock() {
+}
+
+void graphics_release() {
    /* Draw the buffer to the window. */
    XPutImage(
       g_display,

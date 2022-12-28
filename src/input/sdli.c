@@ -96,7 +96,13 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
 
    } else if( SDL_QUIT == event.type ) {
       return INPUT_KEY_QUIT;
+   } else if( SDL_WINDOWEVENT == event.type ) {
+      switch( event.window.event ) {
+      case SDL_WINDOWEVENT_RESIZED:
+         graphics_on_resize( event.window.data1, event.window.data2 );
+      }
    }
+
    return 0;
 }
 

@@ -1,4 +1,6 @@
 
+#define GRAPHICS_PLATFORM_C
+#define NDSG_C
 #include "../unilayer.h"
 
 /*

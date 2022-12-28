@@ -1,4 +1,6 @@
 
+#define GRAPHICS_PLATFORM_C
+#define CURSESG_C
 #include "../unilayer.h"
 
 #include <stdlib.h>

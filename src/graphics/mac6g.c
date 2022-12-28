@@ -1,5 +1,6 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
+#define MAC6G_C
 #include "../unilayer.h"
 
 #include "../formats/bmp.h"

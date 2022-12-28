@@ -1,5 +1,6 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
+#define XG_C
 #include "../unilayer.h"
 
 #include "../../tools/data/bmp.h"

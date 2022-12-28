@@ -1,5 +1,5 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
 #define SDLG_C
 #include "../unilayer.h"
 
@@ -63,8 +63,21 @@ void graphics_lock() {
 }
 
 void graphics_release() {
+   SDL_Rect d_r;
+
+   if( 0 != (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags) ) {
+      d_r.x = rand() % (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags);
+      d_r.y = rand() % (GRAPHICS_FLAG_SHAKING_MASK & g_screen_flags);
+   } else {
+      d_r.x = 0;
+      d_r.y = 0;
+   }
+   d_r.w = g_screen_real_w;
+   d_r.h = g_screen_real_h;
+   /* g_screen_real_w */
+
    SDL_SetRenderTarget( g_window_renderer, NULL );
-   SDL_RenderCopyEx( g_window_renderer, g_buffer_tex, NULL, NULL, 0, NULL, 0 );
+   SDL_RenderCopyEx( g_window_renderer, g_buffer_tex, NULL, &d_r, 0, NULL, 0 );
    SDL_RenderPresent( g_window_renderer );
 }
 
@@ -143,7 +156,8 @@ void graphics_draw_rect(
 
    /* TODO: Handle thickness. */
 
-   SDL_SetRenderDrawColor( g_window_renderer,  color->r, color->g, color->b, 255 );
+   SDL_SetRenderDrawColor(
+      g_window_renderer,  color->r, color->g, color->b, 255 );
    SDL_RenderDrawRect( g_window_renderer, &area );
 }
 

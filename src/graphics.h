@@ -37,8 +37,10 @@
 
 /*! \brief Draw a black outline around each character in the string. */
 #define GRAPHICS_STRING_FLAG_OUTLINE      0x80
-
+ 
 /*! \} */
+
+#define GRAPHICS_FLAG_SHAKING_MASK 0x03
 
 #ifndef GRAPHICS_TXP_R
 /*! \brief Red value for transparency color in VGA DEPTH. */
@@ -291,7 +293,9 @@ int16_t graphics_cache_load_bitmap( RESOURCE_ID id );
  */
 int16_t graphics_get_random( int16_t start, int16_t range );
 
-#ifdef GRAPHICS_C
+void graphics_on_resize( int16_t new_w, int16_t new_h );
+
+#if defined( GRAPHICS_C ) || defined( GRAPHICS_PLATFORM_C )
 
 /* Internal prototypes for abstract routines to access platform-specific
  * implementation features.
@@ -327,8 +331,19 @@ int16_t graphics_platform_blit_partial_at(
 int16_t graphics_platform_init();
 void graphics_platform_shutdown();
 
+#endif /* GRAPHICS_C || GRAPHICS_PLATFORM_C */
+
+#ifdef GRAPHICS_C
+
+uint16_t g_screen_real_w = 0;
+uint16_t g_screen_real_h = 0;
+uint8_t g_screen_flags = 0;
+
+#else
+
 extern uint16_t g_screen_real_w;
 extern uint16_t g_screen_real_h;
+extern uint8_t g_screen_flags;
 
 #endif /* GRAPHICS_C */
 

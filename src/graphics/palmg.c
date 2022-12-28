@@ -1,5 +1,6 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
+#define PALMG_C
 #include "../unilayer.h"
 
 static BitmapType* g_screen = NULL;

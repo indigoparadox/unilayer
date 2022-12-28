@@ -1,5 +1,6 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
+#define NULLG_C
 #include "../unilayer.h"
 
 int16_t graphics_platform_init() {

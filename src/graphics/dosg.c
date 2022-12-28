@@ -1,5 +1,6 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
+#define DOSG_C
 #include "../unilayer.h"
 
 /* TODO: VGA mode. */

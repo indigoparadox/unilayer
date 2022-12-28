@@ -2,9 +2,6 @@
 #define GRAPHICS_C
 #include "unilayer.h"
 
-uint16_t g_screen_real_w = 0;
-uint16_t g_screen_real_h = 0;
-
 #ifdef USE_SOFTWARE_TEXT
 #include "data/font8x8.h"
 #endif /* USE_SOFTWARE_TEXT */
@@ -80,6 +77,11 @@ void graphics_shutdown() {
    memory_free( gs_graphics_cache_handle );
 #endif /* !NO_GFX_CACHE */
    graphics_platform_shutdown();
+}
+
+void graphics_on_resize( int16_t new_w, int16_t new_h ) {
+   g_screen_real_w = new_w;
+   g_screen_real_h = new_h;
 }
 
 #ifdef USE_SOFTWARE_TEXT

@@ -1,5 +1,6 @@
 
-#define GRAPHICS_C
+#define GRAPHICS_PLATFORM_C
+#define WING_C
 #include "../unilayer.h"
 
 /* For rand() */
@@ -108,8 +109,7 @@ static LRESULT CALLBACK WndProc(
          break;
 
       case WM_SIZE:
-         g_screen_real_w = LOWORD( lParam );
-         g_screen_real_h = HIWORD( lParam );
+         graphics_on_resize( LOWORD( lParam ), HIWORD( lParam ) );
          break;
 
       case WM_TIMER:

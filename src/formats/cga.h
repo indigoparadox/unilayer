@@ -2,7 +2,7 @@
 #ifndef CGA_FORMAT_H
 #define CGA_FORMAT_H
 
-struct PACKED CGA_HEADER {
+struct UNILAYER_PACKED CGA_HEADER {
    uint16_t id;
    uint16_t version;
    uint16_t width;

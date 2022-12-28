@@ -2,7 +2,7 @@
 #ifndef BMP_FORMAT_H
 #define BMP_FORMAT_H
 
-struct PACKED BITMAP_FILE_HEADER {
+struct UNILAYER_PACKED BITMAP_FILE_HEADER {
    char id[2];
    uint32_t file_sz;
    uint16_t reserved1;
@@ -10,7 +10,7 @@ struct PACKED BITMAP_FILE_HEADER {
    uint32_t bmp_offset;
 };
 
-struct PACKED BITMAP_DATA_HEADER {
+struct UNILAYER_PACKED BITMAP_DATA_HEADER {
    uint32_t header_sz;
    int32_t bitmap_w;
    int32_t bitmap_h;

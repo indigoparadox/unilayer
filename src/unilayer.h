@@ -10,18 +10,18 @@
 #ifdef __GNUC__
 #  define WARN_UNUSED __attribute__( (warn_unused_result) )
 #  ifndef PLATFORM_NDS
-#     define PACKED __attribute__( (__packed__) )
+#     define UNILAYER_PACKED __attribute__( (__packed__) )
 #  else
-#     define PACKED
+#     define UNILAYER_PACKED
 #  endif /* !PLATFORM_NDS */
 #  define INLINE inline
 #elif defined( __WATCOMC__ )
 #  define WARN_UNUSED
-#  define PACKED
+#  define UNILAYER_PACKED
 #  define INLINE
 #else
 #  define WARN_UNUSED
-#  define PACKED
+#  define UNILAYER_PACKED
 #  define INLINE
 #endif /* __GNUC__ */
 
@@ -34,9 +34,9 @@
 
 #define stringize( inp ) stringize_internal( inp )
 
-#ifndef PLATFORM_GB
+#if !defined( PLATFORM_GB ) && !defined( PLATFORM_NDS )
 #include <stddef.h>
-#endif /* !PLATFORM_GB */
+#endif /* !PLATFORM_GB && !PLATFORM_NDS */
 
 #ifdef ANCIENT_C
 /* For Microsoft C 5 and company. */

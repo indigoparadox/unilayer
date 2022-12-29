@@ -47,6 +47,8 @@
 #  define NO_CGA_FUNCTIONS
 #endif /* ANCIENT_C */
 
+/* Sets up platform, including calling resinc.h to determine resource system.
+ */
 #include "platform.h"
 
 /* = Subsystems and Structures = */

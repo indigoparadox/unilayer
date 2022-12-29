@@ -13,8 +13,10 @@
 #define PLATFORM_GL
 #endif /* PLATFORM_WEB */
 
+#if 0
 #ifndef NO_RESEXT
 #include <resext.h>
+#endif
 #endif
 
 /* ------ */

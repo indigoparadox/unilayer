@@ -7,10 +7,10 @@ struct GRAPHICS_BITMAP {
    RESOURCE_ID id;
    uint16_t flags;
    uint16_t ref_count;
+   uint16_t* pixel_data;
+   uint8_t* frame_data;
 
    /* Unused Overrides */
-   void* resa;
-   void* resb;
    uint32_t res1;
    uint32_t res2;
    uint8_t res3;

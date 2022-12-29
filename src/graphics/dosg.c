@@ -507,7 +507,7 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
       g_gfx_count--;
       memory_free( b->plane_1 );
       memory_free( b->plane_2 );
-      b->initialized = 0;
+      b->flags &= ~GRAPHICS_BMP_FLAG_INIT;
 
       debug_printf( 1,
          "graphic successfully unloaded (%d bytes in use for %d gfx)",

@@ -406,7 +406,7 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
 
          if( 0 <= bg_idx ) {
             blit_retval = graphics_cache_blit_at(
-               bg_idx, GRAPHICS_INSTANCE_NONE, 0, 0, x, y,
+               bg_idx, GRAPHICS_INSTANCE_WINDOW, 0, 0, x, y,
                WINDOW_PATTERN_W, WINDOW_PATTERN_H );
          }
 
@@ -536,6 +536,7 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 #endif /* WINDOW_TRACE */
    offset_sprite = dir * WINDOW_SPRITE_H;
 
+   /* TODO: Track instance IDs for window sprites. */
    graphics_cache_blit_at(
       c->data.scalar, GRAPHICS_INSTANCE_NONE,
       0, offset_sprite,

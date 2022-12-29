@@ -15,6 +15,7 @@ struct RESOURCE_NDS_HANDLE {
 struct RESOURCE_GRIT_DEF {
    const unsigned int* tiles;
    const unsigned short* palette;
+   const uint32_t tiles_sz;
    const uint32_t palette_sz;
    uint32_t ptr_sz;
    uint32_t locks;

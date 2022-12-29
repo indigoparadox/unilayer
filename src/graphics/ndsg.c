@@ -3,10 +3,14 @@
 #define NDSG_C
 #include "../unilayer.h"
 
+uint16_t* gc_sprite_frames[GRAPHICS_SPRITES_ONSCREEN];
+
 /*
  * @return 1 if init was successful and 0 otherwise.
  */
 int16_t graphics_platform_init() {
+   int i = 0;
+
    powerOn( POWER_ALL );
    
    videoSetMode( MODE_0_2D );
@@ -19,9 +23,13 @@ int16_t graphics_platform_init() {
 	oamInit( &oamMain, SpriteMapping_1D_128, 0 );
 	oamInit( &oamSub, SpriteMapping_1D_128, 0 );
 
-   glScreen2D();
+   for( i = 0 ; GRAPHICS_SPRITES_ONSCREEN > i ; i++ ) {
+      gc_sprite_frames[i] = oamAllocateGfx(
+         &oamMain, SpriteSize_16x16, SpriteColorFormat_256Color );
+   }
 
-   lcdSwap();
+   /* glScreen2D(); */
+
    return 1;
 }
 
@@ -66,7 +74,9 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
-   if( 0 <= instance_id ) {
+   int tile_idx = 0;
+
+   if( 0 <= instance_id && GRAPHICS_SPRITES_ONSCREEN > instance_id ) {
       /* Blitting a sprite. */
       
       /* On the DS, the RESOURCE_ID in bmp->id that would be a filename or w/e
@@ -76,13 +86,18 @@ int16_t graphics_platform_blit_partial_at(
        */
       dmaCopy( bmp->id->palette, SPRITE_PALETTE, bmp->id->palette_sz );
 
+      /* TODO */
+      /* 2 = spritesheet width of one row in sprites. */
+      tile_idx = ((s_y / SPRITE_H) * 2) + (s_x / SPRITE_W);
+      dmaCopy(
+         bmp->id->tiles + (tile_idx * (8 * 8)),
+         gc_sprite_frames[instance_id], (TILE_W * TILE_H) );
+
       oamSet(
          &oamMain, instance_id, d_x, d_y, 0, 0,
          SpriteSize_16x16, SpriteColorFormat_256Color, 
-         bmp->frame_data, -1, false, false, false, false, false );
+         gc_sprite_frames[instance_id], -1, false, false, false, false, false );
 
-      /* TODO */
-      dmaCopy( bmp->id->tiles, bmp->frame_data, TILE_W * TILE_H );
    }
 }
 
@@ -115,8 +130,6 @@ int16_t graphics_platform_load_bitmap(
    RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
    /* TODO */
-	b->frame_data = oamAllocateGfx(
-      &oamMain, SpriteSize_16x16, SpriteColorFormat_256Color );
 }
 
 int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {

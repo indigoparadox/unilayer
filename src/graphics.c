@@ -397,7 +397,7 @@ cleanup:
    return retval;
 }
 
-int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
+int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id, uint8_t type_flag ) {
    int16_t idx = GRAPHICS_ERROR_NOT_FOUND,
       i = 0;
    struct GRAPHICS_BITMAP* bitmaps = NULL;
@@ -418,6 +418,7 @@ int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
       if(
          GRAPHICS_BMP_FLAG_INIT != (GRAPHICS_BMP_FLAG_INIT & bitmaps[i].flags)
       ) {
+         bitmaps[i].flags |= (GRAPHICS_BMP_FLAG_TYPE_MASK & type_flag);
          if( graphics_load_bitmap_res( res_id, &(bitmaps[i]) ) ) {
             idx = i;
          }

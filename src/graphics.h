@@ -58,20 +58,6 @@
 #define GRAPHICS_TXP_B 0xff
 #endif /* !GRAPHICS_TXP_B */
 
-#ifndef graphics_blit_sprite_at
-/**
- * \brief Blit using platform-specific sprite hardware if available.
- */
-#define graphics_blit_sprite_at( cache_id, s_x, s_y, d_x, d_y, w, h ) graphics_cache_blit_at( cache_id, s_x, s_y, d_x, d_y, w, h )
-#endif /* !graphics_blit_sprite_at */
-
-#ifndef graphics_blit_tile_at
-/**
- * \brief Blit using platform-specific tile hardware if available.
- */
-#define graphics_blit_tile_at( cache_id, s_x, s_y, d_x, d_y, w, h ) graphics_cache_blit_at( cache_id, s_x, s_y, d_x, d_y, w, h )
-#endif /* !graphics_blit_tile_at */
-
 #define graphics_char_is_printable( c ) (('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || ('0' <= c && '9' >= c) || '.' == c || ',' == c || ':' == c || ';' == c || '!' == c || '/' == c || ' ' == c)
 
 #define graphics_draw_char_outline( x, y, flags ) if( GRAPHICS_STRING_FLAG_OUTLINE == (GRAPHICS_STRING_FLAG_OUTLINE & flags) ) { graphics_draw_px( x, y, GRAPHICS_COLOR_BLACK ); }
@@ -101,7 +87,7 @@ struct GRAPHICS_RECT {
 
 #define GRAPHICS_BMP_FLAG_TYPE_TILE    0x0004
 #define GRAPHICS_BMP_FLAG_TYPE_SPRITE  0x0002
-#define GRAPHICS_BMP_GLAG_TYPE_MASK    0x0006
+#define GRAPHICS_BMP_FLAG_TYPE_MASK    0x0006
 #define GRAPHICS_BMP_FLAG_INIT         0x0001
 
 /*! \} */ /* unilayer_graphics_bmp_flags */
@@ -297,7 +283,7 @@ int16_t graphics_cache_blit_at(
  */
 void graphics_clear_cache();
 
-int16_t graphics_cache_load_bitmap( RESOURCE_ID id );
+int16_t graphics_cache_load_bitmap( RESOURCE_ID id, uint8_t type_flag );
 
 /*! \} */ /* unilayer_graphics_cache */
 

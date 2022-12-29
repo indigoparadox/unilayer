@@ -405,7 +405,7 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
          }
 
          if( 0 <= bg_idx ) {
-            blit_retval = graphics_blit_tile_at(
+            blit_retval = graphics_cache_blit_at(
                bg_idx, 0, 0, x, y,
                WINDOW_PATTERN_W, WINDOW_PATTERN_H );
          }
@@ -536,7 +536,7 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
 #endif /* WINDOW_TRACE */
    offset_sprite = dir * WINDOW_SPRITE_H;
 
-   graphics_blit_sprite_at(
+   graphics_cache_blit_at(
       c->data.scalar,
       0, offset_sprite,
       offset_x + window_get_coords( c, GUI_X ),
@@ -673,34 +673,43 @@ int16_t window_reload_frames() {
    frames[0].l = '|';
    frames[0].c = ' ';
 #elif defined( RESOURCE_FILE )
-   frames[0].tr =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp" );
-   frames[0].tl =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_tl.bmp" );
-   frames[0].br =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_br.bmp" );
-   frames[0].bl =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_bl.bmp" );
-   frames[0].t  =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_t.bmp" );
-   frames[0].b  =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_b.bmp" );
-   frames[0].r  =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_r.bmp" );
-   frames[0].l  =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_l.bmp" );
-   frames[0].c  =
-      graphics_cache_load_bitmap( ASSETS_PATH DEPTH_SPEC "/p_chk_c.bmp" );
+   frames[0].tr = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].tl = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_tl.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].br = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_br.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].bl = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_bl.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].t  = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_t.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].b  = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_b.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].r  = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_r.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].l  = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_l.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].c  = graphics_cache_load_bitmap(
+      ASSETS_PATH DEPTH_SPEC "/p_chk_c.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
 #else
-   frames[0].tr = graphics_cache_load_bitmap( p_chk_tr );
-   frames[0].tl = graphics_cache_load_bitmap( p_chk_tl );
-   frames[0].br = graphics_cache_load_bitmap( p_chk_br );
-   frames[0].bl = graphics_cache_load_bitmap( p_chk_bl );
-   frames[0].t  = graphics_cache_load_bitmap( p_chk_t );
-   frames[0].b  = graphics_cache_load_bitmap( p_chk_b );
-   frames[0].r  = graphics_cache_load_bitmap( p_chk_r );
-   frames[0].l  = graphics_cache_load_bitmap( p_chk_l );
-   frames[0].c  = graphics_cache_load_bitmap( p_chk_c );
+   frames[0].tr = graphics_cache_load_bitmap(
+      p_chk_tr, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].tl = graphics_cache_load_bitmap(
+      p_chk_tl, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].br = graphics_cache_load_bitmap(
+      p_chk_br, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].bl = graphics_cache_load_bitmap(
+      p_chk_bl, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].t  = graphics_cache_load_bitmap(
+      p_chk_t, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].b  = graphics_cache_load_bitmap(
+      p_chk_b, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].r  = graphics_cache_load_bitmap(
+      p_chk_r, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].l  = graphics_cache_load_bitmap(
+      p_chk_l, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   frames[0].c  = graphics_cache_load_bitmap(
+      p_chk_c, GRAPHICS_BMP_FLAG_TYPE_TILE );
 #endif
 
    frames = (struct WINDOW_FRAME*)memory_unlock( g_frames_handle );

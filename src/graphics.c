@@ -440,7 +440,7 @@ cleanup:
 }
 
 int16_t graphics_cache_blit_at(
-   uint16_t bitmap_idx,
+   uint16_t bitmap_idx, uint16_t instance_id,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h
 ) {
@@ -457,7 +457,7 @@ int16_t graphics_cache_blit_at(
       goto cleanup;
    }
    retval = graphics_platform_blit_partial_at(
-      bitmap_blit, s_x, s_y, d_x, d_y, w, h );
+      bitmap_blit, instance_id, s_x, s_y, d_x, d_y, w, h );
 
 cleanup:
 

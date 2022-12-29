@@ -8,7 +8,7 @@ struct GRAPHICS_BITMAP {
    uint16_t flags;
    uint16_t ref_count;
    uint16_t* pixel_data;
-   uint8_t* frame_data;
+   uint16_t* frame_data;
 
    /* Unused Overrides */
    uint32_t res1;

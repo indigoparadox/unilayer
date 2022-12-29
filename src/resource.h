@@ -2,10 +2,6 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
-#ifndef NO_RESEXT
-#include <resext.h>
-#endif /* !NO_RESEXT */
-
 /**
  * \addtogroup unilayer_resource Unilayer Resource Layer
  * \brief Simple abstract unified resource loading layer designed

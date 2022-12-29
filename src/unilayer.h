@@ -48,6 +48,8 @@
 #endif /* ANCIENT_C */
 
 /* Sets up platform, including calling resinc.h to determine resource system.
+ * It calls it before platform-specific graphics header, but after setting
+ * flags like forcing RESOURCE_FILE, so it can't be pulled out for now.
  */
 #include "platform.h"
 
@@ -58,6 +60,10 @@
 #include "uprintf.h"
 
 /* = Module Includes = */
+
+#ifndef NO_RESEXT
+#include <resext.h>
+#endif /* !NO_RESEXT */
 
 #include "memory.h"
 #include "resource.h"

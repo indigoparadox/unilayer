@@ -3,8 +3,7 @@
 #include "../unilayer.h"
 
 RESOURCE_HANDLE resource_get_handle( RESOURCE_ID id ) {
-   /* return (RESOURCE_HANDLE)gsc_resources[id]; */
-   return NULL;
+   return (RESOURCE_HANDLE)id;
 }
 
 MEMORY_PTR resource_lock_handle( RESOURCE_HANDLE handle ) {

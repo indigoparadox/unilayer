@@ -51,15 +51,17 @@ void graphics_draw_rect(
 ) {
 }
 
+/*
 int16_t graphics_platform_blit_at(
    const struct GRAPHICS_BITMAP* bmp,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
    return 0;
 }
+*/
 
 int16_t graphics_platform_blit_partial_at(
-   const struct GRAPHICS_BITMAP* bmp,
+   const struct GRAPHICS_BITMAP* bmp, int16_t instance_id,
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {

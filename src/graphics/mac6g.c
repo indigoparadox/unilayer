@@ -103,7 +103,7 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
  * @return 1 if blit was successful and 0 otherwise.
  */
 int16_t graphics_platform_blit_at(
-   const struct GRAPHICS_BITMAP* b,
+   const struct GRAPHICS_BITMAP* b, int16_t instance_id,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h
 ) {
    Rect r;

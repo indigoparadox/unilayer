@@ -406,7 +406,7 @@ int16_t window_draw_WINDOW( uint16_t w_id, struct WINDOW* windows ) {
 
          if( 0 <= bg_idx ) {
             blit_retval = graphics_cache_blit_at(
-               bg_idx, 0, 0, x, y,
+               bg_idx, GRAPHICS_INSTANCE_NONE, 0, 0, x, y,
                WINDOW_PATTERN_W, WINDOW_PATTERN_H );
          }
 
@@ -537,7 +537,7 @@ int16_t window_draw_SPRITE( uint16_t w_id, struct WINDOW* windows ) {
    offset_sprite = dir * WINDOW_SPRITE_H;
 
    graphics_cache_blit_at(
-      c->data.scalar,
+      c->data.scalar, GRAPHICS_INSTANCE_NONE,
       0, offset_sprite,
       offset_x + window_get_coords( c, GUI_X ),
       offset_y + window_get_coords( c, GUI_Y ),

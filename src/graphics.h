@@ -16,6 +16,8 @@
 
 #define GRAPHICS_ERROR_NOT_FOUND -1
 
+#define GRAPHICS_INSTANCE_NONE -1
+
 /**
  * \addtogroup unilayer_graphics_string_flags Unilayer Graphics String Flags
  * \brief Flags for modifying string display options.
@@ -261,6 +263,7 @@ void graphics_string_sz(
 /**
  * \brief Copy part or all of a ::GRAPHICS_BITMAP image to the screen.
  * \param bitmap_idx Index of the ::GRAPHICS_BITMAP in the graphics cache.
+ * \param instance_id Unique ID for the specific mobile being blitted, or -1.
  * \param s_x Horizontal location of upper-left corner of copy source rectangle.
  * \param s_y Vertical location of upper-left corner of copy source rectangle.
  * \param d_x Horizontal location of upper-left corner of destination rectangle.
@@ -273,7 +276,7 @@ void graphics_string_sz(
  * that bitmap's resource ID is given.
  */
 int16_t graphics_cache_blit_at(
-   uint16_t bitmap_idx,
+   uint16_t bitmap_idx, uint16_t instance_id,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h );
 
@@ -327,7 +330,7 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b );
  *        index or ::GRAPHICS_ERROR_NOT_FOUND if not found.
  */
 int16_t graphics_platform_blit_partial_at(
-   const struct GRAPHICS_BITMAP*,
+   const struct GRAPHICS_BITMAP*, int16_t,
    uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );
 
 int16_t graphics_platform_init();

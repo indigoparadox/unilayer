@@ -53,7 +53,9 @@ void graphics_clear_cache() {
 
    bitmaps = (struct GRAPHICS_BITMAP*)memory_lock( gs_graphics_cache_handle );
    for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
-      if( 1 == bitmaps[i].initialized ) {
+      if(
+         GRAPHICS_BMP_FLAG_INIT == (GRAPHICS_BMP_FLAG_INIT & bitmaps[i].flags)
+      ) {
          graphics_platform_unload_bitmap( &(bitmaps[i]) );
          dropped_count++;
       }
@@ -384,7 +386,7 @@ int16_t graphics_load_bitmap_res( RESOURCE_ID id, struct GRAPHICS_BITMAP* b ) {
 
    /* Assume the load was a success. */
    b->ref_count++;
-   b->initialized = 1;
+   b->flags |= GRAPHICS_BMP_FLAG_INIT;
 
 cleanup:
 
@@ -413,7 +415,9 @@ int16_t graphics_cache_load_bitmap( RESOURCE_ID res_id ) {
    /* Bitmap not found. */
    debug_printf( 1, "bitmap not found in cache; loading..." );
    for( i = 0 ; gs_graphics_cache_sz > i ; i++ ) {
-      if( 0 == bitmaps[i].initialized ) {
+      if(
+         GRAPHICS_BMP_FLAG_INIT != (GRAPHICS_BMP_FLAG_INIT & bitmaps[i].flags)
+      ) {
          if( graphics_load_bitmap_res( res_id, &(bitmaps[i]) ) ) {
             idx = i;
          }

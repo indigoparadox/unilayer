@@ -83,7 +83,10 @@ int16_t graphics_platform_blit_partial_at(
    BitmapPtr ptr = NULL;
    RectangleType screen_rect;
 
-   if( NULL == bmp || !bmp->initialized ) {
+   if(
+      NULL == bmp ||
+      GRAPHICS_BMP_FLAG_INIT != (GRAPHICS_BMP_FLAG_INIT & bmp->flags)
+   ) {
       WinDrawChars( "X", 1, d_x, d_y );
       retval = 0;
       goto cleanup;
@@ -140,7 +143,7 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    }
    b->ref_count--;
    if( 0 == b->ref_count ) {
-      b->initialized = 0;
+      b->flags &= ~GRAPHICS_BMP_FLAG_INIT;
       b->id = 0;
       return 1;
    }

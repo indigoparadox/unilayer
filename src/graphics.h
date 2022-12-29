@@ -95,6 +95,18 @@ struct GRAPHICS_RECT {
 };
 
 /**
+ * \addtogroup unilayer_graphics_bmp_flags Unilayer Graphics Bitmap Flags
+ * \{
+ */
+
+#define GRAPHICS_BMP_FLAG_TYPE_TILE    0x0004
+#define GRAPHICS_BMP_FLAG_TYPE_SPRITE  0x0002
+#define GRAPHICS_BMP_GLAG_TYPE_MASK    0x0006
+#define GRAPHICS_BMP_FLAG_INIT         0x0001
+
+/*! \} */ /* unilayer_graphics_bmp_flags */
+
+/**
  * \brief Struct representing a bitmap. Should be overridden by platform.
  *
  * This struct should be equivalent in size to whatever the bitmap struct for
@@ -103,9 +115,8 @@ struct GRAPHICS_RECT {
 struct GRAPHICS_BITMAP_BASE {
    /*! \brief Identifier for asset this bitmap represents/should load. */
    RESOURCE_ID id;
-   /*! \brief Whether the asset GRAPHICS_BITMAP_BASE::id has been loaded. */
-   uint8_t initialized;
-   /*! \brief (UNUSED) Reference counter. */
+   uint16_t flags;
+   /*! \brief Flags indicating. */
    uint16_t ref_count;
 
    /*! \brief Platform-specific graphics structure; should be overridden. */

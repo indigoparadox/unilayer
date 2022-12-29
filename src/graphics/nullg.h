@@ -24,8 +24,7 @@ typedef int GRAPHICS_COLOR;
 struct GRAPHICS_BITMAP {
    /*! \brief Identifier for asset this bitmap represents/should load. */
    RESOURCE_ID id;
-   /*! \brief Whether the asset GRAPHICS_BITMAP_BASE::id has been loaded. */
-   uint8_t initialized;
+   uint16_t flags;
    /*! \brief (UNUSED) Reference counter. */
    uint16_t ref_count;
 

@@ -358,9 +358,11 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
          b->id, "bitmap" );
 #ifndef PLATFORM_SDL1
       SDL_DestroyTexture( b->texture );
+      b->texture = NULL;
 #endif /* !PLATFORM_SDL1 */
       SDL_FreeSurface( b->surface );
-      b->initialized = 0;
+      b->surface = NULL;
+      b->flags &= ~GRAPHICS_BMP_FLAG_INIT;
       return 1;
    } else {
       resource_debug_printf( 2, "bitmap ref count greater than zero for %s",

@@ -55,11 +55,13 @@ static LRESULT CALLBACK WndProc(
             break;
          }
 
-         if( 0 == g_screen.initialized ) {
+         if(
+            GRAPHICS_BMP_FLAG_INIT != (GRAPHICS_BMP_FLAG_INIT & g_screen.flags)
+         ) {
             debug_printf( 2, "creating screen buffer..." );
             g_screen.bitmap = CreateCompatibleBitmap( hdc_screen,
                SCREEN_W, SCREEN_H );
-            g_screen.initialized = 1;
+            g_screen.flags |= GRAPHICS_BMP_FLAG_INIT;
             bmp_get_hdc(
                g_screen.bitmap, g_hdc_buffer, g_old_hbm_buffer,
                (HDC)NULL, cleanup_paint );
@@ -101,7 +103,9 @@ static LRESULT CALLBACK WndProc(
          break;
 
       case WM_DESTROY:
-         if( 0 != g_screen.initialized ) {
+         if(
+            GRAPHICS_BMP_FLAG_INIT == (GRAPHICS_BMP_FLAG_INIT & g_screen.flags)
+         ) {
             debug_printf( 2, "destroying screen buffer..." );
             DeleteObject( g_screen.bitmap );
          }
@@ -489,8 +493,11 @@ int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    b->ref_count--;
    if( 0 == b->ref_count ) {
       debug_printf( 2, "unloading bitmap resource %d", b->id );
-      b->initialized = 0;
+      b->flags &= ~GRAPHICS_BMP_FLAG_INIT;
       DeleteObject( b->bitmap );
+#ifdef DEPTH_VGA
+      DeleteObject( b->mask );
+#endif /* DEPTH_VGA */
       return 1;
    }
    return 0;

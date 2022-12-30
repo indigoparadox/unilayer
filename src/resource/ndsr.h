@@ -17,6 +17,7 @@ struct RESOURCE_GRIT_DEF {
    const unsigned short* palette;
    const uint32_t tiles_sz;
    const uint32_t palette_sz;
+   int32_t tile_offset;
    uint32_t ptr_sz;
    uint32_t locks;
 };

@@ -11,7 +11,7 @@ static const struct GRAPHICS_BITMAP* g_bg_bmp = NULL;
 static const struct GRAPHICS_BITMAP* g_window_bmp = NULL;
 static int g_bg_id = 0;
 static int g_window_id = 0;
-static int g_bg_tiles[BG_TILE_TW * BG_TILE_TH];
+static uint16_t g_bg_tiles[BG_TILE_TW * BG_TILE_TH];
 static int g_window_tiles[BG_TILE_TW * BG_TILE_TH];
 
 /*
@@ -25,8 +25,12 @@ int16_t graphics_platform_init() {
    videoSetMode( MODE_3_2D );
 	videoSetModeSub( MODE_0_2D );
 
+   /* Setup the upper screen for background and sprites. */
 	vramSetBankA( VRAM_A_MAIN_BG );
 	vramSetBankB( VRAM_A_MAIN_SPRITE );
+
+   /* Setup the lower screen for background and sprites. */
+	vramSetBankC( VRAM_C_MAIN_BG );
 	vramSetBankD( VRAM_D_SUB_SPRITE );
 
    /* Setup the background engine. */
@@ -103,7 +107,7 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
-   VRAM_A[(y * SCREEN_H) + x] = color;
+   /* VRAM_A[(y * SCREEN_H) + x] = color; */
 }
 
 int16_t graphics_platform_blit_partial_at(
@@ -111,7 +115,9 @@ int16_t graphics_platform_blit_partial_at(
    uint16_t s_x, uint16_t s_y,
    uint16_t d_x, uint16_t d_y, uint16_t w, uint16_t h
 ) {
-   int tile_idx = 0;
+   int tile_idx = 0,
+      tile_x = 0,
+      tile_y = 0;
 
    if( 0 <= instance_id && GRAPHICS_SPRITES_ONSCREEN > instance_id ) {
       /* Blitting a sprite. */
@@ -136,7 +142,20 @@ int16_t graphics_platform_blit_partial_at(
          g_sprite_frames[instance_id], -1, false, false, false, false, false );
 
    } else if( GRAPHICS_INSTANCE_TILEMAP == instance_id ) {
-      g_bg_tiles[((d_y / TILE_W) * BG_TILE_TW) + (d_x / TILE_H)] = 2;
+      /* Blitting a background tile. */
+
+      /* DS tiles are 8x8, so each tile is split up into 4, so compensate! */
+      tile_idx = bmp->id->tile_offset * 4;
+
+      /* The tile's physical location on the tilemap. */
+      /* Divide by 8 rather than 16 since DS tiles are 8x8. */
+      tile_y = d_y / 8;
+      tile_x = d_x / 8;
+
+      g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = tile_idx;
+      g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = tile_idx + 1;
+      g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = tile_idx + 2;
+      g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = tile_idx + 3;
       g_bg_bmp = bmp;
       /* scroll(bg, 256, 256); */
 

@@ -2,6 +2,8 @@
 #ifndef DOSI_H
 #define DOSI_H
 
+typedef uint8_t INPUT_VAL;
+
 #define INPUT_KEY_A 97
 #define INPUT_KEY_B 98
 #define INPUT_KEY_C 99
@@ -35,6 +37,8 @@
 #define INPUT_KEY_DOWN INPUT_KEY_S
 #define INPUT_KEY_QUIT INPUT_KEY_Q
 #define INPUT_KEY_OK INPUT_KEY_Z
+
+#define INPUT_CLICK 0xff
 
 #endif /* DOSI_H */
 

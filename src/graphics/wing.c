@@ -9,8 +9,15 @@
 
 #include <string.h>
 
+/* TODO: Verify this on multi-monitor Win32 systems. */
+#define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))
+#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
+
 extern uint8_t g_running;
 extern uint8_t g_last_key;
+extern uint16_t g_last_mouse;
+extern uint16_t g_last_mouse_x;
+extern uint16_t g_last_mouse_y;
 extern HINSTANCE g_instance;
 extern HWND g_window;
 extern MEMORY_HANDLE g_state_handle;
@@ -110,6 +117,13 @@ static LRESULT CALLBACK WndProc(
             DeleteObject( g_screen.bitmap );
          }
          PostQuitMessage( 0 );
+         break;
+
+      case WM_LBUTTONDOWN:
+      case WM_RBUTTONDOWN:
+         g_last_mouse = wParam;
+         g_last_mouse_x = GET_X_LPARAM( lParam );
+         g_last_mouse_y = GET_Y_LPARAM( lParam );
          break;
 
       case WM_SIZE:

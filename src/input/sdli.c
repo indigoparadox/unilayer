@@ -45,8 +45,9 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       NULL != x && NULL != y
    ) {
       
-      *x = event.button.x;  
-      *y = event.button.y;  
+      /* Always return scaled cordinates to compensate for zoom. */
+      *x = event.button.x * SCREEN_W / g_screen_real_w;
+      *y = event.button.y * SCREEN_H / g_screen_real_h;
 
       /* Flush key buffer to improve responsiveness. */
       while( (eres = SDL_PollEvent( &event )) );

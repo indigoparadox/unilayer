@@ -80,7 +80,16 @@ void graphics_platform_shutdown() {
 }
 
 void graphics_lock() {
+#ifdef NDS_BG_PX_CLEAR
+   uint16_t* px_ptr = NULL;
 
+   /* Clear px layer as well. */
+   px_ptr = bgGetGfxPtr( g_px_id );
+   dmaFillWords( 0, px_ptr, 256 * 256 );
+#endif /* NDS_BG_PX_CLEAR */
+
+   /* Clear sprites at the start of the loop. */
+   oamClear( &oamMain, 0, 0 );
 }
 
 void graphics_release() {
@@ -135,9 +144,6 @@ uint32_t graphics_get_ms() {
 
 void graphics_loop_start() {
    g_ms_start = graphics_get_ms();
-
-   /* Clear sprites at the start of the loop. */
-   oamClear( &oamMain, 0, 0 );
 }
 
 void graphics_loop_end() {
@@ -154,10 +160,7 @@ void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
    uint16_t* px_ptr = NULL;
 
    px_ptr = bgGetGfxPtr( g_px_id );
-
    px_ptr[(y * 256) + x] = color;
-
-   /* VRAM_A[(y * SCREEN_H) + x] = color; */
 }
 
 int16_t graphics_platform_blit_partial_at(
@@ -218,6 +221,9 @@ int16_t graphics_platform_blit_partial_at(
          g_window_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
          g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
          g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+
+         /* TODO: Fill block with transparency on px layer in front. */
+         graphics_draw_block( d_x, d_y, TILE_W, TILE_H, 0 );
       }
 
       bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = tile_idx;
@@ -231,7 +237,17 @@ void graphics_draw_block(
    uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h,
    GRAPHICS_COLOR color
 ) {
-   /* TODO */
+   uint16_t* px_ptr = NULL;
+   int16_t x = 0,
+      y = 0;
+
+   px_ptr = bgGetGfxPtr( g_px_id );
+   for( y = y_orig ; y < y_orig + h ; y++ ) {
+      for( x = x_orig ; x < x_orig + w ; x++ ) {
+         px_ptr[(y * 256) + x] = color;
+      }
+      /* dmaFillHalfWords( color, &(px_ptr[(y * 256) + x_orig]), w ); */
+   }
 }
 
 #ifndef USE_SOFTWARE_LINES

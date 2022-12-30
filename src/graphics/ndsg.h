@@ -20,6 +20,9 @@ struct GRAPHICS_BITMAP {
 struct GRAPHICS_ARGS {
 };
 
+#define graphics_clear_screen() \
+   graphics_draw_block( 0, 0, SCREEN_W, SCREEN_H, 0 );
+
 #ifdef DEPTH_VGA
 
 #define GRAPHICS_COLOR_BLACK        ARGB16(1, 0,   0,   0)

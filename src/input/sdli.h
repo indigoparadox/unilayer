@@ -12,6 +12,7 @@ typedef int8_t INPUT_VAL;
 #define INPUT_KEY_DOWN SDLK_s
 #define INPUT_KEY_UP SDLK_w
 #define INPUT_KEY_OK SDLK_z
+#define INPUT_KEY_MENU SDLK_e
 
 #define INPUT_CLICK 127
 

@@ -13,6 +13,8 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
    XEvent event;
    uint16_t mask = 0;
 
+   /* TODO: Mouse support. */
+
    mask = ExposureMask | KeyPressMask | KeyReleaseMask;
 
    /* XNextEvent( g_display, &event ); */

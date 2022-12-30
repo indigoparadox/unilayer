@@ -30,6 +30,8 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       return INPUT_KEY_OK;
    case 'q':
       return INPUT_KEY_QUIT;
+   case 'e':
+      return INPUT_KEY_MENU;
    case KEY_MOUSE:
       if( OK == getmouse( &event ) ) {
          debug_printf( 3, "click" );

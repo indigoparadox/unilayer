@@ -37,6 +37,7 @@ typedef uint8_t INPUT_VAL;
 #define INPUT_KEY_DOWN INPUT_KEY_S
 #define INPUT_KEY_QUIT INPUT_KEY_Q
 #define INPUT_KEY_OK INPUT_KEY_Z
+#define INPUT_KEY_MENU INPUT_KEY_E
 
 #define INPUT_CLICK 0xff
 

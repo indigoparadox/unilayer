@@ -45,7 +45,12 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       break;
 
    case appStopEvent:
+      /* Suspend the program. */
       return INPUT_KEY_QUIT;
+
+   case menuOpenEvent:
+      /* TODO: Broken. */
+      return INPUT_KEY_MENU;
 
    case penDownEvent:
       *x = event.screenX;

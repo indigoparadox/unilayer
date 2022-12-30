@@ -12,6 +12,7 @@ static const struct GRAPHICS_BITMAP* g_bg_bmp = NULL;
 static const struct GRAPHICS_BITMAP* g_window_bmp = NULL;
 static int g_bg_id = 0;
 static int g_window_id = 0;
+static int g_px_id = 0;
 static uint16_t g_bg_tiles[1024];
 static uint16_t g_window_tiles[1024];
 
@@ -26,12 +27,12 @@ int16_t graphics_platform_init() {
 
    powerOn( POWER_ALL );
    
-   videoSetMode( MODE_0_2D );
+   videoSetMode( MODE_5_2D );
 	videoSetModeSub( MODE_0_2D );
 
    /* Setup the upper screen for background and sprites. */
 	vramSetBankA( VRAM_A_MAIN_BG );
-	vramSetBankB( VRAM_A_MAIN_SPRITE );
+	vramSetBankB( VRAM_B_MAIN_SPRITE );
 
    /* Setup the lower screen for background and sprites. */
 	vramSetBankC( VRAM_C_MAIN_BG );
@@ -41,13 +42,19 @@ int16_t graphics_platform_init() {
 
    /* Setup the background engine. */
 
-   /* Put map at base 7, after tiles at base 0, leaving room for 224 tiles. */
-   g_bg_id = bgInit( 0, BgType_Text8bpp, BgSize_T_256x256, 7, 0 );
-   memset( g_bg_tiles, 0, sizeof( g_bg_tiles ) );
+   /* Put map at base 2, but stow tiles up after the bitmap BG at base 7. */
+   g_bg_id = bgInit( 0, BgType_Text8bpp, BgSize_T_256x256, 2, 7 );
+   dmaFillWords( 0, g_bg_tiles, sizeof( g_bg_tiles ) );
+   bgSetPriority( g_bg_id, 2 );
 
-   /* Put window map at base 10, after tiles at base 1, leaving room for 64. */
-   g_window_id = bgInit( 1, BgType_Text8bpp, BgSize_T_256x256, 9, 2 );
-   memset( g_window_tiles, 0, sizeof( g_window_tiles ) );
+   /* Put map at base 3, and tiles at base 0. */
+   g_window_id = bgInit( 1, BgType_Text8bpp, BgSize_T_256x256, 3, 0 );
+   dmaFillWords( 0, g_window_tiles, sizeof( g_window_tiles ) );
+   bgSetPriority( g_window_id, 1 );
+
+   /* Put bitmap BG at base 1, leaving map-addressable space at base 0. */
+   g_px_id = bgInit( 2, BgType_Bmp16, BgSize_B16_256x256, 1, 0 );
+   bgSetPriority( g_px_id, 0 );
 
    /* Setup the sprite engines. */
 	oamInit( &oamMain, SpriteMapping_1D_128, 0 );
@@ -79,7 +86,7 @@ void graphics_lock() {
 void graphics_release() {
 
    /* Setup bank E to receive extended palettes. */
-   /* TODO: Palette/BMP dirty bit. */
+   /* TODO: Palette/BMP dirty bit so we don't have to keep copying. */
    vramSetBankE( VRAM_E_LCD );
 
    /* Update background tiles. */
@@ -144,6 +151,12 @@ void graphics_loop_end() {
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
+   uint16_t* px_ptr = NULL;
+
+   px_ptr = bgGetGfxPtr( g_px_id );
+
+   px_ptr[(y * 256) + x] = color;
+
    /* VRAM_A[(y * SCREEN_H) + x] = color; */
 }
 
@@ -198,6 +211,14 @@ int16_t graphics_platform_blit_partial_at(
       /* Divide by 8 rather than 16 since DS tiles are 8x8. */
       tile_y = d_y / 8;
       tile_x = d_x / 8;
+
+      if( GRAPHICS_INSTANCE_TILEMAP == instance_id ) {
+         /* Hide window tiles if a tilemap tile was drawn more recently. */
+         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x] = 0;
+         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
+         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
+         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+      }
 
       bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = tile_idx;
       bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = tile_idx + 1;

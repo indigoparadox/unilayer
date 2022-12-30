@@ -9,7 +9,7 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
    int keys = 0;
 
    scanKeys();
-   keys = keysHeld();
+   keys = keysDown();
 		
    if( KEY_A == (keys & KEY_A) ) {
       return INPUT_KEY_OK;

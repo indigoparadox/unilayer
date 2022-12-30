@@ -138,7 +138,7 @@
 #endif /* !ANIMATE_FRAMES_MAX */
 
 #ifndef FPS
-#define FPS 15
+#define FPS 30
 #endif /* !FPS */
 
 #ifndef MEMORY_FAKE_HEAP_SZ

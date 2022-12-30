@@ -13,7 +13,7 @@ static const struct GRAPHICS_BITMAP* g_window_bmp = NULL;
 static int g_bg_id = 0;
 static int g_window_id = 0;
 static uint16_t g_bg_tiles[1024];
-static int g_window_tiles[1024];
+static uint16_t g_window_tiles[1024];
 
 const uint32_t gc_ms_target = 1000 / FPS;
 static uint32_t g_ms_start = 0;
@@ -40,11 +40,14 @@ int16_t graphics_platform_init() {
    bgExtPaletteEnable();
 
    /* Setup the background engine. */
-   memset( g_bg_tiles, 0, sizeof( g_bg_tiles ) );
-   g_bg_id = bgInit( 0, BgType_Text8bpp, BgSize_T_256x256, 7, 0 );
 
+   /* Put map at base 7, after tiles at base 0, leaving room for 224 tiles. */
+   g_bg_id = bgInit( 0, BgType_Text8bpp, BgSize_T_256x256, 7, 0 );
+   memset( g_bg_tiles, 0, sizeof( g_bg_tiles ) );
+
+   /* Put window map at base 10, after tiles at base 1, leaving room for 64. */
+   g_window_id = bgInit( 1, BgType_Text8bpp, BgSize_T_256x256, 9, 2 );
    memset( g_window_tiles, 0, sizeof( g_window_tiles ) );
-   g_window_id = bgInit( 1, BgType_Text8bpp, BgSize_T_256x256, 9, 1 );
 
    /* Setup the sprite engines. */
 	oamInit( &oamMain, SpriteMapping_1D_128, 0 );
@@ -59,7 +62,6 @@ int16_t graphics_platform_init() {
    /* Setup the timer. */
    TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
    TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
-   
 
    /* glScreen2D(); */
 
@@ -134,6 +136,7 @@ void graphics_loop_start() {
 void graphics_loop_end() {
    int16_t delta = 0;
    
+   /* Wait for FPS timer. */
    do {
       delta = gc_ms_target - (graphics_get_ms() - g_ms_start);
    } while( 0 < delta );  

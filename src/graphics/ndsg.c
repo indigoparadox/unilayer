@@ -7,12 +7,16 @@
 # define BG_TILE_TH 32
 
 static uint16_t* g_sprite_frames[GRAPHICS_SPRITES_ONSCREEN];
+
 static const struct GRAPHICS_BITMAP* g_bg_bmp = NULL;
 static const struct GRAPHICS_BITMAP* g_window_bmp = NULL;
 static int g_bg_id = 0;
 static int g_window_id = 0;
-static uint16_t g_bg_tiles[BG_TILE_TW * BG_TILE_TH];
-static int g_window_tiles[BG_TILE_TW * BG_TILE_TH];
+static uint16_t g_bg_tiles[1024];
+static int g_window_tiles[1024];
+
+const uint32_t gc_ms_target = 1000 / FPS;
+static uint32_t g_ms_start = 0;
 
 /*
  * @return 1 if init was successful and 0 otherwise.
@@ -22,7 +26,7 @@ int16_t graphics_platform_init() {
 
    powerOn( POWER_ALL );
    
-   videoSetMode( MODE_3_2D );
+   videoSetMode( MODE_0_2D );
 	videoSetModeSub( MODE_0_2D );
 
    /* Setup the upper screen for background and sprites. */
@@ -33,12 +37,14 @@ int16_t graphics_platform_init() {
 	vramSetBankC( VRAM_C_MAIN_BG );
 	vramSetBankD( VRAM_D_SUB_SPRITE );
 
+   bgExtPaletteEnable();
+
    /* Setup the background engine. */
    memset( g_bg_tiles, 0, sizeof( g_bg_tiles ) );
-   g_bg_id = bgInit( 0, BgType_Text8bpp, BgSize_T_256x256, 0, 1 );
+   g_bg_id = bgInit( 0, BgType_Text8bpp, BgSize_T_256x256, 7, 0 );
 
    memset( g_window_tiles, 0, sizeof( g_window_tiles ) );
-   g_window_id = bgInit( 1, BgType_Text8bpp, BgSize_T_256x256, 0, 1 );
+   g_window_id = bgInit( 1, BgType_Text8bpp, BgSize_T_256x256, 9, 1 );
 
    /* Setup the sprite engines. */
 	oamInit( &oamMain, SpriteMapping_1D_128, 0 );
@@ -49,6 +55,11 @@ int16_t graphics_platform_init() {
       g_sprite_frames[i] = oamAllocateGfx(
          &oamMain, SpriteSize_16x16, SpriteColorFormat_256Color );
    }
+
+   /* Setup the timer. */
+   TIMER0_CR = TIMER_ENABLE | TIMER_DIV_1024;
+   TIMER1_CR = TIMER_ENABLE | TIMER_CASCADE;
+   
 
    /* glScreen2D(); */
 
@@ -65,23 +76,39 @@ void graphics_lock() {
 
 void graphics_release() {
 
+   /* Setup bank E to receive extended palettes. */
+   /* TODO: Palette/BMP dirty bit. */
+   vramSetBankE( VRAM_E_LCD );
+
    /* Update background tiles. */
    if( NULL != g_bg_tiles && NULL != g_bg_bmp ) {
       dmaCopy(
          g_bg_bmp->id->tiles, bgGetGfxPtr( g_bg_id ), g_bg_bmp->id->tiles_sz );
-      dmaCopy( g_bg_bmp->id->palette, BG_PALETTE, g_bg_bmp->id->palette_sz );
       dmaCopy( g_bg_tiles, bgGetMapPtr( g_bg_id ),  sizeof( g_bg_tiles ) );
+
+      /* Using extended palettes as a workaround for ImageMagick palette
+       * issues.
+       */
+      dmaCopy( g_bg_bmp->id->palette, &VRAM_E_EXT_PALETTE[0][0],
+         g_bg_bmp->id->palette_sz );
    }
 
    /* Update window tiles. */
    if( NULL != g_window_tiles && NULL != g_window_bmp ) {
       dmaCopy( g_window_bmp->id->tiles, bgGetGfxPtr( g_window_id ),
          g_window_bmp->id->tiles_sz );
-      dmaCopy(
-         g_window_bmp->id->palette, BG_PALETTE, g_window_bmp->id->palette_sz );
       dmaCopy( g_window_tiles, bgGetMapPtr( g_window_id ),
          sizeof( g_window_tiles ) );
+
+      /* Using extended palettes as a workaround for ImageMagick palette
+       * issues.
+       */
+      dmaCopy( g_window_bmp->id->palette, &VRAM_E_EXT_PALETTE[1][0],
+         g_window_bmp->id->palette_sz );
    }
+
+   /* Tell bank E it can use the extended palettes, now. */
+   vramSetBankE( VRAM_E_BG_EXT_PALETTE );
 
    /* Update sprite engines. */
    oamUpdate( &oamMain );
@@ -94,15 +121,22 @@ int16_t graphics_get_random( int16_t start, int16_t range ) {
 }
 
 uint32_t graphics_get_ms() {
-   /* TODO */
-   return 0;
+   return ((TIMER1_DATA * (1 << 16)) + TIMER0_DATA) / 32;
 }
 
 void graphics_loop_start() {
-   /* TODO */
+   g_ms_start = graphics_get_ms();
+
+   /* Clear sprites at the start of the loop. */
+   oamClear( &oamMain, 0, 0 );
 }
 
 void graphics_loop_end() {
+   int16_t delta = 0;
+   
+   do {
+      delta = gc_ms_target - (graphics_get_ms() - g_ms_start);
+   } while( 0 < delta );  
    swiWaitForVBlank();
 }
 
@@ -118,6 +152,7 @@ int16_t graphics_platform_blit_partial_at(
    int tile_idx = 0,
       tile_x = 0,
       tile_y = 0;
+   uint16_t* bg_tiles = NULL;
 
    if( 0 <= instance_id && GRAPHICS_SPRITES_ONSCREEN > instance_id ) {
       /* Blitting a sprite. */
@@ -129,7 +164,6 @@ int16_t graphics_platform_blit_partial_at(
        */
       dmaCopy( bmp->id->palette, SPRITE_PALETTE, bmp->id->palette_sz );
 
-      /* TODO */
       /* 2 = spritesheet width of one row in sprites. */
       tile_idx = ((s_y / SPRITE_H) * 2) + (s_x / SPRITE_W);
       dmaCopy(
@@ -141,8 +175,18 @@ int16_t graphics_platform_blit_partial_at(
          SpriteSize_16x16, SpriteColorFormat_256Color, 
          g_sprite_frames[instance_id], -1, false, false, false, false, false );
 
-   } else if( GRAPHICS_INSTANCE_TILEMAP == instance_id ) {
-      /* Blitting a background tile. */
+   } else if(
+      GRAPHICS_INSTANCE_TILEMAP == instance_id ||
+      GRAPHICS_INSTANCE_WINDOW == instance_id
+   ) {
+      /* Blitting a background or window tile. */
+      if( GRAPHICS_INSTANCE_TILEMAP == instance_id ) {
+         bg_tiles = g_bg_tiles;
+         g_bg_bmp = bmp;
+      } else {
+         bg_tiles = g_window_tiles;
+         g_window_bmp = bmp;
+      }
 
       /* DS tiles are 8x8, so each tile is split up into 4, so compensate! */
       tile_idx = bmp->id->tile_offset * 4;
@@ -152,18 +196,10 @@ int16_t graphics_platform_blit_partial_at(
       tile_y = d_y / 8;
       tile_x = d_x / 8;
 
-      g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = tile_idx;
-      g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = tile_idx + 1;
-      g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = tile_idx + 2;
-      g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = tile_idx + 3;
-      g_bg_bmp = bmp;
-      /* scroll(bg, 256, 256); */
-
-   } else if( GRAPHICS_INSTANCE_WINDOW == instance_id ) {
-   /*
-      g_window_tiles[((d_y / TILE_W) * BG_TILE_TW) + (d_x / TILE_H)] = -1;
-      g_window_bmp = bmp;
-      */
+      bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = tile_idx;
+      bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = tile_idx + 1;
+      bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = tile_idx + 2;
+      bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = tile_idx + 3;
    }
 }
 
@@ -200,6 +236,8 @@ int16_t graphics_platform_load_bitmap(
 
 int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    /* TODO */
+   /* If we're unloading one then we're probably unloading them all? */
+   oamClear( &oamMain, 0, 0 );
 }
 
 #ifndef USE_SOFTWARE_TEXT

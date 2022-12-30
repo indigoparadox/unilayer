@@ -71,6 +71,11 @@
 
 #define graphics_set_screen_zoom( zoom ) g_screen_flags &= ~GRAPHICS_FLAG_ZOOM_MASK; g_screen_flags |= (((zoom) << 2) & GRAPHICS_FLAG_ZOOM_MASK)
 
+#ifndef graphics_clear_screen
+#define graphics_clear_screen() \
+   graphics_draw_block( 0, 0, SCREEN_W, SCREEN_H, GRAPHICS_COLOR_BLACK );
+#endif /* !graphics_clear_screen */
+
 /**
  * \brief Struct representing a graphical rectangle.
  */

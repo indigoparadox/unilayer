@@ -21,6 +21,8 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       return INPUT_KEY_LEFT;
    } else if( KEY_RIGHT == (keys & KEY_RIGHT) ) {
       return INPUT_KEY_RIGHT;
+   } else if( KEY_START == (keys & KEY_START) ) {
+      return INPUT_KEY_MENU;
    }
 
    return 0;

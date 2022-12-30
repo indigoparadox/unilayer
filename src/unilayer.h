@@ -53,6 +53,12 @@
  */
 #include "platform.h"
 
+#ifdef PLATFORM_PALM
+#define SECTION_WINDOW __attribute__ ((section( "winfns" )))
+#else
+#define SECTION_WINDOW
+#endif
+
 /* = Subsystems and Structures = */
 
 #include "config.h"

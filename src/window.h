@@ -263,14 +263,14 @@ struct WINDOW {
  * \param auto_h Limit height of screen area for auto-centering.
  * \return 1 if successful, or 0 otherwise.
  */
-int16_t window_init( uint16_t auto_w, uint16_t auto_h );
+int16_t window_init( uint16_t auto_w, uint16_t auto_h ) SECTION_WINDOW;
 
-int16_t window_reload_frames();
+int16_t window_reload_frames() SECTION_WINDOW;
 
 /**
  * \brief Global shutdown for the window subsystem. Runs at shutdown.
  */
-void window_shutdown();
+void window_shutdown() SECTION_WINDOW;
 
 int16_t window_draw_all();
 
@@ -289,16 +289,16 @@ int16_t window_push(
    uint16_t id, uint16_t parent_id, uint8_t type, uint8_t flags,
    uint16_t x, uint16_t y, uint16_t w, uint16_t h,
    GRAPHICS_COLOR fg, GRAPHICS_COLOR bg, uint8_t render_flags,
-   int32_t data_scalar, const char* data_string );
+   int32_t data_scalar, const char* data_string ) SECTION_WINDOW;
 
 /**
  * \brief Destroy the top-most onscreen WINDOW with the given WINDOW::id.
  * \param id WINDOW::id to search for and eliminate.
  * \param windows Locked ::MEMORY_PTR to the global window list.
  */
-void window_pop( uint16_t id );
+void window_pop( uint16_t id ) SECTION_WINDOW;
 
-void window_refresh( uint16_t w_id );
+void window_refresh( uint16_t w_id ) SECTION_WINDOW;
 
 #if 0
 /**
@@ -381,7 +381,7 @@ static int16_t g_window_screen_grid[4] = {
 
 WINDOW_CB_TABLE( WINDOW_CB_DRAW_TABLE_PROTOTYPES );
 
-#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out );
+#  define WINDOW_CB_SZ_TABLE_PROTOTYPES( idx, name ) uint8_t window_sz_ ## name( uint16_t w_id, struct WINDOW* windows, uint8_t w_h, uint16_t* out ) SECTION_WINDOW;
 
 WINDOW_CB_TABLE( WINDOW_CB_SZ_TABLE_PROTOTYPES );
 

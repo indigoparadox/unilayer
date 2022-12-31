@@ -31,6 +31,7 @@ static void window_placement(
    int16_t w_id, int16_t coord, uint8_t x_y, struct WINDOW* windows
 ) {
    int16_t* p_grid = NULL;
+   int16_t parent_w_h = 0;
    uint16_t parent_coords[4];
    struct WINDOW* p = NULL,
       * c = NULL;
@@ -43,6 +44,8 @@ static void window_placement(
 
    /* This is only called internally so it should NEVER have a null c! */
    assert( NULL != c );
+
+   assert( x_y < 2 );
 
    if( 0 < c->parent_id ) {
       p = window_get( c->parent_id, windows );
@@ -61,7 +64,8 @@ static void window_placement(
       p_grid = g_window_screen_grid;
    } else {
       /* Position relative to parent. */
-      window_trace_printf( 0, "> window %u rel window %d", c->id, c->parent_id );
+      window_trace_printf(
+         0, "> window %u rel window %d", c->id, c->parent_id );
       parent_coords[0] = window_get_coords( p, 0 );
       parent_coords[1] = window_get_coords( p, 1 );
       parent_coords[2] = window_get_coords( p, 2 );
@@ -77,18 +81,31 @@ static void window_placement(
 
    switch( (coord & WINDOW_PLACEMENT_AUTO_MASK) ){
    case WINDOW_PLACEMENT_CENTER:
+      /* Parent w/h (idx 2 & 3) correspond to x/w (idx 0 & 1) respectively. */
+      parent_w_h = (parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK);
+      assert( parent_w_h > 0 );
+
+      /* Note: any changes to this formula should also be made to
+       *       window_parent_sizing() below.
+       */
+
+      /* TODO: Consolidate so these use the same formula in the same place! */
+
       /* Window width / 2 - Control width / 2 */
-      assert( (parent_coords[x_y + 2] & WINDOW_PLACEMENT_PHYS_MASK) > 0 );
-      window_update_coords( c, x_y, 
-         ((parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK) / 2) -
-            (window_get_coords( c, x_y + 2 ) / 2) );
+      window_update_coords( c, x_y,
+         (parent_coords[x_y] & WINDOW_PLACEMENT_PHYS_MASK) +
+            ((parent_w_h / 2) - (window_get_coords( c, x_y + 2 ) / 2)) );
+
       window_trace_printf(
-         1, "> window %u center coord(%d) (%d / 2) - (%d / 2): %d", c->id,
-         x_y, (parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK),
+         1, "> window %u center coord(%d) %d + (%d / 2) - (%d / 2): %d",
+         c->id, x_y,
+         (parent_coords[x_y] & WINDOW_PLACEMENT_PHYS_MASK),
+         (parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK),
          window_get_coords( c, x_y + 2 ), window_get_coords( c, x_y ) );
       break;
 
    case WINDOW_PLACEMENT_RIGHT_BOTTOM:
+      /* TODO: Add parent_coords[x/y] offset. */
       window_update_coords( c, x_y, 
          /* Window width - Padding - Control width */
          parent_coords[x_y + 2] - WINDOW_PADDING_OUTSIDE - 
@@ -96,11 +113,13 @@ static void window_placement(
       break;
 
    case WINDOW_PLACEMENT_GRID_RIGHT_DOWN:
+      /* TODO: Add parent_coords[x/y] offset. */
       p_grid[x_y + 2] = p_grid[x_y];
       p_grid[x_y] += window_get_coords( c, x_y + 2 ) + WINDOW_PADDING_INSIDE;
       /* No break; proceed to place according to modified grid. */
 
    case WINDOW_PLACEMENT_GRID:
+      /* TODO: Add parent_coords[x/y] offset. */
       window_trace_printf( 1, "> window %u adding control using grid at: %d",
          c->id, p_grid[x_y + 2] );
       window_update_coords( c, x_y, p_grid[x_y + 2] );
@@ -116,6 +135,7 @@ static int16_t window_parent_placement(
    int16_t w_id, uint8_t x_y, struct WINDOW* windows
 ) {
    uint16_t parent_coords[4];
+   int16_t parent_w_h = 0;
    struct WINDOW* p = NULL,
       * p_p = NULL,
       * c = NULL;
@@ -166,14 +186,18 @@ static int16_t window_parent_placement(
 
    switch( (p->coords[x_y] & WINDOW_PLACEMENT_AUTO_MASK) ){
    case WINDOW_PLACEMENT_CENTER:
-      /* Window width / 2 - Control width / 2 */
+      
+      parent_w_h = (parent_coords[x_y + 2] & WINDOW_SIZE_PHYS_MASK);
       assert( parent_coords[x_y + 2] > 0 );
+
+      /* Window width / 2 - Control width / 2 */
       window_update_coords( p, x_y, 
-         ((parent_coords[x_y + 2] / 2) & WINDOW_PLACEMENT_PHYS_MASK) -
-            (window_get_coords( p, x_y + 2 ) / 2) );
+         (parent_coords[x_y] & WINDOW_PLACEMENT_PHYS_MASK) +
+            ((parent_w_h / 2) - (window_get_coords( p, x_y + 2 ) / 2) ) );
+      
       window_trace_printf(
-         1, "> window %u center coord(%d) (%d / 2) - (%d / 2): %d", c->id,
-         x_y, parent_coords[x_y + 2],
+         1, "> window %u center coord(%d) %d + (%d / 2) - (%d / 2): %d", c->id,
+         x_y, parent_coords[x_y] & WINDOW_PLACEMENT_PHYS_MASK, parent_w_h,
          window_get_coords( p, x_y + 2 ), window_get_coords( p, x_y ) );
       break;
    }
@@ -626,14 +650,23 @@ uint8_t window_sz_SPRITE(
 
 /* === General Functions === */
 
-int16_t window_init( uint16_t auto_w, uint16_t auto_h ) {
+int16_t window_init(
+   uint16_t auto_x, uint16_t auto_y, uint16_t auto_w, uint16_t auto_h
+) {
    int16_t retval = 1;
 
+   if( 0 < auto_x ) {
+      g_window_screen_coords[0] = auto_x;
+   }
+
+   if( 0 < auto_y ) {
+      g_window_screen_coords[1] = auto_y;
+   }
    if( 0 < auto_w ) {
       g_window_screen_coords[2] = auto_w;
    }
 
-   if( 0 < auto_w ) {
+   if( 0 < auto_h ) {
       g_window_screen_coords[3] = auto_h;
    }
 

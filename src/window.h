@@ -263,7 +263,9 @@ struct WINDOW {
  * \param auto_h Limit height of screen area for auto-centering.
  * \return 1 if successful, or 0 otherwise.
  */
-int16_t window_init( uint16_t auto_w, uint16_t auto_h ) SECTION_WINDOW;
+int16_t window_init(
+   uint16_t auto_x, uint16_t auto_y, uint16_t auto_w, uint16_t auto_h
+) SECTION_WINDOW;
 
 int16_t window_reload_frames() SECTION_WINDOW;
 

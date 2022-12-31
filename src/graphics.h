@@ -77,6 +77,19 @@
 #endif /* !graphics_clear_screen */
 
 /**
+ * \brief Erase a portion of the screen to black.
+ * 
+ * This may be overridden on certain platforms with more complicated graphics
+ * engines.
+ *
+ * \warning X and Y \b MUST be divisible by ::TILE_W and ::TILE_H, respectively.
+ */
+#ifndef graphics_clear_block
+#define graphics_clear_block( x, y, w, h ) \
+   graphics_draw_block( x, y, w, h, GRAPHICS_COLOR_BLACK );
+#endif /* !graphics_clear_screen */
+
+/**
  * \brief Struct representing a graphical rectangle.
  */
 struct GRAPHICS_RECT {

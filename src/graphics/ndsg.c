@@ -7,6 +7,10 @@
 # define BG_TILE_TH 32
 
 static uint16_t* g_sprite_frames[GRAPHICS_SPRITES_ONSCREEN];
+static const struct GRAPHICS_BITMAP* g_oam_entries[GRAPHICS_SPRITES_ONSCREEN];
+static int16_t g_oam_x[GRAPHICS_SPRITES_ONSCREEN];
+static int16_t g_oam_y[GRAPHICS_SPRITES_ONSCREEN];
+static OamState* g_oam_active = NULL;
 
 static const struct GRAPHICS_BITMAP* g_bg_bmp = NULL;
 static const struct GRAPHICS_BITMAP* g_window_bmp = NULL;
@@ -59,6 +63,7 @@ int16_t graphics_platform_init() {
    /* Setup the sprite engines. */
 	oamInit( &oamMain, SpriteMapping_1D_128, 0 );
 	oamInit( &oamSub, SpriteMapping_1D_128, 0 );
+   g_oam_active = &oamMain;
 
    /* Allocate sprite frame memory. */
    for( i = 0 ; GRAPHICS_SPRITES_ONSCREEN > i ; i++ ) {
@@ -89,7 +94,7 @@ void graphics_lock() {
 #endif /* NDS_BG_PX_CLEAR */
 
    /* Clear sprites at the start of the loop. */
-   oamClear( &oamMain, 0, 0 );
+   oamClear( g_oam_active, 0, 0 );
 }
 
 void graphics_release() {
@@ -173,8 +178,18 @@ int16_t graphics_platform_blit_partial_at(
       tile_y = 0;
    uint16_t* bg_tiles = NULL;
 
+   /* TODO: Draw crops and items. */
+
    if( 0 <= instance_id && GRAPHICS_SPRITES_ONSCREEN > instance_id ) {
       /* Blitting a sprite. */
+
+      if( g_oam_entries[instance_id] == bmp ) {
+         /* Bitmap already loaded, so just move it and avoid a dmaCopy(). */
+         oamSetXY( g_oam_active, instance_id, d_x, d_y );
+         g_oam_x[instance_id] = d_x;
+         g_oam_y[instance_id] = d_y;
+         return 1;
+      }
       
       /* On the DS, the RESOURCE_ID in bmp->id that would be a filename or w/e
        * on other platforms is just a pointer directly to the data from the
@@ -190,7 +205,7 @@ int16_t graphics_platform_blit_partial_at(
          g_sprite_frames[instance_id], (TILE_W * TILE_H) );
 
       oamSet(
-         &oamMain, instance_id, d_x, d_y, 0, 0,
+         g_oam_active, instance_id, d_x, d_y, 0, 0,
          SpriteSize_16x16, SpriteColorFormat_256Color, 
          g_sprite_frames[instance_id], -1, false, false, false, false, false );
 
@@ -222,7 +237,7 @@ int16_t graphics_platform_blit_partial_at(
          g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
          g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
 
-         /* TODO: Fill block with transparency on px layer in front. */
+         /* Fill block with transparency on px layer in front. */
          graphics_draw_block( d_x, d_y, TILE_W, TILE_H, 0 );
       }
 
@@ -230,6 +245,58 @@ int16_t graphics_platform_blit_partial_at(
       bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = tile_idx + 1;
       bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = tile_idx + 2;
       bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = tile_idx + 3;
+   }
+
+   return 1;
+}
+
+void graphics_nds_clear_region(
+   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h
+) {
+   int16_t i = 0,
+      tile_x = 0,
+      tile_y = 0,
+      x = 0,
+      y = 0;
+
+   assert( 0 == x_orig % TILE_W );
+   assert( 0 == y_orig % TILE_H );
+
+   /* Zero out bitmap region. */
+   graphics_draw_block( x_orig, y_orig, w, h, 0 );
+
+   /* Clear background in the region. */
+   for( y = y_orig ; y_orig + h > y ; y += TILE_H ) {
+      for( x = x_orig ; x_orig + w > x ; x += TILE_W ) {
+         tile_y = y / 8;
+         tile_x = x / 8;
+
+         /* Erase window tiles. */
+         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x] = 0;
+         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
+         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
+         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+
+         /* Erase tilemap tiles. */
+         g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = 0;
+         g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
+         g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
+         g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+      }
+   }
+
+   /* Clear out sprites in the region. */
+   for( i = 0 ; GRAPHICS_SPRITES_ONSCREEN > i ; i++ ) {
+      if(
+         NULL != g_oam_entries[i] &&
+         x_orig < g_oam_x[i] &&
+         x_orig + w > g_oam_x[i] &&
+         y_orig < g_oam_y[i] &&
+         y_orig + h > g_oam_y[i]
+      ) {
+         /* Sprite in the cleared region, so hide! */
+         oamSetHidden( g_oam_active, i, true );
+      }
    }
 }
 
@@ -277,7 +344,7 @@ int16_t graphics_platform_load_bitmap(
 int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {
    /* TODO */
    /* If we're unloading one then we're probably unloading them all? */
-   oamClear( &oamMain, 0, 0 );
+   /* oamClear( g_oam_active, 0, 0 ); */
 }
 
 #ifndef USE_SOFTWARE_TEXT

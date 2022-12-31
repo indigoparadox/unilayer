@@ -2,7 +2,7 @@
 #ifndef NDSG_H
 #define NDSG_H
 
-typedef uint16_t GRAPHICS_COLOR;
+typedef int32_t GRAPHICS_COLOR;
 struct GRAPHICS_BITMAP {
    RESOURCE_ID id;
    uint16_t flags;
@@ -20,8 +20,11 @@ struct GRAPHICS_BITMAP {
 struct GRAPHICS_ARGS {
 };
 
+/* Need to clear multiple drawing mechanisms (oam, bitmap, tile BG). */
 #define graphics_clear_screen() \
-   graphics_draw_block( 0, 0, SCREEN_W, SCREEN_H, 0 );
+   graphics_nds_clear_region( 0, 0, SCREEN_W, SCREEN_H );
+#define graphics_clear_block() \
+   graphics_nds_clear_region( x, y, w, h );
 
 #ifdef DEPTH_VGA
 

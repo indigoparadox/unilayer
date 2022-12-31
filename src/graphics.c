@@ -440,7 +440,7 @@ cleanup:
 }
 
 int16_t graphics_cache_blit_at(
-   uint16_t bitmap_idx, uint16_t instance_id,
+   uint16_t bitmap_idx, int16_t instance_id,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h
 ) {

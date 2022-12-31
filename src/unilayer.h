@@ -55,8 +55,10 @@
 
 #ifdef PLATFORM_PALM
 #define SECTION_WINDOW __attribute__ ((section( "winfns" )))
+#define SECTION_SETUP __attribute__ ((section( "setfns" )))
 #else
 #define SECTION_WINDOW
+#define SECTION_SETUP
 #endif
 
 /* = Subsystems and Structures = */

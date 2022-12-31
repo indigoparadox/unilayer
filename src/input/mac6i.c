@@ -1,14 +1,14 @@
 
 #include "../unilayer.h"
 
-uint8_t input_init() {
+uint8_t input_platform_init() {
    FlushEvents( everyEvent, 0 );
    return 1;
 }
 
-uint8_t input_poll( int16_t* x, int16_t* y ) {
+INPUT_VAL input_poll( int16_t* x, int16_t* y ) {
    EventRecord event;
-   uint8_t key = 0;
+   INPUT_VAL key = 0;
 
    /* SystemTask(); */
 

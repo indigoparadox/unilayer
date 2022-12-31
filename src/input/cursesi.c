@@ -1,9 +1,10 @@
 
+#define INPUT_PLATFORM_C
 #include "../unilayer.h"
 
 #include <ncurses.h>
 
-uint8_t input_init() {
+uint8_t input_platform_init() {
    nodelay( stdscr, TRUE );
    noecho();
    keypad( stdscr, TRUE );
@@ -11,28 +12,13 @@ uint8_t input_init() {
    return 1;
 }
 
-uint8_t input_poll( int16_t* x, int16_t* y ) {
-   int in_char = 0;
+INPUT_VAL input_poll( int16_t* x, int16_t* y ) {
+   INPUT_VAL in_char = 0;
    MEVENT event;
 
    in_char = getch();
 
-   switch( in_char ) {
-   case 'w':
-      return INPUT_KEY_UP;
-   case 'a':
-      return INPUT_KEY_LEFT;
-   case 's':
-      return INPUT_KEY_DOWN;
-   case 'd':
-      return INPUT_KEY_RIGHT;
-   case 'z':
-      return INPUT_KEY_OK;
-   case 'q':
-      return INPUT_KEY_QUIT;
-   case 'e':
-      return INPUT_KEY_MENU;
-   case KEY_MOUSE:
+   if( KEY_MOUSE == in_char ) {
       if( OK == getmouse( &event ) ) {
          debug_printf( 3, "click" );
          *x = event.x;
@@ -41,7 +27,7 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       return INPUT_CLICK;
    }
 
-   return 0;
+   return in_char;
 }
 
 void input_shutdown() {

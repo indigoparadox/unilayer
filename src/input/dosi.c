@@ -4,7 +4,7 @@
 #include <dos.h>
 #include <conio.h>
 
-uint8_t input_init() {
+uint8_t input_platform_init() {
    union REGS regs;
 
    regs.x.ax = 0;
@@ -20,7 +20,7 @@ uint8_t input_init() {
 
 /* = SCREEN DRAWING = */
 
-uint8_t input_poll( int16_t* x, int16_t* y ) {
+INPUT_VAL input_poll( int16_t* x, int16_t* y ) {
    uint8_t ch_out = 0;
    union REGS regs;
    static int16_t last_x = -1;

@@ -100,7 +100,8 @@ struct DIO_STREAM {
    if( (list_sz) + 1 >= (list_max) ) { \
       g_dio_error = LIST_ERROR_MAX; \
    } else { \
-      memory_copy_ptr( &(list[list_sz]), node, sizeof( list_type ) ); \
+      memory_copy_ptr( (MEMORY_PTR)&(list[list_sz]), (MEMORY_PTR)node, \
+         sizeof( list_type ) ); \
       (list_sz)++; \
    }
 
@@ -112,7 +113,7 @@ struct DIO_STREAM {
  * \param list_sz Number of active items in the list.
  * \param list_type Type of items in the list.
  */
-#define dio_list_remove( idx, list, list_sz, list_type ) assert( (idx) < (list_sz) ); while( (idx) + 1 < (list_sz) ) { memory_copy_ptr( &(list[idx]), &(list[idx + 1]), sizeof( list_type ) ); (idx)++; } (list_sz)--;
+#define dio_list_remove( idx, list, list_sz, list_type ) assert( (idx) < (list_sz) ); while( (idx) + 1 < (list_sz) ) { memory_copy_ptr( (MEMORY_PTR)&(list[idx]), (MEMORY_PTR)&(list[idx + 1]), sizeof( list_type ) ); (idx)++; } (list_sz)--;
 
 /*! \} */ /* unilayer_dio_list */
 

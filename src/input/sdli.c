@@ -1,11 +1,12 @@
 
+#define INPUT_PLATFORM_C
 #include "../unilayer.h"
 
 SDL_Joystick* g_joystick = NULL;
 int g_joystick_idx = -1;
 int g_joystick_deadzone = 8000;
 
-uint8_t input_init() {
+uint8_t input_platform_init() {
    /* TODO: Load selected joystick from config. */
 
    if( 1 > SDL_NumJoysticks() ) {
@@ -23,7 +24,7 @@ uint8_t input_init() {
    return 1;
 }
 
-uint8_t input_poll( int16_t* x, int16_t* y ) {
+INPUT_VAL input_poll( int16_t* x, int16_t* y ) {
    SDL_Event event;
    int8_t eres = 0;
    uint8_t sym_out = 0;
@@ -65,18 +66,18 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
       case 0:
          /* X Axis */
          if( (-1 * g_joystick_deadzone) > event.jaxis.value ) {
-            return INPUT_KEY_LEFT;
+            return g_input_key_left;
          } else if( g_joystick_deadzone < event.jaxis.value ) {
-            return INPUT_KEY_RIGHT;
+            return g_input_key_right;
          }
          break;
 
       case 1:
          /* Y Axis */
          if( (-1 * g_joystick_deadzone) > event.jaxis.value ) {
-            return INPUT_KEY_UP;
+            return g_input_key_up;
          } else if( g_joystick_deadzone < event.jaxis.value ) {
-            return INPUT_KEY_DOWN;
+            return g_input_key_down;
          }
          break;
       }
@@ -89,14 +90,15 @@ uint8_t input_poll( int16_t* x, int16_t* y ) {
 
       /* Convert button presses to key presses. */
 
+      /* TODO: Remappable joystick input. */
       if( 0 == event.jbutton.button ) {
-         return INPUT_KEY_OK;
+         return g_input_key_ok;
       } else if( 1 == event.jbutton.button ) {
-         return INPUT_KEY_QUIT;
+         return g_input_key_menu;
       }
 
    } else if( SDL_QUIT == event.type ) {
-      return INPUT_KEY_QUIT;
+      return g_input_key_quit;
 
 #ifdef PLATFORM_SDL2
    } else if( SDL_WINDOWEVENT == event.type ) {

@@ -129,9 +129,9 @@ struct GRAPHICS_BITMAP_BASE {
    uint8_t res4;
 };
 
-int16_t graphics_init();
+int16_t graphics_init() SECTION_SETUP;
 
-void graphics_shutdown();
+void graphics_shutdown() SECTION_SETUP;
 
 void graphics_lock();
 
@@ -284,7 +284,7 @@ void graphics_string_sz(
  * that bitmap's resource ID is given.
  */
 int16_t graphics_cache_blit_at(
-   uint16_t bitmap_idx, uint16_t instance_id,
+   uint16_t bitmap_idx, int16_t instance_id,
    uint16_t s_x, uint16_t s_y, uint16_t d_x, uint16_t d_y,
    uint16_t w, uint16_t h );
 
@@ -292,7 +292,7 @@ int16_t graphics_cache_blit_at(
  * \brief Free up graphics and resources used by loaded assets. Should only be
  *        called as part of cleanup (i.e. between maps).
  */
-void graphics_clear_cache();
+void graphics_clear_cache() SECTION_SETUP;
 
 int16_t graphics_cache_load_bitmap( RESOURCE_ID id, uint8_t type_flag );
 
@@ -322,7 +322,7 @@ void graphics_on_resize( int16_t new_w, int16_t new_h );
  * \return 1 if load was successful or 0 otherwise.
  */
 int16_t graphics_platform_load_bitmap(
-   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b );
+   RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b ) SECTION_SETUP;
 
 /**
  * \brief Free up the platform-specific resources associated with a loaded
@@ -331,7 +331,8 @@ int16_t graphics_platform_load_bitmap(
  *          deallocated if dynamic.
  * \return 1 if unload was successful or 0 otherwise.
  */
-int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b );
+int16_t graphics_platform_unload_bitmap(
+   struct GRAPHICS_BITMAP* b ) SECTION_SETUP;
 
 /**
  * \brief Load the given ::RESOURCE_ID into the graphics cache and return its
@@ -341,8 +342,8 @@ int16_t graphics_platform_blit_partial_at(
    const struct GRAPHICS_BITMAP*, int16_t,
    uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t );
 
-int16_t graphics_platform_init();
-void graphics_platform_shutdown();
+int16_t graphics_platform_init() SECTION_SETUP;
+void graphics_platform_shutdown() SECTION_SETUP;
 
 #endif /* GRAPHICS_C || GRAPHICS_PLATFORM_C */
 

@@ -261,12 +261,12 @@ void graphics_string_sz(
       i++;
    }
 
-   debug_printf( 0, "string %s is %d x %x", str, sz_out->w, sz_out->h );
-
    if( sz_out->w > 0 ) {
       sz_out->w -= FONT_SPACE; /* Remove trailing space. */
    }
    sz_out->h -= FONT_SPACE;
+
+   debug_printf( 0, "string %s is %d x %x", str, sz_out->w, sz_out->h );
 }
 
 #endif /* USE_SOFTWARE_TEXT */

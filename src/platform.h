@@ -242,6 +242,14 @@ loop_globals();
 
 #elif defined( PLATFORM_NDS )
 
+#  ifndef SCREEN_W
+#     define SCREEN_W 256
+#  endif /* !SCREEN_W */
+
+#  ifndef SCREEN_H
+#     define SCREEN_H 192
+#  endif /* !SCREEN_H */
+
 #  ifndef LOG_TO_FILE
 #     define LOG_TO_FILE
 #  endif /* !LOG_TO_FILE */

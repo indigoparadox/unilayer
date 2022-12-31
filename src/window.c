@@ -66,8 +66,8 @@ static void window_placement(
       /* Position relative to parent. */
       window_trace_printf(
          0, "> window %u rel window %d", c->id, c->parent_id );
-      parent_coords[0] = window_get_coords( p, 0 );
-      parent_coords[1] = window_get_coords( p, 1 );
+      parent_coords[0] = 0; /* Parent offset is added in drawing. */
+      parent_coords[1] = 0;
       parent_coords[2] = window_get_coords( p, 2 );
       parent_coords[3] = window_get_coords( p, 3 );
       p_grid = p->data.grid;

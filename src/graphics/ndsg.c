@@ -203,8 +203,8 @@ int16_t graphics_platform_blit_partial_at(
       /* TODO: Take s_x/s_y into account for caching! */
       if(
          g_oam_entries[instance_id] == bmp &&
-         s_x == g_oam_sx &&
-         s_y == g_oam_sy
+         s_x == g_oam_sx[instance_id] &&
+         s_y == g_oam_sy[instance_id]
       ) {
          /* Bitmap already loaded, so just move it and avoid a dmaCopy(). */
          oamSetXY( NDS_OAM_ACTIVE, instance_id, d_x, d_y );

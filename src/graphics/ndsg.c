@@ -3,8 +3,9 @@
 #define NDSG_C
 #include "../unilayer.h"
 
-# define BG_TILE_TW 32
-# define BG_TILE_TH 32
+#define BG_TILE_W_PX 8
+#define BG_TILE_H_PX 8
+#define BG_W_TILES 32
 
 static uint16_t* g_sprite_frames[GRAPHICS_SPRITES_ONSCREEN];
 static const struct GRAPHICS_BITMAP* g_oam_entries[GRAPHICS_SPRITES_ONSCREEN];
@@ -156,9 +157,9 @@ void graphics_loop_end() {
    
    /* Wait for FPS timer. */
    do {
+      swiWaitForVBlank();
       delta = gc_ms_target - (graphics_get_ms() - g_ms_start);
    } while( 0 < delta );  
-   swiWaitForVBlank();
 }
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
@@ -183,6 +184,8 @@ int16_t graphics_platform_blit_partial_at(
    if( 0 <= instance_id && GRAPHICS_SPRITES_ONSCREEN > instance_id ) {
       /* Blitting a sprite. */
 
+      /* TODO: Take s_x/s_y into account for caching! */
+#if 0
       if( g_oam_entries[instance_id] == bmp ) {
          /* Bitmap already loaded, so just move it and avoid a dmaCopy(). */
          oamSetXY( g_oam_active, instance_id, d_x, d_y );
@@ -190,7 +193,8 @@ int16_t graphics_platform_blit_partial_at(
          g_oam_y[instance_id] = d_y;
          return 1;
       }
-      
+#endif
+
       /* On the DS, the RESOURCE_ID in bmp->id that would be a filename or w/e
        * on other platforms is just a pointer directly to the data from the
        * structs/arrays assembled by grit in Makefile.nds. So just pull right
@@ -201,7 +205,7 @@ int16_t graphics_platform_blit_partial_at(
       /* 2 = spritesheet width of one row in sprites. */
       tile_idx = ((s_y / SPRITE_H) * 2) + (s_x / SPRITE_W);
       dmaCopy(
-         bmp->id->tiles + (tile_idx * (8 * 8)),
+         bmp->id->tiles + (tile_idx * (BG_TILE_W_PX * BG_TILE_H_PX)),
          g_sprite_frames[instance_id], (TILE_W * TILE_H) );
 
       oamSet(
@@ -227,24 +231,24 @@ int16_t graphics_platform_blit_partial_at(
 
       /* The tile's physical location on the tilemap. */
       /* Divide by 8 rather than 16 since DS tiles are 8x8. */
-      tile_y = d_y / 8;
-      tile_x = d_x / 8;
+      tile_y = d_y / BG_TILE_H_PX;
+      tile_x = d_x / BG_TILE_W_PX;
 
       if( GRAPHICS_INSTANCE_TILEMAP == instance_id ) {
          /* Hide window tiles if a tilemap tile was drawn more recently. */
-         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x] = 0;
-         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
-         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
-         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+         g_window_tiles[(tile_y * BG_W_TILES) + tile_x] = 0;
+         g_window_tiles[(tile_y * BG_W_TILES) + tile_x + 1] = 0;
+         g_window_tiles[((tile_y + 1) * BG_W_TILES) + tile_x] = 0;
+         g_window_tiles[((tile_y + 1) * BG_W_TILES) + tile_x + 1] = 0;
 
          /* Fill block with transparency on px layer in front. */
          graphics_draw_block( d_x, d_y, TILE_W, TILE_H, 0 );
       }
 
-      bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = tile_idx;
-      bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = tile_idx + 1;
-      bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = tile_idx + 2;
-      bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = tile_idx + 3;
+      bg_tiles[(tile_y * BG_W_TILES) + tile_x] = tile_idx;
+      bg_tiles[(tile_y * BG_W_TILES) + tile_x + 1] = tile_idx + 1;
+      bg_tiles[((tile_y + 1) * BG_W_TILES) + tile_x] = tile_idx + 2;
+      bg_tiles[((tile_y + 1) * BG_W_TILES) + tile_x + 1] = tile_idx + 3;
    }
 
    return 1;
@@ -268,20 +272,20 @@ void graphics_nds_clear_region(
    /* Clear background in the region. */
    for( y = y_orig ; y_orig + h > y ; y += TILE_H ) {
       for( x = x_orig ; x_orig + w > x ; x += TILE_W ) {
-         tile_y = y / 8;
-         tile_x = x / 8;
+         tile_y = y / BG_TILE_H_PX;
+         tile_x = x / BG_TILE_W_PX;
 
          /* Erase window tiles. */
-         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x] = 0;
-         g_window_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
-         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
-         g_window_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+         g_window_tiles[(tile_y * BG_W_TILES) + tile_x] = 0;
+         g_window_tiles[(tile_y * BG_W_TILES) + tile_x + 1] = 0;
+         g_window_tiles[((tile_y + 1) * BG_W_TILES) + tile_x] = 0;
+         g_window_tiles[((tile_y + 1) * BG_W_TILES) + tile_x + 1] = 0;
 
          /* Erase tilemap tiles. */
-         g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x] = 0;
-         g_bg_tiles[(tile_y * BG_TILE_TW) + tile_x + 1] = 0;
-         g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x] = 0;
-         g_bg_tiles[((tile_y + 1) * BG_TILE_TW) + tile_x + 1] = 0;
+         g_bg_tiles[(tile_y * BG_W_TILES) + tile_x] = 0;
+         g_bg_tiles[(tile_y * BG_W_TILES) + tile_x + 1] = 0;
+         g_bg_tiles[((tile_y + 1) * BG_W_TILES) + tile_x] = 0;
+         g_bg_tiles[((tile_y + 1) * BG_W_TILES) + tile_x + 1] = 0;
       }
    }
 

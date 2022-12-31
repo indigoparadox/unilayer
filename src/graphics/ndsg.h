@@ -23,7 +23,7 @@ struct GRAPHICS_ARGS {
 /* Need to clear multiple drawing mechanisms (oam, bitmap, tile BG). */
 #define graphics_clear_screen() \
    graphics_nds_clear_region( 0, 0, SCREEN_W, SCREEN_H );
-#define graphics_clear_block() \
+#define graphics_clear_block( x, y, w, h ) \
    graphics_nds_clear_region( x, y, w, h );
 
 #ifdef DEPTH_VGA
@@ -54,6 +54,8 @@ struct GRAPHICS_ARGS {
 
 #endif /* DEPTH_VGA */
 
+void graphics_nds_clear_region(
+   uint16_t x_orig, uint16_t y_orig, uint16_t w, uint16_t h );
 
 #endif /* NDSG_H */
 

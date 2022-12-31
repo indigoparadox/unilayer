@@ -17,9 +17,8 @@
 #define GRAPHICS_ERROR_NOT_FOUND -1
 
 #define GRAPHICS_INSTANCE_NONE      -1
-#define GRAPHICS_INSTANCE_STATIC    -2
-#define GRAPHICS_INSTANCE_WINDOW    -3
-#define GRAPHICS_INSTANCE_TILEMAP   -4
+#define GRAPHICS_INSTANCE_WINDOW    -2
+#define GRAPHICS_INSTANCE_TILEMAP   -3
 
 /**
  * \addtogroup unilayer_graphics_string_flags Unilayer Graphics String Flags

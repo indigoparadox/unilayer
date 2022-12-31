@@ -17,6 +17,10 @@ INPUT_VAL input_poll( int16_t* x, int16_t* y ) {
     */
    if( KEY_A == (keys & KEY_A) ) {
       return 6;
+   /*
+   } else if( KEY_B == (keys & KEY_B) ) {
+      return 3;
+   */
    } else if( KEY_UP == (keys & KEY_UP) ) {
       return 5;
    } else if( KEY_DOWN == (keys & KEY_DOWN) ) {

@@ -168,9 +168,9 @@ loop_globals();
 #  define platform_fopen HostFOpen
 #  define platform_fflush HostFFlush
 #  define platform_fclose HostFClose
-#  define after_unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags ) { return unilayer_main( 0, NULL ); }
-#  define platform_init( icon ) if( cmd == sysAppLaunchCmdNormalLaunch ) {
-#  define platform_shutdown() }
+#  define after_unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags ) { if( sysAppLaunchCmdNormalLaunch == cmd ) { return unilayer_main( 0, NULL ); } }
+#  define platform_init( icon )
+#  define platform_shutdown()
 #  include <mtypes.h>
 loop_globals();
 #  include "memory/palmm.h"

@@ -128,6 +128,7 @@ int write_header(
    int32_t buffer_file_sz = 0;
    struct CONVERT_GRID* grid;
    struct HEADPACK_DEF* writer_def = NULL;
+   char resource_name[RESOURCE_NAME_MAX + 1];
 
    /* Output header include guard start. */
    fprintf(
@@ -258,6 +259,43 @@ int write_header(
          fprintf( header, "   gsc_resource_handle_%d,\n", i );
       }
    }
+   fprintf( header, "};\n\n" );
+
+   /* Resource name index. */
+
+   fprintf(
+      header,
+      "static RES_CONST char* gsc_resource_names[] = {\n   NULL,\n"
+   );
+   for( i = 1 ; paths_in_sz >= i ; i++ ) {
+      path_iter_sz = strlen( paths_in[i - 1] );
+      path_iter_fname_idx = dio_basename( paths_in[i - 1], path_iter_sz );
+      writer_def =
+         headpack_get_def( &(paths_in[i - 1][path_iter_fname_idx]) );
+      if( NULL == writer_def ) {
+         printf( "path_in: %s\n", paths_in[i - 1] );
+         path_iter_ext_idx = dio_char_idx_r(
+            &(paths_in[i - 1][path_iter_fname_idx]), path_iter_sz, '.' );
+         memset( resource_name, '\0', RESOURCE_NAME_MAX + 1 );
+         if( RESOURCE_NAME_MAX <= path_iter_ext_idx - path_iter_fname_idx ) {
+            error_printf( "name %s too long: %d longer than %d",
+               paths_in[i - 1], path_iter_ext_idx - path_iter_fname_idx,
+               RESOURCE_NAME_MAX );
+            retval = 1;
+            goto cleanup;
+         } else {
+            strncpy( resource_name, 
+               &(paths_in[i - 1][path_iter_fname_idx]), path_iter_ext_idx );
+            printf( "res_name: %s\n", resource_name );
+         }
+
+         /* Use a generic resource ID. */
+         fprintf(
+            header, "   \"%s\",\n", resource_name );
+      }
+   }
+   fprintf(
+      header, "   \"\",\n" );
    fprintf( header, "};\n\n" );
 
    /* Plugin Indexes */

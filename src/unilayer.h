@@ -47,6 +47,15 @@
 #  define NO_CGA_FUNCTIONS
 #endif /* ANCIENT_C */
 
+#ifndef RESOURCE_NAME_MAX
+/**
+ * \warning Changing this may break save compatibility!
+ */
+#define RESOURCE_NAME_MAX 10
+#endif /* !RESOURCE_NAME_MAX */
+
+typedef char RESOURCE_NAME[RESOURCE_NAME_MAX];
+
 /* Sets up platform, including calling resinc.h to determine resource system.
  * It calls it before platform-specific graphics header, but after setting
  * flags like forcing RESOURCE_FILE, so it can't be pulled out for now.

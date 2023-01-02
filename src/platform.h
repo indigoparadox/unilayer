@@ -21,6 +21,8 @@
 #  define DEPTH_SPEC "16x16x4"
 #elif defined( DEPTH_MONO )
 #  define DEPTH_SPEC "16x16x2"
+#else
+#  error "No depth spec defined!"
 #endif /* DEPTH_VGA || DEPTH_CGA || DEPTH_MONO */
 
 struct GRAPHICS_ARGS;

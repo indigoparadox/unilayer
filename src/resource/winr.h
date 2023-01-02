@@ -2,7 +2,7 @@
 #ifndef WINR_H
 #define WINR_H
 
-typedef uint32_t RESOURCE_ID;
+typedef uint32_t RESOURCE_PLATFORM_ID;
 typedef HBITMAP RESOURCE_HANDLE;
 
 #define resource_compare_id( a, b ) (a == b)

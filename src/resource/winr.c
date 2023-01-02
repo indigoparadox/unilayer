@@ -1,5 +1,5 @@
 
-#define RESOURCE_C
+#define RESOURCE_PLATFORM_C
 #include "../unilayer.h"
 
 extern HINSTANCE g_instance;

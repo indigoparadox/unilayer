@@ -116,5 +116,22 @@ void resource_free_handle( RESOURCE_HANDLE handle ) {
    memory_free( handle );
 }
 
+uint8_t resource_id_from_name(
+   RESOURCE_ID* id, RESOURCE_NAME name, const char* ext
+) {
+   if(
+      NULL != name && 
+      memory_strnlen_ptr( name, RESOURCE_NAME_MAX ) < RESOURCE_NAME_MAX
+   ) {
+      memory_zero_ptr( (*id), RESOURCE_PATH_MAX );
+      dio_snprintf( (*id), RESOURCE_PATH_MAX, "%s/%s/%s.%s",
+         ASSETS_PATH, DEPTH_SPEC, name, ext );
+      return 1;
+   } else {
+      error_printf( "attempted to assign invalid resource: %s", name );
+   }
+   return 0;
+}
+
 #endif /* RESOURCE_FILE */
 

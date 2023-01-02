@@ -23,6 +23,10 @@ struct GRAPHICS_ARGS {
    uint8_t scale;
 };
 
+#ifdef MAIN_C
+extern struct GRAPHICS_ARGS g_graphics_args;
+#endif /* MAIN_C */
+
 #define WIN_GFX_TIMER_ID 6001
 
 #ifdef DEPTH_VGA

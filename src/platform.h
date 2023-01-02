@@ -168,7 +168,7 @@ loop_globals();
 #  define platform_fopen HostFOpen
 #  define platform_fflush HostFFlush
 #  define platform_fclose HostFClose
-#  define unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags )
+#  define after_unilayer_main() UInt32 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags ) { return unilayer_main( 0, NULL ); }
 #  define platform_init( icon ) if( cmd == sysAppLaunchCmdNormalLaunch ) {
 #  define platform_shutdown() }
 #  include <mtypes.h>
@@ -202,11 +202,30 @@ loop_globals();
 #     define LOG_FILE_NAME "logwin32.txt"
 #     define PLATFORM_API WINAPI
 #  endif /* PLATFORM_WIN16, PLATFORM_WIN32 */
-#  define unilayer_main() extern struct GRAPHICS_ARGS g_graphics_args; int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
-#  define unilayer_loop_iter() win_process_messages()
-#  define platform_init( icon ) g_instance = hInstance; g_graphics_args.cmd_show = nCmdShow; g_graphics_args.icon_res = icon; if( hPrevInstance ) { error_printf( "previous instance detected" ); return 1; }
 #  include <windows.h>
 #  include <mtypes.h>
+/* TODO: Why aren't these being defined? */
+#  ifdef __argc
+#     define PLATFORM_ARGS __argc, __argv
+#  else
+#     define PLATFORM_ARGS 0, NULL
+#  endif /* __argc */
+#  define after_unilayer_main() \
+   extern HWND g_window; \
+   extern int __argc; \
+   extern char** __argv; \
+   extern HINSTANCE g_instance; \
+   int PLATFORM_API WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow ) { \
+      g_graphics_args.cmd_show = nCmdShow; \
+      g_instance = hInstance; \
+      if( hPrevInstance ) { \
+         error_printf( "previous instance detected" ); \
+         return 1; \
+      } \
+      return unilayer_main( __argc, __argv ); \
+   }
+#  define unilayer_loop_iter() win_process_messages()
+#  define platform_init( icon ) g_graphics_args.icon_res = icon;
 loop_globals();
 #  include include_memory( "memory/winm.h" )
 #  include "resinc.h"
@@ -214,8 +233,6 @@ loop_globals();
 #  include "graphics/wing.h"
 
 #ifdef MAIN_C
-HINSTANCE g_instance = (HINSTANCE)NULL;
-HWND g_window = (HWND)NULL;
 #endif /* MAIN_C */
 
 #elif defined( PLATFORM_MAC6 )
@@ -282,12 +299,10 @@ loop_globals();
 #define PLATFORM_DIR_SEP '/'
 #endif /* !PLATFORM_DIR_SEP */
 
-#if !defined( unilayer_main ) && defined( DISABLE_MAIN_PARMS )
-#  define unilayer_main() void main()
-#elif !defined( unilayer_main ) && !defined( DISABLE_MAIN_PARMS )
+#if !defined( after_unilayer_main )
 /*! \brief Replaces main() and calls the appropriate platform-specific
  *         entrypoint. */
-#  define unilayer_main() int main( int argc, char* argv[] )
+#  define after_unilayer_main() int main( int argc, char* argv[] ) { return unilayer_main( argc, argv ); }
 #endif /* !unilayer_main() */
 
 #ifndef unilayer_loop_iter

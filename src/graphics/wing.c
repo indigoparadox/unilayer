@@ -18,8 +18,8 @@ extern uint8_t g_last_key;
 extern uint16_t g_last_mouse;
 extern uint16_t g_last_mouse_x;
 extern uint16_t g_last_mouse_y;
-extern HINSTANCE g_instance;
-extern HWND g_window;
+HINSTANCE g_instance = (HINSTANCE)NULL;
+HWND g_window = (HWND)NULL;
 extern MEMORY_HANDLE g_state_handle;
 
 struct GRAPHICS_BITMAP g_screen;

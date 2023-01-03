@@ -56,6 +56,12 @@ typedef int (*loop_iter)( void* );
 #     define SCREEN_H 200
 #  endif /* !SCREEN_H */
 
+#  ifdef DEPTH_VGA
+#     define RESOURCE_EXT_GRAPHICS "vga"
+#  else
+#     define RESOURCE_EXT_GRAPHICS "cga"
+#  endif
+
 #  define PLATFORM_DIR_SEP '\\'
 #  define LOG_FILE_NAME "logdos.txt"
 #  include <mtypes.h>
@@ -289,6 +295,10 @@ loop_globals();
 #  include "graphics/nullg.h"
 
 #endif
+
+#ifndef RESOURCE_EXT_GRAPHICS
+#  define RESOURCE_EXT_GRAPHICS "bmp"
+#endif /* !RESOURCE_EXT_GRAPHICS */
 
 #ifndef NEWLINE_STR
 /*! \brief Newline string on the current platform. */

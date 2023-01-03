@@ -687,6 +687,7 @@ int16_t window_init(
 int16_t window_reload_frames() {
    struct WINDOW_FRAME* frames = NULL;
    int16_t retval = 1;
+   RESOURCE_ID pattern_id;
 
    if( (MEMORY_HANDLE)NULL == g_frames_handle ) {
       return 0;
@@ -706,45 +707,43 @@ int16_t window_reload_frames() {
    frames[0].r = '|';
    frames[0].l = '|';
    frames[0].c = ' ';
-#elif defined( RESOURCE_FILE )
-   frames[0].tr = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_tr.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].tl = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_tl.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].br = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_br.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].bl = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_bl.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].t  = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_t.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].b  = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_b.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].r  = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_r.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].l  = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_l.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
-   frames[0].c  = graphics_cache_load_bitmap(
-      ASSETS_PATH DEPTH_SPEC "/p_chk_c.bmp", GRAPHICS_BMP_FLAG_TYPE_TILE );
 #else
+   resource_id_from_name( &pattern_id, "p_chk_tr", RESOURCE_EXT_GRAPHICS );
    frames[0].tr = graphics_cache_load_bitmap(
-      p_chk_tr, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   
+   resource_id_from_name( &pattern_id, "p_chk_tl", RESOURCE_EXT_GRAPHICS );
    frames[0].tl = graphics_cache_load_bitmap(
-      p_chk_tl, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+
+   resource_id_from_name( &pattern_id, "p_chk_br", RESOURCE_EXT_GRAPHICS );
    frames[0].br = graphics_cache_load_bitmap(
-      p_chk_br, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+
+   resource_id_from_name( &pattern_id, "p_chk_bl", RESOURCE_EXT_GRAPHICS );
    frames[0].bl = graphics_cache_load_bitmap(
-      p_chk_bl, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   
+   resource_id_from_name( &pattern_id, "p_chk_t", RESOURCE_EXT_GRAPHICS );
    frames[0].t  = graphics_cache_load_bitmap(
-      p_chk_t, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   
+   resource_id_from_name( &pattern_id, "p_chk_b", RESOURCE_EXT_GRAPHICS );
    frames[0].b  = graphics_cache_load_bitmap(
-      p_chk_b, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   
+   resource_id_from_name( &pattern_id, "p_chk_r", RESOURCE_EXT_GRAPHICS );
    frames[0].r  = graphics_cache_load_bitmap(
-      p_chk_r, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   
+   resource_id_from_name( &pattern_id, "p_chk_l", RESOURCE_EXT_GRAPHICS );
    frames[0].l  = graphics_cache_load_bitmap(
-      p_chk_l, GRAPHICS_BMP_FLAG_TYPE_TILE );
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+   
+   resource_id_from_name( &pattern_id, "p_chk_c", RESOURCE_EXT_GRAPHICS );
    frames[0].c  = graphics_cache_load_bitmap(
-      p_chk_c, GRAPHICS_BMP_FLAG_TYPE_TILE );
-#endif
+      pattern_id, GRAPHICS_BMP_FLAG_TYPE_TILE );
+#endif /* PLATFORM_CURSES */
 
    frames = (struct WINDOW_FRAME*)memory_unlock( g_frames_handle );
 

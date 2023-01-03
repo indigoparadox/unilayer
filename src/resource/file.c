@@ -23,28 +23,6 @@ RESOURCE_HANDLE resource_get_handle( const RESOURCE_ID id ) {
 
    dio_snprintf( asset_path, RESOURCE_PATH_MAX, "%s", id );
 
-#ifdef PLATFORM_DOS
-   extension_idx = dio_char_idx_r( asset_path,
-      memory_strnlen_ptr( asset_path, RESOURCE_PATH_MAX ), '.' );
-
-   #if 0
-   for( i = 0 ; strlen( asset_path ) > i ; i++ ) {
-      if( '/' == asset_path[i] ) {
-         asset_path[i] = PLATFORM_DIR_SEP;
-      }
-   }
-   debug_printf( 3, "asset path: %s\n", asset_path );
-   #endif
-
-   /* Use CGA-converted assets in DOS. */
-   debug_printf( 2, "resource extension: %s", &(asset_path[extension_idx]) );
-   if( 0 == memory_strncmp_ptr( &(asset_path[extension_idx]), ".bmp", 4 ) ) {
-      asset_path[extension_idx + 1] = 'c';
-      asset_path[extension_idx + 2] = 'g';
-      asset_path[extension_idx + 3] = 'a';
-   }
-#endif /* PLATFORM_DOS */
-
    res_file = fopen( asset_path, "rb" );
    if( NULL == res_file ) {
       error_printf( "unable to load resource: %s (error: %d)",
@@ -124,7 +102,7 @@ uint8_t resource_id_from_name(
       memory_strnlen_ptr( name, RESOURCE_NAME_MAX ) < RESOURCE_NAME_MAX
    ) {
       memory_zero_ptr( (*id), RESOURCE_PATH_MAX );
-      dio_snprintf( (*id), RESOURCE_PATH_MAX, "%s/%s/%s.%s",
+      dio_snprintf( (*id), RESOURCE_PATH_MAX, "%s%s/%s.%s",
          ASSETS_PATH, DEPTH_SPEC, name, ext );
       return 1;
    } else {

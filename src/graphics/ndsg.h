@@ -10,7 +10,7 @@ struct GRAPHICS_BITMAP {
    uint16_t* pixel_data;
 
    /* Unused Overrides */
-   void* res0;
+   struct RESOURCE_GRIT_DEF* grit;
    uint32_t res1;
    uint32_t res2;
    uint8_t res3;

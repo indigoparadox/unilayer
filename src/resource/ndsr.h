@@ -4,15 +4,8 @@
 
 /* This file is automatically selected by resinc.h. */
 
-/*
-struct RESOURCE_NDS_HANDLE {
-   struct RESOURCE_GRIT_DEF* grit_def;
-   uint32_t ptr_sz;
-   uint32_t locks;
-};
-*/
-
 struct RESOURCE_GRIT_DEF {
+   const char* name;
    const unsigned int* tiles;
    const unsigned short* palette;
    const uint32_t tiles_sz;
@@ -23,11 +16,14 @@ struct RESOURCE_GRIT_DEF {
 };
 
 /* This is defined in the Makefile.nds-created resext.h. */
-typedef struct RESOURCE_GRIT_DEF* RESOURCE_ID;
+typedef uint32_t RESOURCE_ID;
 typedef struct RESOURCE_GRIT_DEF* RESOURCE_HANDLE;
 
 #define resource_compare_id( a, b ) (a == b)
 #define resource_assign_id( dest, source ) dest = source
+#define resource_id_valid( id ) (0 < id)
+
+#define RESOURCE_ID_FMT "%d"
 
 #endif /* RESOURCE_NDS_H */
 

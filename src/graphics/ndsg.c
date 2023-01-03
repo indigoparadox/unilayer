@@ -114,14 +114,14 @@ void graphics_release() {
       /* Update background tiles. */
       if( g_bg_bmp_changed && NULL != g_bg_tiles && NULL != g_bg_bmp ) {
          dmaCopy(
-            g_bg_bmp->id->tiles, bgGetGfxPtr( g_bg_id ),
-            g_bg_bmp->id->tiles_sz );
+            g_bg_bmp->grit->tiles, bgGetGfxPtr( g_bg_id ),
+            g_bg_bmp->grit->tiles_sz );
 
          /* Using extended palettes as a workaround for ImageMagick palette
          * issues.
          */
-         dmaCopy( g_bg_bmp->id->palette, &VRAM_E_EXT_PALETTE[0][0],
-            g_bg_bmp->id->palette_sz );
+         dmaCopy( g_bg_bmp->grit->palette, &VRAM_E_EXT_PALETTE[0][0],
+            g_bg_bmp->grit->palette_sz );
 
          g_bg_bmp_changed = 0;
       }
@@ -130,14 +130,14 @@ void graphics_release() {
       if(
          g_window_bmp_changed && NULL != g_window_tiles && NULL != g_window_bmp
       ) {
-         dmaCopy( g_window_bmp->id->tiles, bgGetGfxPtr( g_window_id ),
-            g_window_bmp->id->tiles_sz );
+         dmaCopy( g_window_bmp->grit->tiles, bgGetGfxPtr( g_window_id ),
+            g_window_bmp->grit->tiles_sz );
 
          /* Using extended palettes as a workaround for ImageMagick palette
           * issues.
           */
-         dmaCopy( g_window_bmp->id->palette, &VRAM_E_EXT_PALETTE[1][0],
-            g_window_bmp->id->palette_sz );
+         dmaCopy( g_window_bmp->grit->palette, &VRAM_E_EXT_PALETTE[1][0],
+            g_window_bmp->grit->palette_sz );
 
          g_window_bmp_changed = 0;
       }
@@ -218,7 +218,7 @@ int16_t graphics_platform_blit_partial_at(
        * structs/arrays assembled by grit in Makefile.nds. So just pull right
        * from there.
        */
-      dmaCopy( bmp->id->palette, SPRITE_PALETTE, bmp->id->palette_sz );
+      dmaCopy( bmp->grit->palette, SPRITE_PALETTE, bmp->grit->palette_sz );
 
       /* 2 = spritesheet width of one row in sprites. */
       if( 0 == s_x && 0 == s_y ) {
@@ -227,7 +227,7 @@ int16_t graphics_platform_blit_partial_at(
          tile_idx = ((s_y / SPRITE_H) * 2) + (s_x / SPRITE_W);
       }
       dmaCopy(
-         bmp->id->tiles + (tile_idx * (BG_TILE_W_PX * BG_TILE_H_PX)),
+         bmp->grit->tiles + (tile_idx * (BG_TILE_W_PX * BG_TILE_H_PX)),
          g_sprite_frames[instance_id], (TILE_W * TILE_H) );
 
       oamSet(
@@ -269,7 +269,7 @@ int16_t graphics_platform_blit_partial_at(
       }
 
       /* DS tiles are 8x8, so each tile is split up into 4, so compensate! */
-      tile_idx = bmp->id->tile_offset * 4;
+      tile_idx = bmp->grit->tile_offset * 4;
 
       bg_tiles[(tile_y * BG_W_TILES) + tile_x] = tile_idx;
       bg_tiles[(tile_y * BG_W_TILES) + tile_x + 1] = tile_idx + 1;
@@ -368,7 +368,7 @@ void graphics_draw_line(
 int16_t graphics_platform_load_bitmap(
    RESOURCE_HANDLE res_handle, struct GRAPHICS_BITMAP* b
 ) {
-   /* TODO */
+   b->grit = res_handle;
 }
 
 int16_t graphics_platform_unload_bitmap( struct GRAPHICS_BITMAP* b ) {

@@ -57,16 +57,18 @@
  * \{
  */
 
-int32_t asn_write_int( MEMORY_HANDLE* h_buffer, int32_t idx, int32_t value );
+int32_t asn_write_int(
+   MEMORY_HANDLE* h_buffer, int32_t idx, int32_t value ) SECTION_ASN;
 int32_t asn_write_string(
    MEMORY_HANDLE* h_buffer, int32_t idx,
-   const char* source, int32_t source_sz );
+   const char* source, int32_t source_sz ) SECTION_ASN;
 int32_t asn_write_blob(
-   MEMORY_HANDLE* h_buffer, int32_t idx, uint8_t* source, int32_t source_sz );
+   MEMORY_HANDLE* h_buffer, int32_t idx, uint8_t* source, int32_t source_sz
+) SECTION_ASN;
 int32_t asn_write_seq_start(
-   MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark );
+   MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark ) SECTION_ASN;
 int32_t asn_write_seq_end(
-   MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark );
+   MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t* mark ) SECTION_ASN;
 
 /*! \} */
 
@@ -83,7 +85,7 @@ int32_t asn_write_seq_end(
  * \return Count of bytes parsed in asn_buffer or \ref unilayer_asn_errors.
  * \deprecated Should be worked into asn_read_int using flags at some point.
  */
-int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx );
+int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx ) SECTION_ASN;
 
 /**
  * \brief Read int object in asn_buffer into buffer.
@@ -96,7 +98,7 @@ int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx );
  */
 int16_t asn_read_int(
    uint8_t* int_buffer, uint8_t buffer_sz, uint8_t flags,
-   const uint8_t* asn_buffer, int32_t idx );
+   const uint8_t* asn_buffer, int32_t idx ) SECTION_ASN;
 
 /**
  * \brief Read string object in asn_buffer into str_buffer.
@@ -108,7 +110,7 @@ int16_t asn_read_int(
  */
 int16_t asn_read_string(
    char* str_buffer, int16_t str_buffer_sz,
-   const uint8_t* asn_buffer, int32_t idx );
+   const uint8_t* asn_buffer, int32_t idx ) SECTION_ASN;
 
 /**
  * \brief Get metadata for the object at idx in buffer.
@@ -119,7 +121,8 @@ int16_t asn_read_string(
  * \return
  */
 int32_t asn_read_meta_ptr(
-   const uint8_t* buffer, int32_t idx, uint8_t* type_out, int32_t* sz_out );
+   const uint8_t* buffer, int32_t idx, uint8_t* type_out, int32_t* sz_out
+) SECTION_ASN;
 
 /*! \} */
 

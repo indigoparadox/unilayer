@@ -2,9 +2,8 @@
 #ifndef RESOURCE_FILE_H
 #define RESOURCE_FILE_H
 
-#ifndef RESOURCE_PATH_MAX
-#define RESOURCE_PATH_MAX 48
-#endif /* !RESOURCE_PATH_MAX */
+/* So RESOURCE_PATH_MAX is available to tools. */
+#include "../config.h"
 
 typedef char RESOURCE_ID[RESOURCE_PATH_MAX];
 typedef MEMORY_HANDLE RESOURCE_HANDLE;

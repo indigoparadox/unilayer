@@ -1,7 +1,22 @@
 
 #include "unilayer.h"
 
-static int8_t asn_get_int_sz( int32_t value ) {
+/* Private Prototypes w/ Sections */
+
+int8_t asn_get_int_sz( int32_t value ) SECTION_ASN;
+int32_t asn_raw_write_int(
+   uint8_t* buffer, int32_t idx, int32_t value, int32_t value_sz ) SECTION_ASN;
+int32_t asn_raw_read_int(
+   const uint8_t* buffer, int32_t idx, int32_t* value_out, int32_t value_sz
+) SECTION_ASN;
+int32_t asn_ensure_buffer_sz(
+   MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t val_sz ) SECTION_ASN;
+int32_t asn_write_sz(
+   uint8_t* buffer, int32_t idx, int32_t sz, int32_t sz_of_sz ) SECTION_ASN;
+
+/* Function Definitions */
+
+int8_t asn_get_int_sz( int32_t value ) {
    int8_t val_sz = -1;
 
    if( value <= 0x7f ) {
@@ -21,7 +36,7 @@ static int8_t asn_get_int_sz( int32_t value ) {
    return val_sz;
 }
 
-static int32_t asn_raw_write_int(
+int32_t asn_raw_write_int(
    uint8_t* buffer, int32_t idx, int32_t value, int32_t value_sz
 ) {
    int32_t i = 0;
@@ -39,7 +54,7 @@ static int32_t asn_raw_write_int(
    return idx;
 }
 
-static int32_t asn_raw_read_int(
+int32_t asn_raw_read_int(
    const uint8_t* buffer, int32_t idx, int32_t* value_out, int32_t value_sz
 ) {
    int32_t i = 0,
@@ -63,7 +78,7 @@ static int32_t asn_raw_read_int(
    return idx;
 }
 
-static int32_t asn_ensure_buffer_sz(
+int32_t asn_ensure_buffer_sz(
    MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t val_sz
 ) {
    int32_t sz_of_sz = 1,
@@ -94,7 +109,7 @@ static int32_t asn_ensure_buffer_sz(
    return memory_sz( *ph_buffer );
 }
 
-static int32_t asn_write_sz(
+int32_t asn_write_sz(
    uint8_t* buffer, int32_t idx, int32_t sz, int32_t sz_of_sz
 ) {
 

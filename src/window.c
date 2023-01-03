@@ -2,7 +2,23 @@
 #define WINDOW_C
 #include "unilayer.h"
 
-/* === Static Utility Functions === */
+/* Private Prototypes w/ Sections */
+
+void window_placement(
+   int16_t w_id, int16_t coord, uint8_t x_y, struct WINDOW* windows
+) SECTION_WINDOW;
+int16_t window_parent_placement(
+   int16_t w_id, uint8_t x_y, struct WINDOW* windows ) SECTION_WINDOW;
+int16_t window_sizing(
+   int16_t w_id, uint16_t dimension, uint8_t w_h,
+   struct WINDOW* windows ) SECTION_WINDOW;
+void window_parent_sizing(
+   int16_t w_id, uint8_t w_h, struct WINDOW* windows ) SECTION_WINDOW;
+void window_pop_internal( uint16_t id, struct WINDOW* windows ) SECTION_WINDOW;
+
+/* Function Definitions */
+
+/* === Common Internal Utility Functions === */
 
 static struct WINDOW* window_get( uint16_t id, struct WINDOW* windows ) {
    int16_t i = 0;
@@ -27,7 +43,7 @@ static struct WINDOW* window_get( uint16_t id, struct WINDOW* windows ) {
    return NULL;
 }
 
-static void window_placement(
+void window_placement(
    int16_t w_id, int16_t coord, uint8_t x_y, struct WINDOW* windows
 ) {
    int16_t* p_grid = NULL;
@@ -131,7 +147,7 @@ static void window_placement(
    }
 }
 
-static int16_t window_parent_placement(
+int16_t window_parent_placement(
    int16_t w_id, uint8_t x_y, struct WINDOW* windows
 ) {
    uint16_t parent_coords[4];
@@ -205,7 +221,7 @@ static int16_t window_parent_placement(
    return retval;
 }
 
-static int16_t window_sizing(
+int16_t window_sizing(
    int16_t w_id, uint16_t dimension, uint8_t w_h,
    struct WINDOW* windows
 ) {
@@ -257,7 +273,7 @@ static int16_t window_sizing(
  * \brief Redo parent sizing if parent is dynamically sized to account for new
  *        children. This should be called whenever a child is added.
  */
-static void window_parent_sizing(
+void window_parent_sizing(
    int16_t w_id, uint8_t w_h, struct WINDOW* windows
 ) {
    struct WINDOW* c = NULL,
@@ -918,7 +934,7 @@ cleanup:
    return retval;
 }
 
-static void window_pop_internal( uint16_t id, struct WINDOW* windows ) {
+void window_pop_internal( uint16_t id, struct WINDOW* windows ) {
    int16_t i = 0,
       id_recurse = 0;
    struct WINDOW* window_out = NULL;

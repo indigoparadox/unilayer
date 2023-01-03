@@ -2,9 +2,8 @@
 #ifndef RESOURCE_WEB_H
 #define RESOURCE_WEB_H
 
-#ifndef RESOURCE_PATH_MAX
-#define RESOURCE_PATH_MAX 48
-#endif /* !RESOURCE_PATH_MAX */
+/* So RESOURCE_PATH_MAX is available. */
+#include "../config.h"
 
 #include <emscripten/fetch.h>
 

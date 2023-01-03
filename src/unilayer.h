@@ -65,9 +65,11 @@ typedef char RESOURCE_NAME[RESOURCE_NAME_MAX];
 #ifdef PLATFORM_PALM
 #define SECTION_WINDOW __attribute__ ((section( "winfns" )))
 #define SECTION_SETUP __attribute__ ((section( "setfns" )))
+#define SECTION_ASN __attribute__ ((section( "asnfns" )))
 #else
 #define SECTION_WINDOW
 #define SECTION_SETUP
+#define SECTION_ASN
 #endif
 
 /* = Subsystems and Structures = */
@@ -96,8 +98,8 @@ typedef char RESOURCE_NAME[RESOURCE_NAME_MAX];
 #endif /* UNILAYER_NETWORK */
 #ifdef RESOURCE_FILE
 #include "json.h"
-#include "asn.h"
 #endif /* RESOURCE_FILE */
+#include "asn.h"
 #include "save.h"
 #include "window.h"
 

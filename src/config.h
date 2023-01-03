@@ -153,6 +153,10 @@
 #define NAMEBUF_MAX 255
 #endif /* !NAMEBUF_MAX */
 
+#ifndef RESOURCE_PATH_MAX
+#define RESOURCE_PATH_MAX 48
+#endif /* !RESOURCE_PATH_MAX */
+
 #ifndef DEBUG_THRESHOLD
 #define DEBUG_THRESHOLD 2
 #endif /* !DEBUG_THRESHOLD */

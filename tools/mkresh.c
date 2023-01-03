@@ -12,6 +12,7 @@
 #define STATE_FMT       4
 #define STATE_ID        5
 #define STATE_STYPES    6
+#define STATE_OUTARRAYS 7
 
 #define FMT_PALM        1
 #define FMT_WIN16       2
@@ -99,6 +100,53 @@ void mkresh_header(
 
    /* Output header include guard terminator. */
    fprintf( header_file, "\n#endif /* RESIDX_H */\n" );
+
+cleanup:
+
+   if( NULL != header_file ) {
+      fclose( header_file );
+   }
+   header_file = NULL;
+
+}
+
+void mkresh_arrays(
+   const char* namebuf_header, int id_start, int fmt,
+   char* const file_list[], char* const file_basename_list[], int file_list_len,
+   char* const stypes_list[], int stypes_list_len
+) {
+   FILE* header_file = NULL;
+   int i = 0;
+
+   header_file = fopen( namebuf_header, "w" );
+   assert( NULL!= header_file );
+
+   /* TODO: Encode files that aren't in (s)parsetypes, like in headpack. */
+
+   /* Output header include guards. */
+   fprintf( header_file, "\n#ifndef RESARRAY_H\n#define RESARRAY_H\n" );
+
+   /* Create optional index arrays. */
+   fprintf( header_file, "\n#ifdef RESOURCE_C\n" );
+
+   fprintf( header_file, "\nstatic char* g_resource_names[] = {\n" );
+   for( i = 0 ; file_list_len > i ; i++ ) {
+      fprintf( header_file, "   \"%s\",\n", file_basename_list[i] );
+   }
+   fprintf( header_file, "   \"\"\n" );
+   fprintf( header_file, "};\n" );
+
+   fprintf( header_file, "\nstatic uint32_t g_resource_ids[] = {\n" );
+   for( i = 0 ; file_list_len > i ; i++ ) {
+      fprintf( header_file, "   %d,\n", id_start + i );
+   }
+   fprintf( header_file, "};\n" );
+
+
+   fprintf( header_file, "\n#endif /* RESOURCE_C */\n" );
+
+   /* Output header include guard terminator. */
+   fprintf( header_file, "\n#endif /* RESARRAY_H */\n" );
 
 cleanup:
 
@@ -219,7 +267,8 @@ int main( int argc, char* argv[] ) {
       * file_basename_list[FILE_LIST_MAX];
    const char* res_type = NULL;
    char namebuf_header[NAMEBUF_MAX + 1],
-      namebuf_res[NAMEBUF_MAX + 1];
+      namebuf_res[NAMEBUF_MAX + 1],
+      namebuf_arrays[NAMEBUF_MAX + 1];
    size_t file_list_len = 0,
       stypes_list_len = 0;
 
@@ -264,6 +313,11 @@ int main( int argc, char* argv[] ) {
          state = 0;
          break;
 
+      case STATE_OUTARRAYS:
+         strncpy( namebuf_arrays, argv[i], NAMEBUF_MAX );
+         state = 0;
+         break;
+
       case STATE_OUTRES:
          strncpy( namebuf_res, argv[i], NAMEBUF_MAX );
          state = 0;
@@ -293,6 +347,8 @@ int main( int argc, char* argv[] ) {
             state = STATE_OUTRES;
          } else if( 0 == strncmp( argv[i], "-oh", 3 ) ) {
             state = STATE_OUTHEADER;
+         } else if( 0 == strncmp( argv[i], "-oa", 3 ) ) {
+            state = STATE_OUTARRAYS;
          } else if( 0 == strncmp( argv[i], "-f", 2 ) ) {
             state = STATE_FMT;
          } else if( 0 == strncmp( argv[i], "-i", 2 ) ) {
@@ -309,6 +365,12 @@ int main( int argc, char* argv[] ) {
 
    if( 0 < strlen( namebuf_header ) ) {
       mkresh_header( namebuf_header, id_start, fmt, file_list,
+         file_basename_list, file_list_len,
+         stypes_list, stypes_list_len );
+   }
+
+   if( 0 < strlen( namebuf_arrays ) ) {
+      mkresh_arrays( namebuf_arrays, id_start, fmt, file_list,
          file_basename_list, file_list_len,
          stypes_list, stypes_list_len );
    }

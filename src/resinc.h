@@ -19,6 +19,9 @@
 #if defined RESOURCE_HEADER
 #   define RESOURCES "HEADER"
 #   include "resource/header.h"
+#elif defined PLATFORM_WASM && !defined RESOURCE_FILE
+#   define RESOURCES "WASM"
+#   include "resource/webr.h"
 #elif defined PLATFORM_NDS && !defined RESOURCE_FILE
 #   define RESOURCES "NDS"
 #   include "resource/ndsr.h"

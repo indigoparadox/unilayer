@@ -6,7 +6,7 @@
 int8_t asn_get_int_sz( int32_t value ) SECTION_ASN;
 int32_t asn_raw_write_int(
    uint8_t* buffer, int32_t idx, int32_t value, int32_t value_sz ) SECTION_ASN;
-int32_t asn_raw_read_int(
+int16_t asn_raw_read_int(
    const uint8_t* buffer, int32_t idx, int32_t* value_out, int32_t value_sz
 ) SECTION_ASN;
 int32_t asn_ensure_buffer_sz(
@@ -54,17 +54,19 @@ int32_t asn_raw_write_int(
    return idx;
 }
 
-int32_t asn_raw_read_int(
+int16_t asn_raw_read_int(
    const uint8_t* buffer, int32_t idx, int32_t* value_out, int32_t value_sz
 ) {
    int32_t i = 0,
       byte_scratch = 0; /* Buffer to hold byte while it is shifted. */
+   int16_t field_sz = 0;
 
    assert( 0 < value_sz );
 
    for( i = value_sz - 1 ; 0 <= i ; i-- ) {
       /* Grab the buffer and shift it to the left i times. */
-      byte_scratch = buffer[idx++];
+      byte_scratch = buffer[idx + field_sz];
+      field_sz++;
       byte_scratch <<= (i * 8);
 
       *value_out |= byte_scratch;
@@ -75,7 +77,7 @@ int32_t asn_raw_read_int(
       */
    }
 
-   return idx;
+   return field_sz;
 }
 
 int32_t asn_ensure_buffer_sz(
@@ -468,10 +470,11 @@ cleanup:
 }
 
 
-int32_t asn_read_meta_ptr(
+int16_t asn_read_meta_ptr(
    const uint8_t* buffer, int32_t idx, uint8_t* type_out, int32_t* sz_out
 ) {
    uint8_t sz_of_sz = 0;
+   int16_t read_sz = 0;
 
    *type_out = buffer[idx++];
 
@@ -481,7 +484,9 @@ int32_t asn_read_meta_ptr(
       /* Strip high bit. */
       sz_of_sz = (buffer[idx++] & 0x7f);
       *sz_out = 0;
-      idx = asn_raw_read_int( buffer, idx, sz_out, sz_of_sz );
+      read_sz = asn_raw_read_int( buffer, idx, sz_out, sz_of_sz );
+      /* TODO: Error checking. */
+      idx += read_sz;
 
    } else {
       /* Size of size is one byte long. */

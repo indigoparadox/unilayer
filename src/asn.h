@@ -74,6 +74,13 @@ int32_t asn_write_seq_end(
 
 /**
  * \addtogroup unilayer_asn_read Reading ASN.1 Data
+ * \brief Functions for reasing ASN.1 data back into C structs.
+ *
+ * These functions generally take a locked ::MEMORY_PTR to the ASN.1 data.
+ * This may seem inconsistent with \ref unilayer_asn_write, but since the
+ * ASN.1 buffer is finalized and won't change size, locking the buffer once
+ * and passing it around is faster and simpler.
+ *
  * \{
  */
 
@@ -120,7 +127,7 @@ int16_t asn_read_string(
  * \param sz_out
  * \return
  */
-int32_t asn_read_meta_ptr(
+int16_t asn_read_meta_ptr(
    const uint8_t* buffer, int32_t idx, uint8_t* type_out, int32_t* sz_out
 ) SECTION_ASN;
 

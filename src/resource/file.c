@@ -99,15 +99,20 @@ uint8_t resource_id_from_name(
 ) {
    if(
       NULL != name && 
+      memory_strnlen_ptr( name, RESOURCE_NAME_MAX ) > 0 &&
       memory_strnlen_ptr( name, RESOURCE_NAME_MAX ) < RESOURCE_NAME_MAX
    ) {
       memory_zero_ptr( (*id), RESOURCE_PATH_MAX );
       dio_snprintf( (*id), RESOURCE_PATH_MAX, "%s%s/%s.%s",
          ASSETS_PATH, DEPTH_SPEC, name, ext );
       return 1;
+#if 0
    } else {
       error_printf( "attempted to assign invalid resource: %s", name );
+#endif
    }
+
+   (*id)[0] = '\0';
    return 0;
 }
 

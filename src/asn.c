@@ -167,7 +167,7 @@ int32_t asn_write_int( MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t value ) {
       value *= -1;
    }
 
-   debug_printf( 1,
+   debug_printf( 0,
       "(offset 0x%02x) value %d (0x%02x) type is %02x",
       idx, value, value, type_val );
 
@@ -398,13 +398,10 @@ int16_t asn_read_int(
    const uint8_t* asn_buffer, int32_t idx
 ) {
    int16_t field_sz = 0;
-   volatile int16_t* int16_buffer = (int16_t*)int_buffer;
-   volatile uint16_t* uint16_buffer = (uint16_t*)int_buffer;
-   volatile int8_t* int8_buffer = NULL; /* Assigned below. */
-   volatile uint8_t* uint8_buffer = NULL; /* Assigned below. */
-   uint8_t negative = 0,
-      buffer_offset = 0; /* How deep into the buffer to write? */
+   uint32_t int_out = 0;
+   uint8_t negative = 0;
    uint8_t type_buf = asn_buffer[idx];
+   uint8_t sz_buf = 0;
 
    if( 0x02 != type_buf ) {
       if( 0x42 == type_buf ) {
@@ -432,85 +429,50 @@ int16_t asn_read_int(
    }
 
    /* Do the reading based on actual size of stored number. */
-
-   if( asn_buffer[idx + 1] == 1 ) {
+   sz_buf = asn_buffer[idx + 1];
+   if( sz_buf == 1 ) {
       /* Stored number is 1 byte. */
-
-      /* Make sure pointer is pointing to right part of the buffer. */
-      if( 2 == int_buffer_sz ) {
-         /* Provided buffer is 2 bytes but stored value is 1 byte. */
-         buffer_offset = 1;
-
-         /* Zero out both bytes. */
-         *uint16_buffer = 0;
-         debug_printf( 1, "zero buffer to %d", *uint16_buffer );
-      } else if( 1 == int_buffer_sz ) {
-         buffer_offset = 0;
-      } else {
-         error_printf( "field mismatch error!" ); /* Shouldn't happen! */
-         field_sz = ASN_ERROR_INVALID_VALUE_SZ;
-         goto cleanup;
-      }
-
-      debug_printf( 1, "buffer offset is %d", buffer_offset );
-   
-      if( 0x42 == type_buf ) {
-         /* Stored number is negative. */
-
-         /* Setup the buffer and assign the value. */
-         int8_buffer = (int8_t*)(int_buffer + buffer_offset);
-         *int8_buffer = asn_buffer[idx + 2];
-
-         debug_printf( 1, "assigning %d to become %d or %d or %d",
-            asn_buffer[idx + 2], *int8_buffer, *int16_buffer, *uint16_buffer );
-         
-         /* Negative check based on type byte above. */
-         if( negative ) {
-            (*int8_buffer) *= -1;
-            debug_printf( 1, "now it's %d or %d or %d",
-               *int8_buffer, *int16_buffer, *uint16_buffer );
-         }
-         assert(
-            (negative && 0 > *int8_buffer) ||
-            (!negative && 0 <= *int8_buffer) );
-
-         debug_printf( 1, "(offset 0x%02x) value byte is 0x%02x",
-            idx + 2, *int8_buffer );
-      } else {
-         uint8_buffer = (uint8_t*)(int_buffer + buffer_offset);
-         *uint8_buffer = asn_buffer[idx + 2];
-
-         debug_printf( 1, "(offset 0x%02x) value byte is 0x%02x",
-            idx + 2, *uint8_buffer );
-      }
+      int_out = asn_buffer[idx + 2];
       field_sz += 1;
-
-   } else if( asn_buffer[idx + 1] == 2 ) {
-      if( ASN_FLAG_SIGNED == (flags & ASN_FLAG_SIGNED) ) {
-         *int16_buffer = asn_read_short( asn_buffer, idx + 2 );
-         if( negative ) {
-            (*int16_buffer) *= -1;
-         }
-         assert(
-            (negative && 0 > *int16_buffer) ||
-            (!negative && 0 <= *int16_buffer) );
-      } else {
-         /* TODO: This causes store to misaligned address! */
-         *uint16_buffer = asn_read_short( asn_buffer, idx + 2 );
-         if( negative ) {
-            error_printf( "negative number found in non-negative type" );
-            /* TODO: Error value for field_sz? */
-            goto cleanup;
-         }
-      }
+   } else if( sz_buf == 2 ) {
+      int_out = asn_read_short( asn_buffer, idx + 2 );
       field_sz += 2;
    } else {
       /* TODO: Handle larger integers. */
-      error_printf( "unable to process integer: size 0x%02x",
-         asn_buffer[idx + 1] );
+      error_printf( "unable to process integer: size 0x%02x", sz_buf );
       idx = ASN_ERROR_INVALID_VALUE_SZ;
       goto cleanup;
    }
+
+   /* Negative check based on type byte above. */
+   if( 0x42 == type_buf && negative ) {
+      int_out *= -1;
+   } else if( 0x02 == type_buf && negative ) {
+      error_printf( "stored value is negative but output is not" );
+      field_sz = ASN_ERROR_INVALID_TYPE;
+      goto cleanup;
+   }
+
+   if( 2 == int_buffer_sz && (ASN_FLAG_SIGNED == (ASN_FLAG_SIGNED & flags)) ) {
+      *((int16_t*)int_buffer) = int_out;
+   } else if(
+      2 == int_buffer_sz && (ASN_FLAG_SIGNED != (ASN_FLAG_SIGNED & flags))
+   ) {
+      *((uint16_t*)int_buffer) = int_out;
+   } else if(
+      1 == int_buffer_sz && (ASN_FLAG_SIGNED == (ASN_FLAG_SIGNED & flags))
+   ) {
+      *((int8_t*)int_buffer) = int_out;
+   } else if(
+      1 == int_buffer_sz && (ASN_FLAG_SIGNED != (ASN_FLAG_SIGNED & flags))
+   ) {
+      *((uint8_t*)int_buffer) = int_out;
+   }
+
+   debug_printf( 0,
+      "(offset 0x%02x) type_buf: 0x%02x, negative: %d, output: %d",
+      idx, type_buf, negative, *int_buffer );
+   /* assert( (negative && 0 > int_out) || (!negative && 0 <= int_out) ); */
 
    field_sz += 2; /* type and size bytes */
 

@@ -97,12 +97,11 @@ Suite* asn_suite( void ) {
    /* Core test case */
    tc_read = tcase_create( "Read" );
 
-/*
    tcase_add_loop_test( tc_read, test_asn_write_neg_int_16, 0, TEST_NEG_16_SZ );
    tcase_add_loop_test( tc_read, test_asn_write_neg_int_16_1, 0, TEST_NEG_16_1_SZ );
-*/   tcase_add_test( tc_read, test_asn_read_neg_int_16 );
-   /*tcase_add_test( tc_read, test_asn_read_int_16 );
-   tcase_add_test( tc_read, test_asn_read_str );*/
+   tcase_add_test( tc_read, test_asn_read_neg_int_16 );
+   tcase_add_test( tc_read, test_asn_read_int_16 );
+   tcase_add_test( tc_read, test_asn_read_str );
 
    suite_add_tcase( s, tc_read );
 

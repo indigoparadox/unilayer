@@ -69,7 +69,7 @@ TESTS_C_FILES := \
    unilayer/tests/check.c \
    unilayer/tests/chkasn.c
 
-CFLAGS_TESTS := -DNO_RESEXT -DDEBUG_LOG -DDEBUG_THRESHOLD=3
+CFLAGS_TESTS := -DNO_RESEXT -DDEBUG_LOG -DDEBUG_THRESHOLD=$(DTHRESHOLD) -DDEPTH_VGA $(INCLUDES_UNILAYER)
 
 test_unilayer: $(addprefix obj/tests/,$(subst .c,.o,$(TESTS_C_FILES)))
 	$(MD) $(dir $@)

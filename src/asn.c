@@ -129,6 +129,7 @@ int32_t asn_write_sz(
 int32_t asn_write_int( MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t value ) {
    int32_t val_sz = 0;
    uint8_t* buffer = NULL;
+   uint8_t type_val = ASN_INT;
    int32_t retval = 0;
    
    val_sz = asn_get_int_sz( value );
@@ -161,12 +162,16 @@ int32_t asn_write_int( MEMORY_HANDLE* ph_buffer, int32_t idx, int32_t value ) {
    }
 
    /* Write the integer type to the buffer. */
-   if( 0 <= value ) {
-      buffer[idx++] = ASN_INT;
-   } else {
-      debug_printf( 1, "value %d (0x%02x) is negative", value, value );
-      buffer[idx++] = ASN_INT | 0x40;
+   if( 0 > value ) {
+      type_val |= 0x40;
+      value *= -1;
    }
+
+   debug_printf( 1,
+      "(offset 0x%02x) value %d (0x%02x) type is %02x",
+      idx, value, value, type_val );
+
+   buffer[idx++] = type_val;
 
    /* Write the size of the integer to the buffer. */
    buffer[idx++] = val_sz;
@@ -382,6 +387,8 @@ cleanup:
 int16_t asn_read_short( const uint8_t* asn_buffer, int32_t idx ) {
    int16_t n_out = 0;
    n_out |= (asn_buffer[idx++] << 8);
+   debug_printf( 1, "(offset 0x%02x) value byte is 0x%02x", idx, n_out );
+   debug_printf( 1, "(offset 0x%02x) value byte is 0x%02x", idx, asn_buffer[idx] );
    n_out |= asn_buffer[idx++];
    return n_out;
 }
@@ -391,16 +398,32 @@ int16_t asn_read_int(
    const uint8_t* asn_buffer, int32_t idx
 ) {
    int16_t field_sz = 0;
-   int16_t* int16_buffer = (int16_t*)int_buffer;
-   uint16_t* uint16_buffer = (uint16_t*)int_buffer;
-   int8_t* int8_buffer = (int8_t*)int_buffer; /* For signed int. */
+   volatile int16_t* int16_buffer = (int16_t*)int_buffer;
+   volatile uint16_t* uint16_buffer = (uint16_t*)int_buffer;
+   volatile int8_t* int8_buffer = NULL; /* Assigned below. */
+   volatile uint8_t* uint8_buffer = NULL; /* Assigned below. */
+   uint8_t negative = 0,
+      buffer_offset = 0; /* How deep into the buffer to write? */
+   uint8_t type_buf = asn_buffer[idx];
 
-   if( 0x02 != asn_buffer[idx] ) {
-      error_printf( "invalid integer type byte: 0x%02x (%d)",
-         asn_buffer[idx], idx );
-      field_sz = ASN_ERROR_INVALID_TYPE;
-      goto cleanup;
+   if( 0x02 != type_buf ) {
+      if( 0x42 == type_buf ) {
+         /* It's not invalid, just negative. */
+         negative = 1;
+         if( ASN_FLAG_SIGNED != (flags & ASN_FLAG_SIGNED) ) {
+            error_printf( "negative number found in non-negative type" );
+            field_sz = ASN_ERROR_INVALID_TYPE;
+            goto cleanup;
+         }
+      } else {
+         error_printf( "invalid integer type byte: 0x%02x (%d)",
+            type_buf, idx );
+         field_sz = ASN_ERROR_INVALID_TYPE;
+         goto cleanup;
+      }
    }
+
+   /* Make sure the buffer is clean and properly sized. */
 
    if( 2 < int_buffer_sz ) {
       error_printf( "integer buffer too large" );
@@ -408,25 +431,84 @@ int16_t asn_read_int(
       goto cleanup;
    }
 
+   /* Do the reading based on actual size of stored number. */
+
    if( asn_buffer[idx + 1] == 1 ) {
-      if( ASN_FLAG_SIGNED == (flags & ASN_FLAG_SIGNED) ) {
-         *int8_buffer = asn_buffer[idx + 2];
+      /* Stored number is 1 byte. */
+
+      /* Make sure pointer is pointing to right part of the buffer. */
+      if( 2 == int_buffer_sz ) {
+         /* Provided buffer is 2 bytes but stored value is 1 byte. */
+         buffer_offset = 1;
+
+         /* Zero out both bytes. */
+         *uint16_buffer = 0;
+         debug_printf( 1, "zero buffer to %d", *uint16_buffer );
+      } else if( 1 == int_buffer_sz ) {
+         buffer_offset = 0;
       } else {
-         *int_buffer = asn_buffer[idx + 2];
+         error_printf( "field mismatch error!" ); /* Shouldn't happen! */
+         field_sz = ASN_ERROR_INVALID_VALUE_SZ;
+         goto cleanup;
+      }
+
+      debug_printf( 1, "buffer offset is %d", buffer_offset );
+   
+      if( 0x42 == type_buf ) {
+         /* Stored number is negative. */
+
+         /* Setup the buffer and assign the value. */
+         int8_buffer = (int8_t*)(int_buffer + buffer_offset);
+         *int8_buffer = asn_buffer[idx + 2];
+
+         debug_printf( 1, "assigning %d to become %d or %d or %d",
+            asn_buffer[idx + 2], *int8_buffer, *int16_buffer, *uint16_buffer );
+         
+         /* Negative check based on type byte above. */
+         if( negative ) {
+            (*int8_buffer) *= -1;
+            debug_printf( 1, "now it's %d or %d or %d",
+               *int8_buffer, *int16_buffer, *uint16_buffer );
+         }
+         assert(
+            (negative && 0 > *int8_buffer) ||
+            (!negative && 0 <= *int8_buffer) );
+
+         debug_printf( 1, "(offset 0x%02x) value byte is 0x%02x",
+            idx + 2, *int8_buffer );
+      } else {
+         uint8_buffer = (uint8_t*)(int_buffer + buffer_offset);
+         *uint8_buffer = asn_buffer[idx + 2];
+
+         debug_printf( 1, "(offset 0x%02x) value byte is 0x%02x",
+            idx + 2, *uint8_buffer );
       }
       field_sz += 1;
+
    } else if( asn_buffer[idx + 1] == 2 ) {
       if( ASN_FLAG_SIGNED == (flags & ASN_FLAG_SIGNED) ) {
          *int16_buffer = asn_read_short( asn_buffer, idx + 2 );
+         if( negative ) {
+            (*int16_buffer) *= -1;
+         }
+         assert(
+            (negative && 0 > *int16_buffer) ||
+            (!negative && 0 <= *int16_buffer) );
       } else {
          /* TODO: This causes store to misaligned address! */
          *uint16_buffer = asn_read_short( asn_buffer, idx + 2 );
+         if( negative ) {
+            error_printf( "negative number found in non-negative type" );
+            /* TODO: Error value for field_sz? */
+            goto cleanup;
+         }
       }
       field_sz += 2;
    } else {
       /* TODO: Handle larger integers. */
       error_printf( "unable to process integer: size 0x%02x",
          asn_buffer[idx + 1] );
+      idx = ASN_ERROR_INVALID_VALUE_SZ;
       goto cleanup;
    }
 
@@ -475,6 +557,7 @@ int16_t asn_read_meta_ptr(
 ) {
    uint8_t sz_of_sz = 0;
    int16_t read_sz = 0;
+   int16_t idx_start = idx;
 
    *type_out = buffer[idx++];
 
@@ -496,6 +579,6 @@ int16_t asn_read_meta_ptr(
    debug_printf(
       1, "sequence type is %02x, %d bytes long", *type_out, *sz_out );
 
-   return idx;
+   return idx - idx_start;
 }
 

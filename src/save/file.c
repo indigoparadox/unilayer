@@ -32,7 +32,7 @@ int32_t save_write(
 cleanup:
 
    if( NULL != save_buffer ) {
-      save_h = memory_unlock( save_h );
+      save_buffer = (MEMORY_PTR)memory_unlock( save_h );
    }
 
    if( NULL != save_file ) {

@@ -110,8 +110,6 @@ struct HEADPACK_DEF* headpack_get_def( const char* filename ) {
    return NULL;
 }
 
-#define HEADPACK_WRITE_INCLUDES( inc ) fprintf( header, "#include \"" #inc "\"\n" );
-
 int write_header(
    FILE* header, int paths_in_sz, const char* paths_in[],
    int in_fmt, int out_fmt
@@ -134,7 +132,9 @@ int write_header(
    fprintf(
       header, "#ifndef " HEADPACK_INCLUDE_GUARD "\n#define RESEMB_H\n\n" );
 
-   HEADPACK_INCLUDES_TABLE( HEADPACK_WRITE_INCLUDES )
+   for( i = 0 ; g_headpack_headers_sz > i ; i++ ) {
+      fprintf( header, "#include \"%s\"\n", g_headpack_headers[i] );
+   }
 
    /* TODO: Use dynamic path to resource header. */
    fprintf( header, "#ifdef RESOURCE_FILE\n" );
@@ -333,6 +333,13 @@ int headpack_register(
    g_headpack_defs[g_headpack_defs_sz].indexer = indexer;
    strncpy( g_headpack_defs[g_headpack_defs_sz].type, type, HEADPACK_TYPE_MAX );
    g_headpack_defs_sz++;
+   assert( g_headpack_defs_sz < HEADPACK_DEFS_MAX );
+}
+
+int headpack_register_h( char* h ) {
+   g_headpack_headers[g_headpack_headers_sz] = h;
+   g_headpack_headers_sz++;
+   assert( g_headpack_headers_sz < HEADPACK_HEADERS_MAX );
 }
 
 #ifndef HEADPACK_NOMAIN

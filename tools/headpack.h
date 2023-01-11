@@ -10,14 +10,13 @@
 
 #define HEADPACK_INCLUDE_GUARD "RESEMB_H"
 
-#define HEADPACK_INCLUDES_TABLE( f ) f( ../../src/config.h ) f( ../../src/itstruct.h ) f( ../../src/cropdef.h ) f( ../../src/tmstruct.h )
-
 #define HEADPACK_FNAME_MAX 255
 
 #define HEADPACK_STATE_IN_FMT_ARG 1
 #define HEADPACK_STATE_OUT_FMT_ARG 2
 
 #define HEADPACK_DEFS_MAX 255
+#define HEADPACK_HEADERS_MAX 255
 
 #define HEADPACK_TYPE_MAX 8
 
@@ -39,6 +38,8 @@ struct HEADPACK_DEF {
 int headpack_register(
    char prefix, headpack_writer writer, headpack_indexer indexer,
    const char* type );
+
+int headpack_register_h( char* h );
 
 /**
  * \brief Determine if a path points to a bitmap or tilemap.
@@ -78,9 +79,13 @@ int headpack_main( int argc, char* argv[] );
 #ifdef HEADPACK_C
 struct HEADPACK_DEF g_headpack_defs[HEADPACK_DEFS_MAX];
 int g_headpack_defs_sz = 0;
+char* g_headpack_headers[HEADPACK_HEADERS_MAX];
+int g_headpack_headers_sz = 0;
 #else
 extern struct HEADPACK_DEF g_headpack_defs[];
 extern int g_headpack_defs_sz;
+extern char* g_headpack_headers[];
+extern int g_headpack_headers_sz;
 #endif /* HEADPACK_C */
 
 #endif /* !HEADPACK_H */

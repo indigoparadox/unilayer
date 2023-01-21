@@ -18,8 +18,13 @@ void memory_debug_dump() {
 
    h_info._pentry = NULL;
    for(;;) {
+#if defined( MEMORY_LARGE ) || defined( MEMORY_COMPACT )
+      heap_status = _heapwalk( &h_info );
+#else
       heap_status = _nheapwalk( &h_info );
+#endif /* MEMORY_LARGE || MEMORY_COMPACT */
       if( heap_status != _HEAPOK ) {
+         error_printf( "heap not OK!" );
          break;
       }
       if( _USEDENTRY == h_info._useflag ) {
@@ -128,8 +133,13 @@ void memory_free( MEMORY_HANDLE handle ) {
       handle_iter->next = handle->next;
    }
 
+#if defined( MEMORY_LARGE ) || defined( MEMORY_COMPACT )
+   free( handle->ptr );
+   free( handle );
+#else
    _nfree( handle->ptr );
    _nfree( handle );
+#endif /* MEMORY_LARGE || MEMORY_COMPACT */
 }
 
 uint32_t memory_sz( MEMORY_HANDLE handle ) {
@@ -146,7 +156,11 @@ uint32_t memory_resize( MEMORY_HANDLE* handle, uint32_t sz ) {
    debug_printf( 1, "reallocating %u-byte block to %u bytes",
       (*handle)->ptr_sz, sz );
 
+#if defined( MEMORY_LARGE ) || defined( MEMORY_COMPACT )
+   new_ptr = realloc( (*handle)->ptr, sz );
+#else
    new_ptr = _nrealloc( (*handle)->ptr, sz );
+#endif /* MEMORY_LARGE || MEMORY_COMPACT */
    if( NULL == new_ptr ) {
       error_printf( "unable to reallocate handle" );
       return 0;

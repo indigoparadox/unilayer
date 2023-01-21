@@ -39,7 +39,7 @@ INPUT_VAL input_poll( int16_t* x, int16_t* y ) {
       return ch_out;
    } else if( 1 == regs.x.bx /* Left button clicked. */ ) {
 	   if(
-         regs.x.cx != last_y &&
+         regs.x.cx != last_x &&
          regs.x.dx != last_y
       ) { 
 	      *x = regs.x.cx;

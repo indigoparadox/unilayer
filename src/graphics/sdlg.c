@@ -156,10 +156,33 @@ void graphics_loop_end() {
 
 void graphics_draw_px( uint16_t x, uint16_t y, const GRAPHICS_COLOR color ) {
 #ifdef PLATFORM_SDL1
-   /* int offset = 0;
-   offset = (y * g_screen->pitch) + (x * g_screen->format->BytesPerPixel);
-   ((uint8_t*)(g_screen->pixels))[offset] = SDL_MapRGB(
-      g_screen->format, color->r, color->g, color->b ); */
+   int offset = 0;
+   uint8_t* px_1 = NULL;
+   uint16_t* px_2 = NULL;
+   uint32_t* px_4 = NULL;
+
+   offset = (y * target->surface->pitch) +
+      (x * target->surface->format->BytesPerPixel);
+
+   switch( target->surface->format->BytesPerPixel ) {
+   case 4:
+      px_4 = (uint32_t*)&(((uint8_t*)(target->surface->pixels))[offset]);
+      *px_4 =
+         SDL_MapRGB( target->surface->format, color->r, color->g, color->b );
+      break;
+
+   case 2:
+      px_2 = (uint16_t*)&(((uint8_t*)(target->surface->pixels))[offset]);
+      *px_2 =
+         SDL_MapRGB( target->surface->format, color->r, color->g, color->b );
+      break;
+
+   case 1:
+      px_1 = (uint8_t*)&(((uint8_t*)(target->surface->pixels))[offset]);
+      *px_1 =
+         SDL_MapRGB( target->surface->format, color->r, color->g, color->b );
+      break;
+   }
 #else
    SDL_SetRenderDrawColor(
       g_window_renderer,  color->r, color->g, color->b, 255 );
